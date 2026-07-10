@@ -1,10 +1,7 @@
-SECQUOIA.NET - Project REDWOOD v1.2 FLAT
+SECQUOIA REDWOOD v1.5
 
-IMPORTANT:
-1. Open this extracted folder.
-2. Select ALL files inside it (do not upload the containing folder).
-3. Drag all files directly into the root of the GitHub repository.
-4. Commit to the main branch.
-
-The logo, favicon, Apple icon and PWA icons are all placed at repository root.
-No /assets folder is required by this release.
+1. Extract this ZIP.
+2. Upload ALL internal files directly to the root of the GitHub repository.
+3. Confirm secquoia-logo.png, favicon.ico and index.html appear at the same level.
+4. Commit: Publish REDWOOD v1.5 harmonized production release
+5. Wait for the green GitHub Pages deployment and refresh with Ctrl+F5.
