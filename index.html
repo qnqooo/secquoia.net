@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SECQUOIA Cybersecurity | Mission-Critical Cybersecurity</title>
+<meta name="description" content="Native English and Spanish SECQUOIA Cybersecurity enterprise website: QuSOC, QuPhone, QuSIM, QuSentinel, QuAudit, QuForensis, QuShield and the full Qu ecosystem.">
+<meta name="theme-color" content="#06100c">
+<link rel="canonical" href="https://secquoia.net/">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:title" content="SECQUOIA Cybersecurity">
+<meta property="og:description" content="Mission-critical cybersecurity for governments, enterprises and critical infrastructure.">
+<meta property="og:image" content="/assets/img/secquoia-logo.webp">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Organization",
+  "name":"SECQUOIA Cybersecurity",
+  "url":"https://secquoia.net/",
+  "logo":"/assets/img/secquoia-logo.webp",
+  "email":"info@secquoia.net",
+  "telephone":"+57 311 350 0159",
+  "sameAs":[
+    "https://www.linkedin.com/company/secquoiasas/posts/?feedView=all",
+    "https://www.instagram.com/secquoiasas/",
+    "https://twitter.com/secquoia",
+    "https://wa.me/573113500159"
+  ],
+  "address":[
+    {"@type":"PostalAddress","addressCountry":"PA","addressLocality":"Ciudad de Panamá","streetAddress":"Calle 50, Edificio Inteligente Credicorp Bank, Pisos 9, 31 y 32"},
+    {"@type":"PostalAddress","addressCountry":"CO","addressLocality":"Bogotá D.C.","postalCode":"110221","streetAddress":"Calle 85 # 12-66 Piso 10, Barrio La Cabrera"},
+    {"@type":"PostalAddress","addressCountry":"EC","addressLocality":"Quito","postalCode":"170507","streetAddress":"Edificio La Previsora, Av. Naciones Unidas y Av. Río Amazonas 1084, Torre B, Piso 8"}
+  ]
+}
+</script>
+<style>
+:root{--bg:#040806;--panel:#0b1712;--panel2:#101f18;--g:#57ff9a;--g2:#00c871;--txt:#f0fff6;--mut:#a8b9af;--line:rgba(87,255,154,.18);--r:28px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5}a{text-decoration:none;color:inherit}.wrap{width:min(1200px,calc(100% - 40px));margin:auto}.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 20% 0,rgba(87,255,154,.18),transparent 28%),radial-gradient(circle at 90% 10%,rgba(0,200,113,.14),transparent 27%),linear-gradient(180deg,#06100c,#040806 55%)}.bg:after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(87,255,154,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(87,255,154,.06) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(#000,transparent 70%)}header{position:sticky;top:0;z-index:99;background:rgba(4,8,6,.74);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.07)}.nav{height:82px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:14px}.brand img{height:48px;width:auto;max-width:330px;object-fit:contain;display:block}.brand strong{letter-spacing:.18em;font-size:14px}.brand span{display:block;color:var(--mut);font-size:11px;letter-spacing:.14em;text-transform:uppercase}nav{display:flex;gap:20px;color:#dceee5;font-size:13px}nav a:hover{color:var(--g)}.actions{display:flex;gap:10px;align-items:center}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:999px;padding:12px 17px;font-weight:800;font-size:13px;background:rgba(255,255,255,.035)}.btn.primary{background:linear-gradient(135deg,var(--g),var(--g2));color:#041008;border-color:transparent}.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}.lang button{border:0;background:transparent;color:var(--mut);padding:10px 12px;font-weight:900;cursor:pointer}.lang button.active{background:rgba(87,255,154,.16);color:var(--g)}.hero{min-height:calc(100vh - 82px);display:grid;align-items:center;position:relative;overflow:hidden;padding:78px 0}.hero:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(4,8,6,.96),rgba(4,8,6,.75) 50%,rgba(4,8,6,.45)),url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2400&auto=format&fit=crop') center/cover;filter:saturate(.95) brightness(.7)}.hero-grid{display:grid;grid-template-columns:1.04fr .74fr;gap:52px;align-items:center}.eyebrow{display:inline-flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:8px 12px;color:#cffff0;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;background:rgba(8,18,14,.65)}.dot{width:8px;height:8px;background:var(--g);border-radius:50%;box-shadow:0 0 18px var(--g)}h1{font-size:clamp(48px,7.6vw,105px);line-height:.92;margin:24px 0 22px;letter-spacing:-.07em}.grad{background:linear-gradient(120deg,#fff,#a7ffc9 58%,#22dc83);-webkit-background-clip:text;background-clip:text;color:transparent}.lead{font-size:clamp(18px,2vw,24px);color:#e4f1ea;max-width:840px;margin:0 0 20px}.sub{font-size:16px;color:var(--mut);max-width:750px;margin:0 0 32px}.hero-actions{display:flex;flex-wrap:wrap;gap:12px}.panel{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg,rgba(14,29,22,.88),rgba(6,12,9,.78));box-shadow:0 30px 90px rgba(0,0,0,.4);padding:24px}.dash-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.status{color:var(--g);font-weight:900;font-size:12px;letter-spacing:.13em}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:15px;background:rgba(255,255,255,.045)}.metric b{font-size:28px;display:block}.metric span{font-size:12px;color:var(--mut)}.radar{height:230px;margin-top:18px;border:1px solid var(--line);border-radius:22px;overflow:hidden;position:relative;background:radial-gradient(circle,transparent 0 17%,rgba(87,255,154,.13) 18% 19%,transparent 20% 34%,rgba(87,255,154,.13) 35% 36%,transparent 37% 50%,rgba(87,255,154,.13) 51% 52%,transparent 53%),conic-gradient(rgba(87,255,154,.42),transparent 24%,transparent),rgba(255,255,255,.03)}.radar:before{content:"";position:absolute;inset:0;background:conic-gradient(from 90deg,rgba(87,255,154,.55),transparent 18%,transparent);animation:spin 6s linear infinite;mix-blend-mode:screen}@keyframes spin{to{transform:rotate(360deg)}}section{padding:92px 0;border-top:1px solid rgba(255,255,255,.06)}.head{display:flex;justify-content:space-between;gap:28px;align-items:end;margin-bottom:34px}.k{color:var(--g);font-size:12px;font-weight:950;letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px}h2{font-size:clamp(34px,4.6vw,64px);line-height:1;margin:0;letter-spacing:-.055em}.head p{max-width:540px;color:var(--mut);margin:0}.framework{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}.phase{min-height:255px;border:1px solid var(--line);border-radius:24px;padding:16px;background:linear-gradient(180deg,rgba(15,29,23,.84),rgba(8,15,12,.84));position:relative;overflow:hidden}.phase:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top,rgba(87,255,154,.16),transparent 45%);pointer-events:none}.phase h3{position:relative;margin:0 0 8px;color:var(--g);font-size:13px;letter-spacing:.16em}.phase p{position:relative;margin:0 0 14px;color:var(--mut);font-size:12px;min-height:38px}.chip{position:relative;display:block;margin:8px 0;padding:10px 11px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.055);font-weight:900;font-size:13px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{border:1px solid var(--line);border-radius:26px;padding:24px;background:linear-gradient(180deg,rgba(15,29,23,.86),rgba(6,11,9,.86));box-shadow:0 18px 55px rgba(0,0,0,.24)}.tag{color:var(--g);font-size:12px;font-weight:950;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}.card h3{font-size:25px;margin:0 0 8px;letter-spacing:-.04em}.card p{color:var(--mut);margin:0 0 15px}.list{display:grid;gap:7px}.list span{position:relative;padding-left:18px;color:#ddf0e6;font-size:14px}.list span:before{content:"";position:absolute;left:0;top:.65em;width:6px;height:6px;border-radius:50%;background:var(--g)}.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}.pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.pill{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);border-radius:999px;padding:8px 11px;color:#def3e7;font-size:12px}.offices{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.office{border:1px solid var(--line);border-radius:24px;padding:20px;background:rgba(255,255,255,.04);min-height:230px}.office b{font-size:20px;display:block;margin-bottom:8px}.office p{color:var(--mut);font-size:14px;margin:0 0 12px}.office a{color:var(--g);font-weight:900}.cta{border:1px solid rgba(87,255,154,.28);border-radius:36px;padding:56px;background:linear-gradient(135deg,rgba(87,255,154,.16),rgba(0,200,113,.06)),url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2200&auto=format&fit=crop') center/cover}.cta h2{max-width:900px}footer{padding:54px 0 30px;background:#030504}.foot{display:grid;grid-template-columns:1.35fr repeat(3,1fr);gap:28px}.foot img{height:48px;width:auto;max-width:330px;object-fit:contain;display:block;margin-bottom:18px}.foot p,.foot li{color:var(--mut);font-size:14px}.foot h4{font-size:13px;letter-spacing:.16em;text-transform:uppercase;margin:0 0 14px}.foot ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}.social{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.social a{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;color:var(--g);font-weight:950;background:rgba(255,255,255,.04)}.bottom{border-top:1px solid rgba(255,255,255,.08);margin-top:32px;padding-top:22px;color:#74867c;font-size:13px;display:flex;justify-content:space-between;gap:20px}.en [data-es],.es [data-en]{display:none!important}
+@media(max-width:1060px){nav{display:none}.hero-grid,.split{grid-template-columns:1fr}.framework{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(2,1fr)}.offices{grid-template-columns:repeat(2,1fr)}.foot{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.wrap{width:calc(100% - 28px)}.brand span{display:none}.nav{height:72px}.brand img{height:42px}.actions .btn:not(.primary){display:none}.hero{padding:48px 0}.hero-actions,.head,.bottom{flex-direction:column;align-items:stretch}.btn{width:100%}.framework,.cards,.offices,.foot{grid-template-columns:1fr}.phase{min-height:auto}.metrics{grid-template-columns:1fr}.cta{padding:34px 22px}section{padding:70px 0}h1{font-size:52px}}
+
+/* v6.4 production fixes */
+.btn,.lang button,.hamb{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.hamb{display:none;width:44px;height:44px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.035);align-items:center;justify-content:center;gap:4px;flex-direction:column;flex-shrink:0}
+.hamb span{width:18px;height:2px;background:var(--g);border-radius:99px;display:block}
+.mobile-menu{display:none;position:fixed;left:14px;right:14px;top:82px;z-index:98;border:1px solid var(--line);border-radius:24px;background:rgba(5,12,9,.97);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:16px;box-shadow:0 28px 80px rgba(0,0,0,.45)}
+.mobile-menu.open{display:grid;gap:8px}
+.mobile-menu a{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);color:#dceee5;font-weight:800}
+.hero-sections{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 0}
+.hero-sections a{border:1px solid rgba(87,255,154,.19);background:rgba(255,255,255,.04);border-radius:999px;padding:8px 11px;color:#d8f6e5;font-size:12px;font-weight:800}
+.local-email{display:block;margin-top:10px;color:#fff!important;font-weight:900}
+.subdomain{font-size:12px;color:#dff8ea;border:1px solid rgba(87,255,154,.22);display:inline-flex;padding:7px 9px;border-radius:999px;margin-top:8px;background:rgba(87,255,154,.06)}
+@media(max-width:1060px){.hamb{display:inline-flex}.mobile-menu{top:82px}}
+@media(max-width:640px){
+.mobile-menu{top:72px}
+.hero:before{background:linear-gradient(180deg,rgba(4,8,6,.94),rgba(4,8,6,.86)),url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2400&auto=format&fit=crop') center/cover!important}
+.cta{background:linear-gradient(135deg,rgba(87,255,154,.16),rgba(0,200,113,.06)),url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2200&auto=format&fit=crop') center/cover!important}
+.hero-sections a{font-size:11px}
+}
+
+</style>
+</head>
+<body class="en">
+<div class="bg"></div>
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top"><img src="/assets/img/secquoia-logo.webp" alt="SECQUOIA logo"><div><strong>SECQUOIA</strong><span>Cybersecurity</span></div></a>
+    <nav>
+      <a href="#framework" data-en>Capabilities</a><a href="#framework" data-es>Capacidades</a>
+      <a href="#ecosystem">Ecosystem</a>
+      <a href="#technology" data-en>Technology</a><a href="#technology" data-es>Tecnología</a>
+      <a href="#services" data-en>Services</a><a href="#services" data-es>Servicios</a>
+      <a href="#presence" data-en>Presence</a><a href="#presence" data-es>Presencia</a>
+      <a href="#contact" data-en>Contact</a><a href="#contact" data-es>Contacto</a>
+    </nav>
+    <div class="actions">
+      <div class="lang"><button class="active" id="enBtn" type="button">EN</button><button id="esBtn" type="button">ES</button></div>
+      <a class="btn primary" href="https://wa.me/573113500159" target="_blank" rel="noopener">WhatsApp</a>
+<button class="hamb" id="hamb" aria-label="Open menu" type="button"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#framework" data-en>Capabilities</a><a href="#framework" data-es>Capacidades</a>
+    <a href="#ecosystem">Ecosystem</a>
+    <a href="#technology" data-en>Technology</a><a href="#technology" data-es>Tecnología</a>
+    <a href="#services" data-en>Services</a><a href="#services" data-es>Servicios</a>
+    <a href="#presence" data-en>Global Presence</a><a href="#presence" data-es>Presencia regional</a>
+    <a href="#contact" data-en>Contact</a><a href="#contact" data-es>Contacto</a>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow"><span class="dot"></span><span data-en>A SECQUOIA Group Company</span><span data-es>Una compañía de SECQUOIA Group</span></div>
+      <h1 data-en><span class="grad">Mission-Critical</span><br>Cybersecurity.</h1>
+      <h1 data-es><span class="grad">Ciberseguridad</span><br>Integral.</h1>
+      <p class="lead" data-en>Integrated cyber defense, cyber resilience, secure communications and managed security capabilities for governments, enterprises and critical infrastructure.</p>
+      <p class="lead" data-es>Ciberseguridad integral para organizaciones de alto valor e infraestructura crítica: defensa, resiliencia, comunicaciones seguras, auditoría, forense, inteligencia, implementación e integración.</p>
+      <p class="sub" data-en>SECQUOIA Cybersecurity helps organizations prevent, assess, protect, detect, respond, recover and evolve through a modular Qu™ ecosystem and specialized professional services.</p>
+      <p class="sub" data-es>SECQUOIA Cybersecurity comercializa, integra, implementa y opera capacidades avanzadas para fortalecer la postura de seguridad, reducir el riesgo y proteger la continuidad operacional.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#framework" data-en>Explore Capabilities</a><a class="btn primary" href="#framework" data-es>Explorar capacidades</a>
+        <a class="btn" href="#contact" data-en>Talk to an Expert</a><a class="btn" href="#contact" data-es>Hablar con un experto</a>
+      </div>
+      <div class="hero-sections">
+        <a href="#framework" data-en>Capabilities</a><a href="#framework" data-es>Capacidades</a>
+        <a href="#ecosystem">Ecosystem</a>
+        <a href="#technology" data-en>Technology</a><a href="#technology" data-es>Tecnología</a>
+        <a href="#services" data-en>Services</a><a href="#services" data-es>Servicios</a>
+        <a href="#presence" data-en>Presence</a><a href="#presence" data-es>Presencia</a>
+        <a href="#contact" data-en>Contact</a><a href="#contact" data-es>Contacto</a>
+      </div>
+
+    </div>
+    <aside class="panel">
+      <div class="dash-head"><strong>QuSOC™</strong><span class="status">ONLINE</span></div>
+      <div class="metrics">
+        <div class="metric"><b>24×7</b><span data-en>Cyber operations</span><span data-es>Operación de ciberseguridad</span></div>
+        <div class="metric"><b>360°</b><span data-en>Security lifecycle</span><span data-es>Ciclo de seguridad</span></div>
+        <div class="metric"><b>Ecosystem</b><span data-en>Modular ecosystem</span><span data-es>Ecosistema modular</span></div>
+        <div class="metric"><b>AI</b><span data-en>Assisted analysis</span><span data-es>Análisis asistido</span></div>
+      </div>
+      <div class="radar"></div>
+      <div class="pillrow"><span class="pill">SIEM</span><span class="pill">XDR</span><span class="pill">SOAR</span><span class="pill">MDR</span><span class="pill">Threat Intel</span></div>
+    </aside>
+  </div>
+</section>
+
+<section id="framework">
+  <div class="wrap">
+    <div class="head">
+      <div><div class="k" data-en>Cybersecurity Capability Framework™</div><div class="k" data-es>Marco de Capacidades de Ciberseguridad™</div>
+      <h2 data-en>A complete security lifecycle.</h2><h2 data-es>Un ciclo completo de seguridad 360.</h2></div>
+      <p data-en>Each phase includes Qu™ capabilities that can operate as standalone modules, managed services, or integrated functions within QuSOC™.</p>
+      <p data-es>Cada eslabón cuenta con capacidades Qu™ que pueden adquirirse como módulos independientes, servicios gestionados o funciones integradas dentro de QuSOC™.</p>
+    </div>
+    <div class="framework">
+      <div class="phase"><h3>PREVENT</h3><p data-en>Stop fraud and human risk before incidents begin.</p><p data-es>Anticipar fraude y riesgo humano antes del incidente.</p><span class="chip">QuSentinel™</span><span class="chip">QuAware™</span></div>
+      <div class="phase"><h3>ASSESS</h3><p data-en>Understand posture, compliance and technical evidence.</p><p data-es>Entender postura, cumplimiento y evidencia técnica.</p><span class="chip">QuAudit™</span><span class="chip">QuForensis™</span></div>
+      <div class="phase"><h3>PROTECT</h3><p data-en>Secure users, identities, devices and communications.</p><p data-es>Proteger usuarios, identidades, dispositivos y comunicaciones.</p><span class="chip">QuShield™</span><span class="chip">QuPhone™</span><span class="chip">QuSIM™</span></div>
+      <div class="phase"><h3>DETECT</h3><p data-en>Identify threats with continuous monitoring and intelligence.</p><p data-es>Detectar amenazas con monitoreo e inteligencia continua.</p><span class="chip">QuSOC™</span><span class="chip">QuIntel™</span></div>
+      <div class="phase"><h3>RESPOND</h3><p data-en>Contain, coordinate and eradicate cyber incidents.</p><p data-es>Contener, coordinar y erradicar incidentes.</p><span class="chip">QuResponse™</span><span class="chip">QuContain™</span></div>
+      <div class="phase"><h3>RECOVER</h3><p data-en>Restore critical operations with confidence.</p><p data-es>Restaurar operaciones críticas con confianza.</p><span class="chip">QuRecover™</span><span class="chip">QuResilience™</span></div>
+      <div class="phase"><h3>EVOLVE</h3><p data-en>Advance digital trust and security maturity.</p><p data-es>Elevar confianza digital y madurez de seguridad.</p><span class="chip">QuVault™</span><span class="chip">QnQ™</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="ecosystem">
+<div class="wrap">
+  <div class="head">
+    <div><div class="k">Ecosystem</div><h2 data-en>Commercial capabilities for enterprise cybersecurity.</h2><h2 data-es>Capacidades comerciales para ciberseguridad integral.</h2></div>
+    <p data-en>A modular portfolio built for organizations that need assessment, protection, operations, secure communications, intelligence, recovery and continuous improvement.</p>
+    <p data-es>Un portafolio modular para organizaciones que requieren evaluación, protección, operación, comunicaciones seguras, inteligencia, recuperación y mejora continua.</p>
+  </div>
+  <div class="cards">
+    <article class="card"><div class="tag">Prevent</div><h3>QuSentinel™</h3><p data-en>AI digital risk prevention for fraud, phishing, smishing, vishing, brand protection and user risk.</p><p data-es>Prevención de riesgo digital para fraude, phishing, smishing, vishing, protección de marca y riesgo de usuario.</p><div class="list"><span>Fraud Prevention</span><span>Brand Protection</span><span>Real-Time Alerts</span></div></article>
+    <article class="card"><div class="tag">Prevent</div><h3>QuAware™</h3><p data-en>Security awareness, phishing simulations and human risk management for executives and teams.</p><p data-es>Concienciación, simulaciones de phishing y gestión del riesgo humano para directivos y equipos.</p><div class="list"><span>Awareness Training</span><span>Phishing Simulation</span><span>Human Risk Analytics</span></div></article>
+    <article class="card"><div class="tag">Assess</div><h3>QuAudit™</h3><p data-en>Cybersecurity audits, maturity assessments, compliance, risk analysis and security roadmaps.</p><p data-es>Auditorías, evaluaciones de madurez, cumplimiento, análisis de riesgo y hojas de ruta de seguridad.</p><div class="list"><span>ISO / NIST / CIS</span><span>Gap Analysis</span><span>Compliance Roadmaps</span></div></article>
+    <article class="card"><div class="tag">Assess</div><h3>QuForensis™</h3><p data-en>Digital forensics, evidence preservation, incident investigation, malware analysis and root cause analysis.</p><p data-es>Forense digital, preservación de evidencia, investigación de incidentes, análisis de malware y causa raíz.</p><div class="list"><span>Digital Forensics</span><span>Chain of Custody</span><span>Incident Investigation</span></div></article>
+    <article class="card"><div class="tag">Protect</div><h3>QuShield™</h3><p data-en>Integrated protection for endpoints, network, cloud, identity, email, data, OT/ICS and Zero Trust architectures.</p><p data-es>Protección integral para endpoints, red, nube, identidad, correo, datos, OT/ICS y arquitecturas Zero Trust.</p><div class="list"><span>Zero Trust</span><span>Endpoint / Cloud / IAM</span><span>OT / ICS Security</span></div></article>
+    <article class="card"><div class="tag">Protect</div><h3>QuPhone™</h3><p data-en>Secure voice, messaging, video, collaboration and file sharing for mission-critical environments.</p><p data-es>Voz, mensajería, video, colaboración y archivos seguros para entornos de misión crítica.</p><div class="list"><span>Secure Voice</span><span>Secure Messaging</span><span>Secure Collaboration</span></div></article>
+    <article class="card"><div class="tag">Protect</div><h3>QuSIM™</h3><p data-en>Enterprise secure connectivity with eSIM, private APN, global roaming, IoT/M2M connectivity and secure mobility.</p><p data-es>Conectividad segura empresarial con eSIM, APN privado, roaming global, conectividad IoT/M2M y movilidad segura.</p><div class="list"><span>eSIM Management</span><span>Private APN</span><span>IoT Secure Connectivity</span></div></article>
+    <article class="card"><div class="tag">Detect</div><h3>QuSOC™</h3><p data-en>24×7 Security Operations Center with SIEM, XDR, SOAR, MDR, use cases and continuous monitoring.</p><p data-es>Centro de Operaciones de Seguridad 24×7 con SIEM, XDR, SOAR, MDR, casos de uso y monitoreo continuo.</p><div class="list"><span>24×7 Monitoring</span><span>SIEM / XDR / SOAR</span><span>Managed Detection</span></div></article>
+    <article class="card"><div class="tag">Detect</div><h3>QuIntel™</h3><p data-en>Cyber threat intelligence, dark web monitoring, IoCs, TTPs, threat hunting and executive intelligence.</p><p data-es>Inteligencia de amenazas, dark web, IoC, TTPs, threat hunting y reportes ejecutivos.</p><div class="list"><span>Threat Intelligence</span><span>Dark Web Monitoring</span><span>MITRE ATT&CK</span></div></article>
+    <article class="card"><div class="tag">Respond</div><h3>QuResponse™</h3><p data-en>Incident response, ransomware response, crisis coordination, breach management and executive communications.</p><p data-es>Respuesta a incidentes, ransomware, coordinación de crisis, gestión de brechas y comunicación ejecutiva.</p><div class="list"><span>Incident Response</span><span>Ransomware Response</span><span>Crisis Management</span></div></article>
+    <article class="card"><div class="tag">Respond</div><h3>QuContain™</h3><p data-en>Threat containment and orchestration with isolation, playbooks, SOAR automation and neutralization.</p><p data-es>Contención y orquestación de amenazas con aislamiento, playbooks, automatización SOAR y neutralización.</p><div class="list"><span>Automated Containment</span><span>Security Playbooks</span><span>Threat Neutralization</span></div></article>
+    <article class="card"><div class="tag">Recover</div><h3>QuRecover™</h3><p data-en>Cyber recovery, disaster recovery, business continuity, backup validation and secure restoration.</p><p data-es>Recuperación cibernética, continuidad de negocio, recuperación ante desastres, validación de respaldos y restauración segura.</p><div class="list"><span>Disaster Recovery</span><span>Backup Validation</span><span>Cyber Recovery</span></div></article>
+    <article class="card"><div class="tag">Recover</div><h3>QuResilience™</h3><p data-en>Operational resilience, tabletop exercises, executive readiness and crisis simulations.</p><p data-es>Resiliencia operacional, ejercicios tabletop, preparación ejecutiva y simulacros de crisis.</p><div class="list"><span>Operational Resilience</span><span>Tabletop Exercises</span><span>Executive Readiness</span></div></article>
+    <article class="card"><div class="tag">Evolve</div><h3>QuVault™</h3><p data-en>Digital Trust & Cyber Vault for secrets, keys, certificates, evidence, immutable backups and critical data.</p><p data-es>Digital Trust & Cyber Vault para secretos, llaves, certificados, evidencia, respaldos inmutables y datos críticos.</p><div class="list"><span>Secrets Management</span><span>Key Management</span><span>Immutable Vault</span></div></article>
+    <article class="card"><div class="tag">Evolve</div><h3>QnQ™</h3><p data-en>Unified Cyber Workspace to manage policies, reports, services, modules and cyber operations.</p><p data-es>Workspace unificado para administrar políticas, reportes, servicios, módulos y operación de ciberseguridad.</p><div class="list"><span>Unified Dashboard</span><span>Policy Management</span><span>Executive Reporting</span></div></article>
+  </div>
+</div>
+</section>
+
+<section id="technology">
+<div class="wrap">
+  <div class="head">
+    <div><div class="k" data-en>Technology & Philosophy</div><div class="k" data-es>Tecnología y filosofía</div><h2 data-en>Concept, engineering and commercial products: clearly separated.</h2><h2 data-es>Concepto, ingeniería y productos comerciales: claramente separados.</h2></div>
+    <p data-en>SQAILE™ is not sold as software. It is the conceptual AI governance framework. QuantPaths™ is the engineering layer for AI, automation and quantum-ready development products.</p>
+    <p data-es>SQAILE™ no se vende como software. Es el framework conceptual de gobernanza de IA. QuantPaths™ es la capa de ingeniería para productos de IA, automatización y desarrollo quantum-ready.</p>
+  </div>
+  <div class="split">
+    <article class="card"><div class="tag">Conceptual Layer</div><h3>SQAILE™ Framework</h3><p data-en>A cognitive AI governance framework that can be implemented over LLMs to centralize, route and guide reasoning through ethical epistemology, fractal thinking, quantum-inspired principles, 39 knowledge domains and Horizon∞™.</p><p data-es>Framework cognitivo de gobernanza de IA que puede implementarse sobre LLMs para centralizar, encaminar y orientar su razonamiento bajo epistemología ética, pensamiento fractal, principios inspirados en mecánica cuántica, 39 dominios del conocimiento y Horizon∞™.</p><div class="pillrow"><span class="pill">AI Governance</span><span class="pill">Ethical Epistemology</span><span class="pill">Horizon∞™</span></div></article>
+    <article class="card"><div class="tag">Engineering Layer</div><h3>QuantPaths™</h3><p data-en>AI • Automation • Quantum Development Products. The engineering and innovation layer where SECQUOIA designs, integrates and evolves products, APIs, connectors and digital solutions.</p><p data-es>AI • Automation • Quantum Development Products. La capa de ingeniería e innovación donde SECQUOIA diseña, integra y evoluciona productos, APIs, conectores y soluciones digitales.</p><div class="pillrow"><span class="pill">AI Development</span><span class="pill">Automation</span><span class="pill">API Integration</span><span class="pill">Quantum-Ready Products</span></div></article>
+  </div>
+</div>
+</section>
+
+<section id="services">
+<div class="wrap">
+  <div class="head">
+    <div><div class="k" data-en>Professional & Academic Services</div><div class="k" data-es>Servicios profesionales y académicos</div><h2 data-en>From strategy to implementation and knowledge transfer.</h2><h2 data-es>De la estrategia a la implementación y transferencia de conocimiento.</h2></div>
+    <p data-en>Services sit below the Qu™ portfolio and help customers deploy, integrate, operate and mature their cyber capabilities.</p>
+    <p data-es>Los servicios están debajo del portafolio Qu™ y permiten desplegar, integrar, operar y madurar las capacidades de ciberseguridad del cliente.</p>
+  </div>
+  <div class="split">
+    <article class="card"><div class="tag">Professional Services</div><h3 data-en>Consulting, Integration & Managed Services</h3><h3 data-es>Consultoría, integración y servicios gestionados</h3><p data-en>Security architecture, implementation, integration, managed services, vCISO, incident response, premium support and customer success.</p><p data-es>Arquitectura de seguridad, implementación, integración, servicios gestionados, vCISO, respuesta a incidentes, soporte premium y customer success.</p><div class="list"><span>Consulting</span><span>Implementation</span><span>Integration</span><span>Managed Services</span><span>Support</span></div></article>
+    <article class="card"><div class="tag">QuAcademy™</div><h3 data-en>Cybersecurity, AI & Quantum Learning</h3><h3 data-es>Formación en ciberseguridad, IA y quantum</h3><p data-en>Executive education, certifications, corporate training, security awareness, cyber ranges, workshops, labs, research and university alliances.</p><p data-es>Educación ejecutiva, certificaciones, entrenamiento corporativo, awareness, cyber ranges, workshops, laboratorios, investigación y alianzas universitarias.</p><div class="list"><span>Training</span><span>Certifications</span><span>Cyber Range</span><span>Research</span><span>University Programs</span></div></article>
+  </div>
+</div>
+</section>
+
+<section id="presence">
+<div class="wrap">
+  <div class="head">
+    <div><div class="k" data-en>Global Presence</div><div class="k" data-es>Presencia regional</div><h2 data-en>Regional reach for critical operations across the Americas.</h2><h2 data-es>Presencia regional para proteger operaciones críticas en las Américas.</h2></div>
+    <p data-en>One corporate email, one WhatsApp Business channel, and regional offices supporting enterprise and government customers.</p>
+    <p data-es>Un único correo corporativo, un canal de WhatsApp Business y oficinas regionales para atender clientes empresariales y gubernamentales.</p>
+  </div>
+
+  <div class="offices">
+    <div class="office"><b>🇺🇸 United States</b><p data-en>SECQUOIA Group Headquarters<br>Austin, Texas, USA</p><p data-es>Headquarters de SECQUOIA Group<br>Austin, Texas, EE. UU.</p><a href="tel:+19796004595">+1 (979) 600-4595</a><a class="local-email" href="mailto:us@secquoia.net">us@secquoia.net</a></div>
+    <div class="office"><b>🇵🇦 Panamá</b><p>Calle 50, Edificio Inteligente Credicorp Bank, Pisos 9, 31 y 32. Ciudad de Panamá.</p><a href="tel:+50765030015">+507 6503 0015</a><a class="local-email" href="mailto:pa@secquoia.net">pa@secquoia.net</a><span class="subdomain">pa.secquoia.net</span></div>
+    <div class="office"><b>🇨🇴 Colombia</b><p>Calle 85 # 12-66 P10, Barrio La Cabrera, Bogotá D.C., 110221.</p><a href="tel:+573113500159">+57 311 350 0159</a><a class="local-email" href="mailto:co@secquoia.net">co@secquoia.net</a><span class="subdomain">co.secquoia.net</span></div>
+    <div class="office"><b>🇪🇨 Ecuador</b><p>Edificio La Previsora, Av. Naciones Unidas y Av. Río Amazonas 1084, Torre B, Piso 8, 170507 Quito.</p><a href="tel:+593986906862">+593 98 690 6862</a><a class="local-email" href="mailto:ec@secquoia.net">ec@secquoia.net</a><span class="subdomain">ec.secquoia.net</span></div>
+  </div>
+
+</div>
+</section>
+
+<section id="contact">
+<div class="wrap">
+  <div class="cta">
+    <div class="eyebrow"><span class="dot"></span><span data-en>Contact SECQUOIA</span><span data-es>Contacto SECQUOIA</span></div>
+    <h2 data-en>Let’s design the cybersecurity capability your organization needs.</h2>
+    <h2 data-es>Diseñemos la capacidad de ciberseguridad que requiere tu organización.</h2>
+    <p class="lead" data-en style="margin-top:18px">QuSOC™, QuPhone™, QuSIM™, QuSentinel™, QuAudit™ and the complete Qu™ ecosystem are ready to support your cyber resilience strategy.</p>
+    <p class="lead" data-es style="margin-top:18px">QuSOC™, QuPhone™, QuSIM™, QuSentinel™, QuAudit™ y todo el ecosistema Qu™ están listos para fortalecer tu estrategia de ciberresiliencia.</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="mailto:info@secquoia.net">info@secquoia.net</a>
+      <a class="btn" href="https://wa.me/573113500159" target="_blank" rel="noopener">WhatsApp Business</a>
+    </div>
+  </div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="wrap">
+  <div class="foot">
+    <div>
+      <img src="/assets/img/secquoia-logo.webp" alt="SECQUOIA logo">
+      <p><strong>SECQUOIA Cybersecurity</strong><br><span data-en>A SECQUOIA Group Company.</span><span data-es>Una compañía de SECQUOIA Group.</span><br><span data-en>Mission-critical cybersecurity for governments, enterprises and critical infrastructure.</span><span data-es>Ciberseguridad integral para gobiernos, empresas e infraestructura crítica.</span></p>
+      <div class="social">
+        <a href="https://www.linkedin.com/company/secquoiasas/posts/?feedView=all" target="_blank" rel="noopener" title="LinkedIn">in</a>
+        <a href="https://www.instagram.com/secquoiasas/" target="_blank" rel="noopener" title="Instagram">IG</a>
+        <a href="https://twitter.com/secquoia" target="_blank" rel="noopener" title="X">X</a>
+        <a href="https://wa.me/573113500159" target="_blank" rel="noopener" title="WhatsApp Business">WA</a>
+      </div>
+    </div>
+    <div><h4>Ecosystem</h4><ul><li>QuSentinel™</li><li>QuAudit™</li><li>QuShield™</li><li>QuPhone™</li><li>QuSIM™</li><li>QuSOC™</li><li>QuVault™</li></ul></div>
+    <div><h4 data-en>Services</h4><h4 data-es>Servicios</h4><ul><li>Consulting</li><li>Implementation</li><li>Integration</li><li>Managed Services</li><li>Support</li><li>QuAcademy™</li></ul></div>
+    <div><h4>Contact</h4><ul><li><a href="mailto:info@secquoia.net">info@secquoia.net</a></li><li><a href="https://wa.me/573113500159" target="_blank" rel="noopener">WhatsApp: +57 311 350 0159</a></li><li>Instagram · X · LinkedIn · WhatsApp</li></ul></div>
+  </div>
+  <div class="bottom"><span>© 2026 SECQUOIA Cybersecurity. All rights reserved.</span><span>Privacy · Terms · Legal · Careers</span></div>
+</div>
+</footer>
+
+<script>
+(function(){
+  const body=document.body;
+  const en=document.getElementById('enBtn');
+  const es=document.getElementById('esBtn');
+  const hamb=document.getElementById('hamb');
+  const menu=document.getElementById('mobileMenu');
+
+  function setLang(l){
+    body.classList.remove('en','es');
+    body.classList.add(l);
+    document.documentElement.lang = l === 'en' ? 'en' : 'es';
+    if(en && es){
+      en.classList.toggle('active', l === 'en');
+      es.classList.toggle('active', l === 'es');
+    }
+    try{ localStorage.setItem('secquoia_lang', l); }catch(e){}
+  }
+
+  if(en) en.addEventListener('click', function(){ setLang('en'); });
+  if(es) es.addEventListener('click', function(){ setLang('es'); });
+  try{ setLang(localStorage.getItem('secquoia_lang') || 'en'); }catch(e){ setLang('en'); }
+
+  if(hamb && menu){
+    hamb.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      const target = document.querySelector(a.getAttribute('href'));
+      if(target){
+        e.preventDefault();
+        if(menu) menu.classList.remove('open');
+        target.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    });
+  });
+
+  document.addEventListener('click', function(e){
+    if(menu && hamb && !menu.contains(e.target) && !hamb.contains(e.target)){
+      menu.classList.remove('open');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
