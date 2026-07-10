@@ -10,3 +10,10 @@ GitHub Pages production package with all visual assets placed at repository root
 
 ## Upload
 Extract the ZIP and upload **all files inside the extracted folder** directly to the repository root on branch `main`.
+
+
+## REDWOOD v1.3
+- Responsive and adaptive hardening for phones, tablets, laptops and large displays.
+- Mobile header and navigation optimized for narrow screens.
+- Flexible grids, typography, cards, hero and contact sections.
+- Landscape mobile support and horizontal overflow prevention.

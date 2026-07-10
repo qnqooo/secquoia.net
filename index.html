@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SECQUOIA Cybersecurity | Mission-Critical Cybersecurity</title>
 <meta name="description" content="Native English and Spanish SECQUOIA Cybersecurity enterprise website: QuSOC, QuPhone, QuSIM, QuSentinel, QuAudit, QuForensis, QuShield and the full Qu ecosystem.">
 <meta name="theme-color" content="#06100c">
@@ -60,6 +60,67 @@
 .hero:before{background:linear-gradient(180deg,rgba(4,8,6,.94),rgba(4,8,6,.86)),url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2400&auto=format&fit=crop') center/cover!important}
 .cta{background:linear-gradient(135deg,rgba(87,255,154,.16),rgba(0,200,113,.06)),url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2200&auto=format&fit=crop') center/cover!important}
 .hero-sections a{font-size:11px}
+}
+
+
+
+/* REDWOOD v1.3 — responsive & adaptive hardening */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+img,svg,video,canvas{max-width:100%;height:auto}
+.wrap,.hero-grid,.hero-grid>*,.split,.split>*,.cards,.cards>*,.offices,.offices>*,.foot,.foot>*{min-width:0}
+section[id]{scroll-margin-top:92px}
+.brand{min-width:0;flex-shrink:1}.brand img{max-width:min(330px,38vw)}
+.actions{flex-shrink:0}.panel,.card,.office,.phase,.cta{max-width:100%}
+.hero-grid{width:100%}.eyebrow{max-width:100%;white-space:normal;line-height:1.35}.lead,.sub,.head p,.office p{overflow-wrap:anywhere}
+
+@media(max-width:1180px){
+  .wrap{width:min(100% - 32px,1120px)}
+  .nav{gap:14px}.brand img{max-width:250px}nav{gap:14px}
+  .hero-grid{gap:30px}.framework{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:1060px){
+  .nav{height:76px}.mobile-menu{top:76px;max-height:calc(100dvh - 92px);overflow-y:auto}
+  .hero{min-height:auto;padding:58px 0}.hero-grid{gap:26px}
+  .panel{width:100%}.framework{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cards,.offices{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .wrap{width:calc(100% - 28px)}
+  header{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .nav{height:68px;gap:8px}.brand{gap:8px}.brand img{height:38px;max-width:150px}.brand>div{display:none}
+  .actions{gap:6px}.lang button{padding:8px 10px}.actions>.btn.primary{display:none}.hamb{width:40px;height:40px}
+  .mobile-menu{top:68px;left:10px;right:10px;border-radius:18px;padding:12px}
+  .hero{padding:38px 0 48px}.hero-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+  h1{font-size:clamp(42px,14vw,64px);line-height:.96;letter-spacing:-.055em;margin:20px 0 18px;overflow-wrap:anywhere}
+  h2{font-size:clamp(32px,10vw,48px);line-height:1.05}
+  .lead{font-size:clamp(17px,4.8vw,21px)}.sub{font-size:15px}
+  .eyebrow{font-size:10px;letter-spacing:.12em;padding:7px 10px}
+  .hero-actions{display:grid;grid-template-columns:1fr;gap:10px}.hero-actions .btn{width:100%}
+  .hero-sections{gap:6px}.hero-sections a{font-size:10px;padding:7px 9px}
+  .panel{padding:18px;border-radius:22px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.metric{padding:13px}.metric b{font-size:24px}.radar{height:min(54vw,220px)}
+  section{padding:58px 0}.head{display:grid;gap:18px;align-items:start;margin-bottom:26px}
+  .framework,.cards,.offices,.foot{grid-template-columns:minmax(0,1fr)}
+  .phase,.card,.office{padding:19px;border-radius:20px}.phase{min-height:auto}.office{min-height:0}
+  .split{grid-template-columns:minmax(0,1fr)}
+  .cta{padding:30px 20px;border-radius:26px;background-position:center}
+  footer{padding:44px 0 24px}.foot img{max-width:230px}.bottom{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:430px){
+  .wrap{width:calc(100% - 22px)}
+  .nav{height:64px}.brand img{height:34px;max-width:126px}.mobile-menu{top:64px}
+  .lang button{padding:7px 9px;font-size:12px}.hamb{width:38px;height:38px}
+  .hero{padding:30px 0 42px}h1{font-size:clamp(38px,14.5vw,54px)}
+  .metrics{grid-template-columns:1fr}.metric b{font-size:23px}.radar{height:200px}
+  .pillrow{gap:6px}.pill{font-size:11px;padding:7px 9px}
+  .k{letter-spacing:.16em}.card h3{font-size:23px}.cta{padding:26px 17px}
+}
+@media(max-width:350px){
+  .brand img{max-width:105px}.lang button{padding:6px 8px}.hamb{width:36px;height:36px}
+  h1{font-size:36px}.wrap{width:calc(100% - 18px)}
+}
+@media(orientation:landscape) and (max-height:520px) and (max-width:950px){
+  .hero{padding:28px 0}.hero-grid{grid-template-columns:1.05fr .95fr;gap:18px}h1{font-size:clamp(38px,7vw,58px)}
+  .panel{padding:14px}.radar{height:140px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 </style>
