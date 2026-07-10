@@ -1,15 +1,12 @@
-# SECQUOIA.NET — Project REDWOOD v1.1
+# SECQUOIA.NET — Project REDWOOD Release v1.2 FLAT
 
-Production-ready GitHub Pages package.
+GitHub Pages production package with all visual assets placed at repository root.
 
-## Deploy
-Upload **all files and folders in this package** to the root of the `main` branch.
-Do not upload only `index.html`; the `assets/` directory contains the official SECQUOIA logo and favicon files.
+## Corrections
+- Official SECQUOIA logo restored without nested folders.
+- `Qu™` navigation label changed to `Ecosystem`.
+- United States card uses `+1 (979) 600-4595` and `us@secquoia.net`.
+- Root-level favicon, Apple touch icon and PWA icons.
 
-## Included fixes
-- Official SECQUOIA logo stored locally at `/assets/img/secquoia-logo.webp`
-- Local favicon and mobile icons
-- Responsive bilingual site
-- Working language selector, hamburger menu and internal navigation
-- SEO metadata, sitemap, robots and web manifest
-- GitHub Pages custom-domain file (`CNAME`)
+## Upload
+Extract the ZIP and upload **all files inside the extracted folder** directly to the repository root on branch `main`.
