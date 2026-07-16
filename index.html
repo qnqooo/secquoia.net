@@ -55,6 +55,18 @@
 
 /* REDWOOD v1.4 production fixes */
 .btn,.lang button,.hamb{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.qumarket-shell{margin-top:24px;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.55fr);gap:18px;align-items:start}
+.qumarket-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid rgba(87,255,154,.22);border-radius:24px;padding:16px;background:rgba(0,0,0,.24)}
+.qumarket-domain{color:var(--g);font-weight:950;letter-spacing:.02em}.qumarket-toolbar p{margin:6px 0 0;color:var(--mut);font-size:13px;max-width:760px}
+.qumarket-products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}.qumarket-product{cursor:grab}.qumarket-product.dragging{opacity:.62}
+.qumarket-product .price{display:block;color:var(--g);font-size:24px;font-weight:950;margin:10px 0 2px}.qumarket-product .unit{color:var(--mut);font-size:12px}
+.qumarket-actions,.quassistant-controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.qumarket-actions .btn,.quassistant-controls .btn{padding:10px 13px;font-size:12px}
+.qumarket-cart{position:sticky;top:96px;border:1px solid rgba(87,255,154,.35);border-radius:26px;padding:18px;background:linear-gradient(180deg,rgba(4,34,18,.96),rgba(0,0,0,.92));box-shadow:0 26px 80px rgba(0,0,0,.34)}
+.qumarket-cart.drop-ready{box-shadow:0 0 0 3px rgba(87,255,154,.20),0 26px 80px rgba(0,0,0,.34)}.qumarket-cart h3{margin:0 0 4px;font-size:24px}.qumarket-cart p{margin:0;color:var(--mut);font-size:13px}
+.qumarket-cart-list{display:grid;gap:10px;margin:14px 0}.qumarket-cart-item{display:flex;justify-content:space-between;gap:10px;padding:10px;border-radius:14px;background:rgba(255,255,255,.06);font-size:13px}.qumarket-cart-item button{border:0;background:transparent;color:#ffb3b3;cursor:pointer;font-weight:900}
+.qumarket-total{display:grid;gap:7px;margin:14px 0;font-weight:900}.qumarket-total div{display:flex;justify-content:space-between;gap:10px}.qumarket-total .grand{font-size:20px;color:var(--g)}.qumarket-status{border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:10px;color:#dff4e8;background:rgba(255,255,255,.045);font-size:12px}
+.quassistant{margin-top:14px;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:14px;background:rgba(255,255,255,.05)}.quassistant strong{color:#fff}.quassistant p{margin:8px 0 0}
+@media(max-width:900px){.qumarket-shell{grid-template-columns:1fr}.qumarket-products{grid-template-columns:1fr}.qumarket-cart{position:relative;top:auto}}
 .hamb{display:none;width:44px;height:44px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.035);align-items:center;justify-content:center;gap:4px;flex-direction:column;flex-shrink:0}
 .hamb span{width:18px;height:2px;background:var(--g);border-radius:99px;display:block}
 .mobile-menu{display:none;position:fixed;left:14px;right:14px;top:82px;z-index:98;border:1px solid var(--line);border-radius:24px;background:rgba(5,12,9,.97);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:16px;box-shadow:0 28px 80px rgba(0,0,0,.45)}
@@ -300,7 +312,7 @@ section[id]{scroll-margin-top:92px}
       <article class="market-item featured"><span class="premium-badge" data-en>Flagship product</span><span class="premium-badge" data-es>Producto insignia</span><div class="tag">Super Premium Core Defense</div><h3>QuFense™</h3><p data-en>Exclusive SECQUOIA.NET quantum-safe defense product for organizations that require PQC governance, dynamic entropy, secure key ceremonies and vault-backed cryptographic control.</p><p data-es>Producto exclusivo de defensa quantum-safe de SECQUOIA.NET para organizaciones que requieren gobierno PQC, entropía dinámica, ceremonias seguras de llaves y control criptográfico respaldado por vault.</p><span class="market-price" data-en>Private beta · Enterprise licensing</span><span class="market-price" data-es>Beta privado · Licenciamiento enterprise</span><span class="market-bundle" data-en>Full package: 15% off</span><span class="market-bundle" data-es>Paquete completo: 15% off</span><div class="market-stack"><span>NIST PQC alignment</span><span>SeQure QRNG-ready entropy</span><span>QuVault + QuSOC orchestration</span><span>Premium implementation track</span></div></article>
       <article class="market-item"><div class="tag">Operations</div><h3>QuSOC™</h3><p data-en>Defensive cyber operations with SIEM/XDR/SOAR/MDR, threat intelligence and endpoint-based packages.</p><p data-es>Operación defensiva con SIEM/XDR/SOAR/MDR, inteligencia de amenazas y paquetes por endpoint.</p><span class="market-price" data-en>25+ endpoint plans</span><span class="market-price" data-es>Planes desde 25 endpoints</span><div class="market-stack"><span>Monitoring</span><span>Incident triage</span><span>Managed response</span></div></article>
       <article class="market-item"><div class="tag">Payments</div><h3>QuPay™</h3><p data-en>Global payment interface for cards, recurring payments, crypto-ready flows and commercial checkout.</p><p data-es>Interfaz global de pagos para tarjetas, recurrencia, flujos crypto-ready y checkout comercial.</p><span class="market-price" data-en>API + storefront</span><span class="market-price" data-es>API + tienda</span><div class="market-stack"><span>Stripe connectors</span><span>Licensing checkout</span><span>Revenue tracking</span></div></article>
-      <article class="market-item"><div class="tag">Finance</div><h3>QuCFA™ / QVit™</h3><p data-en>Internal AI-CFA for cost attribution, QVit resource accounting, pricing and profit control.</p><p data-es>AI-CFA interno para atribución de costos, contabilidad QVit, precios y control de utilidad.</p><span class="market-price" data-en>Manage your profit</span><span class="market-price" data-es>Margen mínimo: 30%</span><div class="market-stack"><span>Provider costs</span><span>Unit economics</span><span>Package pricing</span></div></article>
+      <article class="market-item"><div class="tag">Finance</div><h3>QuCFA™ / QVit™</h3><p data-en>Internal AI-CFA for cost attribution, QVit resource accounting, pricing and profit control.</p><p data-es>AI-CFA interno para atribución de costos, contabilidad QVit, precios y control de utilidad.</p><span class="market-price" data-en>Manage your profit</span><span class="market-price" data-es>Gestiona tu utilidad</span><div class="market-stack"><span>Provider costs</span><span>Unit economics</span><span>Package pricing</span></div></article>
       <article class="market-item"><div class="tag">Integrations</div><h3>QuHub™</h3><p data-en>Universal external integration gateway for Plaid, OKTA, Stripe, Siigo, PayPal and provider APIs.</p><p data-es>Puerta universal de integración externa para Plaid, OKTA, Stripe, Siigo, PayPal y APIs de proveedores.</p><span class="market-price" data-en>Connector gateway</span><span class="market-price" data-es>Gateway de conectores</span><div class="market-stack"><span>API brokering</span><span>Data ingress/egress</span><span>Audit routing</span></div></article>
       <article class="market-item"><div class="tag">Identity</div><h3>QuIdentify™</h3><p data-en>Identity, access and interactive authorization layer anchored in OKTA for internal and customer access.</p><p data-es>Capa de identidad, acceso y autorización interactiva anclada en OKTA para acceso interno y de clientes.</p><span class="market-price" data-en>SSO / OIDC-ready</span><span class="market-price" data-es>SSO / OIDC-ready</span><div class="market-stack"><span>Tenant access</span><span>Scoped consent</span><span>Audit evidence</span></div></article>
       <article class="market-item"><div class="tag">AI Experience</div><h3>QuChat™ / QuVoice™</h3><p data-en>Conversational and voice interface layer for internal operations, customer support and product experiences.</p><p data-es>Capa conversacional y de voz para operación interna, soporte al cliente y experiencias de producto.</p><span class="market-price" data-en>Embeddable service</span><span class="market-price" data-es>Servicio embebible</span><div class="market-stack"><span>Assistant UI</span><span>Voice workflows</span><span>QuAgent bridge</span></div></article>
@@ -308,11 +320,51 @@ section[id]{scroll-margin-top:92px}
     </div>
     <div class="market-note">
       <span data-en>Marketplace rule: customers can buy individual modules, assemble a custom cart, set profit controls for their own products, or purchase the complete SECQUOIA package with a 15% bundle discount. QuCFA/QVit calculates provider costs, reserves, insurance buffers and endpoint economics before checkout.</span>
-      <span data-es>Regla comercial: los servicios internos Qu-a-Qu se contabilizan en USD $0.00; las ventas externas por QnQ Platform conservan un margen bruto mínimo del 30%, con QuCFA/QVit calculando costos de proveedor, reservas, seguros y economía por endpoint.</span>
+      <span data-es>Regla comercial: el cliente puede comprar módulos individuales, armar su carrito, gestionar su utilidad para productos propios o adquirir el paquete SECQUOIA completo con 15% de descuento. QuCFA/QVit calcula costos de proveedor, reservas, seguros y economía por endpoint antes del checkout.</span>
     </div>
     <div class="market-cta">
-      <a class="btn primary" href="#contact" data-en>Buy complete package Â· Save 15%</a><a class="btn primary" href="#contact" data-es>Comprar paquete completo Â· Ahorrar 15%</a>
-      <a class="btn" href="#services" data-en>Add selected products to cart</a><a class="btn" href="#services" data-es>Servicios de implementación</a>
+      <a class="btn primary" href="#qumarket-cart" data-qumarket-bundle data-en>Buy complete package · Save 15%</a><a class="btn primary" href="#qumarket-cart" data-qumarket-bundle data-es>Comprar paquete completo · Ahorrar 15%</a>
+      <a class="btn" href="#qumarket" data-en>Add selected products to cart</a><a class="btn" href="#qumarket" data-es>Agregar productos al carrito</a>
+    </div>
+    <div class="qumarket-shell" id="qumarket" data-market-domain="qu-market.secquoia.group">
+      <div>
+        <div class="qumarket-toolbar">
+          <div>
+            <div class="k">QuMarket™</div>
+            <div class="qumarket-domain">qu-market.secquoia.group</div>
+            <p data-en>Commercial storefront for SECQUOIA modular services. Add packages, drag products into the basket, simulate QuPay checkout and export the cart as a provisioning request.</p>
+            <p data-es>Tienda comercial para servicios modulares SECQUOIA. Agrega paquetes, arrastra productos a la canasta, simula checkout QuPay y exporta el carrito como solicitud de aprovisionamiento.</p>
+          </div>
+          <a class="btn" href="#qumarket-cart" data-en>Open basket</a><a class="btn" href="#qumarket-cart" data-es>Abrir canasta</a>
+        </div>
+        <div class="qumarket-products" id="qumarketProducts" aria-live="polite"></div>
+      </div>
+      <aside class="qumarket-cart" id="qumarket-cart" aria-live="polite">
+        <h3 data-en>Solution basket</h3><h3 data-es>Canasta de soluciones</h3>
+        <p data-en>Drop products here or use “Add to cart”. Complete package applies 15% discount.</p>
+        <p data-es>Arrastra productos aquí o usa “Agregar”. El paquete completo aplica 15% de descuento.</p>
+        <div class="qumarket-cart-list" id="qumarketCartList"></div>
+        <div class="qumarket-total">
+          <div><span data-en>Subtotal</span><span data-es>Subtotal</span><strong id="qumarketSubtotal">$0/mo</strong></div>
+          <div><span data-en>Bundle discount</span><span data-es>Descuento paquete</span><strong id="qumarketDiscount">$0/mo</strong></div>
+          <div class="grand"><span data-en>Total estimate</span><span data-es>Total estimado</span><strong id="qumarketTotal">$0/mo</strong></div>
+        </div>
+        <div class="qumarket-status" id="qumarketStatus">QuPay ready · QuHub provisioner standby · QuAudit enabled</div>
+        <div class="qumarket-actions">
+          <button class="btn primary" type="button" id="qumarketCheckout" data-en>Simulate QuPay checkout</button><button class="btn primary" type="button" id="qumarketCheckoutEs" data-es>Simular pago QuPay</button>
+          <button class="btn" type="button" id="qumarketDownload" data-en>Download cart</button><button class="btn" type="button" id="qumarketDownloadEs" data-es>Descargar carrito</button>
+          <button class="btn" type="button" id="qumarketClear" data-en>Clear</button><button class="btn" type="button" id="qumarketClearEs" data-es>Limpiar</button>
+        </div>
+        <div class="quassistant">
+          <strong>QuChat / QuVoice / QuAgent</strong>
+          <p id="qumarketAssistant" data-en>I can guide the buyer from package selection to QuIdentify access, QuPay checkout and QuHub provisioning.</p>
+          <p data-es>Puedo guiar al comprador desde la selección del paquete hasta acceso QuIdentify, pago QuPay y aprovisionamiento QuHub.</p>
+          <div class="quassistant-controls">
+            <button class="btn" type="button" id="qumarketGuide" data-en>Guide me</button><button class="btn" type="button" id="qumarketGuideEs" data-es>Guíame</button>
+            <button class="btn" type="button" id="qumarketVoice" data-en>Voice briefing</button><button class="btn" type="button" id="qumarketVoiceEs" data-es>Guía por voz</button>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 </div>
@@ -474,6 +526,98 @@ section[id]{scroll-margin-top:92px}
       menu.classList.remove('open');
     }
   });
+})();
+</script>
+
+<script>
+(function(){
+  const products=[
+    {id:'qufense',name:'QuFense™ Private Beta Core',price:715,unit:'mo',badge:'Premium PQC',desc:{en:'Quantum-safe cyber immune system with PQC governance, QRNG-ready entropy binding, QuVault protection and cryptographic evidence.',es:'Sistema inmunológico cyber quantum-safe con gobierno PQC, entropía QRNG-ready, protección QuVault y evidencia criptográfica.'},features:['NIST PQC','QRNG-ready','QuVault','QuAudit'],endpoints:'25 endpoints'},
+    {id:'qusoc',name:'QuSOC™ Starter',price:1950,unit:'mo',badge:'SOC / MDR',desc:{en:'Defensive cyber operations package with monitoring, triage, alerting and managed response roadmap.',es:'Paquete de operación cyber defensiva con monitoreo, triage, alertas y hoja de ruta MDR.'},features:['SIEM-ready','MDR','Threat intel','QuFense optional'],endpoints:'25 endpoints'},
+    {id:'qupay',name:'QuPay™ Global Checkout',price:149,unit:'mo',badge:'Payments',desc:{en:'Payment storefront for cards, recurring billing, crypto-ready flows and licensing checkout.',es:'Checkout para tarjetas, pagos recurrentes, flujos crypto-ready y licenciamiento.'},features:['Stripe-ready','Crypto-ready','Recurring','QuCFA ledger'],endpoints:'API'},
+    {id:'quhub',name:'QuHub™ Connector Gateway',price:390,unit:'mo',badge:'Integrations',desc:{en:'Universal API gateway for Plaid, Okta, Stripe, Siigo, PayPal and external providers.',es:'Gateway universal para Plaid, Okta, Stripe, Siigo, PayPal y proveedores externos.'},features:['API brokering','Provider routing','Audit trail','Consent'],endpoints:'Connectors'},
+    {id:'quidentify',name:'QuIdentify™ / Okta Access',price:290,unit:'mo',badge:'Identity',desc:{en:'SSO/OIDC identity, access and customer authorization layer for marketplace services.',es:'Capa SSO/OIDC de identidad, acceso y autorización de clientes para servicios marketplace.'},features:['Okta OIDC','Scoped access','MFA-ready','QuAudit'],endpoints:'Tenant'},
+    {id:'quchat',name:'QuChat™ / QuVoice™ / QuAgent™',price:590,unit:'mo',badge:'AI Experience',desc:{en:'Conversational, voice and agent guidance for onboarding, support and autonomous workflows.',es:'Guía conversacional, voz y agente para onboarding, soporte y flujos autónomos.'},features:['Chat assistant','Voice guide','Agent handoff','Marketplace UX'],endpoints:'Workspace'},
+    {id:'qucfa',name:'QuCFA™ / QVit™',price:490,unit:'mo',badge:'Finance',desc:{en:'AI-CFA cost attribution, QVit accounting, pricing controls and customer profit management.',es:'AI-CFA para costos, contabilidad QVit, control de precios y gestión de utilidad del cliente.'},features:['Cost model','QVit ledger','Pricing','Profit controls'],endpoints:'Finance'},
+    {id:'quoptio',name:'QuOptio™ Optimization Sidecar',price:350,unit:'mo',badge:'Optimization',desc:{en:'Cost, latency and resource optimization engine applied across every macro-iteration.',es:'Motor de optimización de costos, latencia y recursos aplicado en cada macroiteración.'},features:['QMax cycles','Resource policy','Waste control','Horizon∞'],endpoints:'Sidecar'}
+  ];
+  const selected=new Map();
+  const productRoot=document.getElementById('qumarketProducts');
+  const cart=document.getElementById('qumarket-cart');
+  const cartList=document.getElementById('qumarketCartList');
+  const subtotalEl=document.getElementById('qumarketSubtotal');
+  const discountEl=document.getElementById('qumarketDiscount');
+  const totalEl=document.getElementById('qumarketTotal');
+  const statusEl=document.getElementById('qumarketStatus');
+  const assistant=document.getElementById('qumarketAssistant');
+  if(!productRoot||!cart||!cartList)return;
+  function lang(){return document.body.classList.contains('es')?'es':'en'}
+  function money(v){return '$'+Math.round(v).toLocaleString('en-US')+'/mo'}
+  function renderProducts(){
+    const l=lang();
+    productRoot.innerHTML=products.map(function(p){
+      return '<article class="market-item qumarket-product" draggable="true" data-id="'+p.id+'">'+
+        '<div class="tag">'+p.badge+'</div><h3>'+p.name+'</h3>'+
+        '<p>'+p.desc[l]+'</p><span class="price">'+money(p.price)+'</span><span class="unit">'+p.endpoints+'</span>'+
+        '<div class="market-stack">'+p.features.map(function(f){return '<span>'+f+'</span>'}).join('')+'</div>'+
+        '<div class="qumarket-actions"><button type="button" class="btn primary" data-add="'+p.id+'">'+(l==='es'?'Agregar al carrito':'Add to cart')+'</button><button type="button" class="btn" data-add="'+p.id+'" data-scroll-cart="1">'+(l==='es'?'Agregar y ver':'Add & view')+'</button></div>'+
+      '</article>';
+    }).join('');
+  }
+  function addProduct(id){
+    const product=products.find(function(p){return p.id===id});
+    if(!product)return;
+    selected.set(id,product);
+    updateCart();
+  }
+  function updateCart(){
+    const l=lang();
+    const items=Array.from(selected.values());
+    if(!items.length){
+      cartList.innerHTML='<div class="qumarket-status">'+(l==='es'?'La canasta está vacía. Arrastra un paquete o usa “Agregar al carrito”.':'Basket is empty. Drag a package here or use “Add to cart”.')+'</div>';
+    }else{
+      cartList.innerHTML=items.map(function(p){
+        return '<div class="qumarket-cart-item"><span><strong>'+p.name+'</strong><br><small>'+p.endpoints+'</small></span><span>'+money(p.price)+' <button type="button" data-remove="'+p.id+'" aria-label="remove">×</button></span></div>';
+      }).join('');
+    }
+    const subtotal=items.reduce(function(sum,p){return sum+p.price},0);
+    const bundle=items.length===products.length;
+    const discount=bundle?subtotal*.15:0;
+    subtotalEl.textContent=money(subtotal);
+    discountEl.textContent='-'+money(discount);
+    totalEl.textContent=money(subtotal-discount);
+    statusEl.textContent=bundle
+      ? (l==='es'?'Paquete completo detectado: 15% de descuento aplicado. QuPay listo para checkout simulado.':'Complete package detected: 15% discount applied. QuPay ready for simulated checkout.')
+      : (l==='es'?'QuPay listo · QuHub en espera · QuAudit activo':'QuPay ready · QuHub provisioner standby · QuAudit enabled');
+  }
+  function downloadCart(){
+    const items=Array.from(selected.values());
+    const subtotal=items.reduce(function(sum,p){return sum+p.price},0);
+    const discount=items.length===products.length?subtotal*.15:0;
+    const payload={schema:'secquoia.qumarket.cart.v1',domain:'qu-market.secquoia.group',createdAt:new Date().toISOString(),currency:'USD',items:items.map(function(p){return {id:p.id,name:p.name,priceMonthlyUsd:p.price,scope:p.endpoints,features:p.features}}),subtotalMonthlyUsd:subtotal,bundleDiscountMonthlyUsd:discount,totalMonthlyUsd:subtotal-discount,workflow:['QuIdentify/Okta','QuCFA/QVit','QuPay','QuHub','QuFense','QuChat/QuVoice/QAgent','QuAudit']};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='secquoia-qumarket-cart.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  }
+  document.addEventListener('click',function(e){
+    const add=e.target.closest('[data-add]');
+    if(add){addProduct(add.getAttribute('data-add'));if(add.hasAttribute('data-scroll-cart'))cart.scrollIntoView({behavior:'smooth',block:'start'});}
+    const remove=e.target.closest('[data-remove]');
+    if(remove){selected.delete(remove.getAttribute('data-remove'));updateCart();}
+    if(e.target.closest('[data-qumarket-bundle]')){products.forEach(function(p){selected.set(p.id,p)});updateCart();}
+  });
+  productRoot.addEventListener('dragstart',function(e){const item=e.target.closest('[data-id]');if(!item)return;item.classList.add('dragging');e.dataTransfer.setData('text/plain',item.getAttribute('data-id'));});
+  productRoot.addEventListener('dragend',function(e){const item=e.target.closest('[data-id]');if(item)item.classList.remove('dragging');});
+  cart.addEventListener('dragover',function(e){e.preventDefault();cart.classList.add('drop-ready');});
+  cart.addEventListener('dragleave',function(){cart.classList.remove('drop-ready');});
+  cart.addEventListener('drop',function(e){e.preventDefault();cart.classList.remove('drop-ready');addProduct(e.dataTransfer.getData('text/plain'));});
+  ['qumarketDownload','qumarketDownloadEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',downloadCart);});
+  ['qumarketClear','qumarketClearEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){selected.clear();updateCart();});});
+  ['qumarketCheckout','qumarketCheckoutEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){statusEl.textContent=lang()==='es'?'Checkout QuPay simulado: QuHub aprovisionaría servicios, QuFense activaría controles y QuAudit registraría evidencia.':'Simulated QuPay checkout: QuHub would provision services, QuFense would activate controls, and QuAudit would register evidence.';});});
+  ['qumarketGuide','qumarketGuideEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){assistant.textContent=lang()==='es'?'Paso 1: elige módulos. Paso 2: QuCFA/QVit estima costos. Paso 3: QuPay cobra. Paso 4: QuHub aprovisiona. Paso 5: QuFense protege y QuAudit registra.':'Step 1: choose modules. Step 2: QuCFA/QVit estimates costs. Step 3: QuPay collects payment. Step 4: QuHub provisions. Step 5: QuFense protects and QuAudit records evidence.';});});
+  ['qumarketVoice','qumarketVoiceEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){const text=lang()==='es'?'QuVoice listo. Esta demo guiará al cliente por selección, pago y activación del servicio.':'QuVoice ready. This demo guides the customer through selection, payment and service activation.';assistant.textContent=text;if('speechSynthesis'in window){window.speechSynthesis.cancel();window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));}});});
+  ['enBtn','esBtn'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){setTimeout(function(){renderProducts();updateCart();},0);});});
+  renderProducts();updateCart();
 })();
 </script>
 
