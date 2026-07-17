@@ -6,7 +6,7 @@ Status: production-ready design contract; backend enforcement required in QuIden
 
 1. Customer selects products and endpoint tier in QuMarket.
 2. Customer must authenticate through QuIdentify / Okta before quoting, downloading product material or purchasing.
-3. QnQ Platform sends the basket to QuCFA / QVit for commercial price evidence.
+3. QnQ Platform sends the basket to QuCFA for commercial price evidence.
 4. QuFense evaluates the transaction policy.
 5. QuPay opens Stripe checkout only after identity and policy are approved.
 6. QuHub sends fulfillment email after payment confirmation.
@@ -59,4 +59,3 @@ The email must not contain raw secrets, permanent API keys, cards, tokens or une
 - QuVault must use a real secrets backend for production secrets.
 - QuFense must issue policy decisions and key ceremony evidence.
 - QuAudit must store immutable evidence.
-
