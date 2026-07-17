@@ -334,8 +334,8 @@ section[id]{scroll-margin-top:92px}
           <div>
             <div class="k">QuMarket™</div>
             <div class="qumarket-domain">qu-market.secquoia.group</div>
-            <p data-en>Commercial storefront for SECQUOIA modular services. Add packages, drag products into the basket, simulate QuPay checkout and export the cart as a provisioning request.</p>
-            <p data-es>Tienda comercial para servicios modulares SECQUOIA. Agrega paquetes, arrastra productos a la canasta, simula checkout QuPay y exporta el carrito como solicitud de aprovisionamiento.</p>
+            <p data-en>Commercial storefront for SECQUOIA modular services. Add packages, drag products into the basket, continue to QuPay activation and export the order as a provisioning request.</p>
+            <p data-es>Tienda comercial para servicios modulares SECQUOIA. Agrega paquetes, arrastra productos a la canasta, continua a activacion QuPay y exporta la orden como solicitud de aprovisionamiento.</p>
           </div>
           <a class="btn" href="qu-market.html" data-en>Open basket</a><a class="btn" href="qu-market.html" data-es>Abrir canasta</a>
         </div>
@@ -353,7 +353,7 @@ section[id]{scroll-margin-top:92px}
         </div>
         <div class="qumarket-status" id="qumarketStatus">QuPay ready · QuHub provisioner standby · QuAudit enabled</div>
         <div class="qumarket-actions">
-          <button class="btn primary" type="button" id="qumarketCheckout" data-en>Simulate QuPay checkout</button><button class="btn primary" type="button" id="qumarketCheckoutEs" data-es>Simular pago QuPay</button>
+          <button class="btn primary" type="button" id="qumarketCheckout" data-en>Continue to QuPay</button><button class="btn primary" type="button" id="qumarketCheckoutEs" data-es>Continuar a QuPay</button>
           <button class="btn" type="button" id="qumarketDownload" data-en>Download cart</button><button class="btn" type="button" id="qumarketDownloadEs" data-es>Descargar carrito</button>
           <button class="btn" type="button" id="qumarketClear" data-en>Clear</button><button class="btn" type="button" id="qumarketClearEs" data-es>Limpiar</button>
         </div>
@@ -589,7 +589,7 @@ section[id]{scroll-margin-top:92px}
     discountEl.textContent='-'+money(discount);
     totalEl.textContent=money(subtotal-discount);
     statusEl.textContent=bundle
-      ? (l==='es'?'Paquete completo detectado: 15% de descuento aplicado. QuPay listo para checkout simulado.':'Complete package detected: 15% discount applied. QuPay ready for simulated checkout.')
+      ? (l==='es'?'Paquete completo detectado: 15% de descuento aplicado. QuPay listo para activacion comercial.':'Complete package detected: 15% discount applied. QuPay ready for commercial activation.')
       : (l==='es'?'QuPay listo · QuHub en espera · QuAudit activo':'QuPay ready · QuHub provisioner standby · QuAudit enabled');
   }
   function downloadCart(){
@@ -615,9 +615,9 @@ section[id]{scroll-margin-top:92px}
   cart.addEventListener('drop',function(e){e.preventDefault();cart.classList.remove('drop-ready');addProduct(e.dataTransfer.getData('text/plain'));});
   ['qumarketDownload','qumarketDownloadEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',downloadCart);});
   ['qumarketClear','qumarketClearEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){selected.clear();updateCart();});});
-  ['qumarketCheckout','qumarketCheckoutEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){statusEl.textContent=lang()==='es'?'Checkout QuPay simulado: QuHub aprovisionaría servicios, QuFense activaría controles y QuAudit registraría evidencia.':'Simulated QuPay checkout: QuHub would provision services, QuFense would activate controls, and QuAudit would register evidence.';});});
+  ['qumarketCheckout','qumarketCheckoutEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){window.location.href='qu-market.html';});});
   ['qumarketGuide','qumarketGuideEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){assistant.textContent=lang()==='es'?'Paso 1: elige módulos. Paso 2: QuCFA/QVit estima costos. Paso 3: QuPay cobra. Paso 4: QuHub aprovisiona. Paso 5: QuFense protege y QuAudit registra.':'Step 1: choose modules. Step 2: QuCFA/QVit estimates costs. Step 3: QuPay collects payment. Step 4: QuHub provisions. Step 5: QuFense protects and QuAudit records evidence.';});});
-  ['qumarketVoice','qumarketVoiceEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){const text=lang()==='es'?'QuVoice listo. Esta demo guiará al cliente por selección, pago y activación del servicio.':'QuVoice ready. This demo guides the customer through selection, payment and service activation.';assistant.textContent=text;if('speechSynthesis'in window){window.speechSynthesis.cancel();window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));}});});
+  ['qumarketVoice','qumarketVoiceEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){const text=lang()==='es'?'QuVoice listo. Esta experiencia guia al cliente por seleccion, pago y activacion del servicio.':'QuVoice ready. This experience guides the customer through selection, payment and service activation.';assistant.textContent=text;if('speechSynthesis'in window){window.speechSynthesis.cancel();window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));}});});
   ['enBtn','esBtn'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){setTimeout(function(){renderProducts();updateCart();},0);});});
   renderProducts();updateCart();
 })();
