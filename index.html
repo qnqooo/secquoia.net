@@ -158,6 +158,7 @@ section[id]{scroll-margin-top:92px}
 .office .subdomain:hover,.office .office-phone:hover,.office .office-email:hover{filter:brightness(1.12)}
 @media(max-width:1060px){.office{grid-template-rows:auto minmax(96px,auto) auto auto auto}.office .office-address{min-height:96px}}
 @media(max-width:640px){.office{grid-template-rows:auto auto auto auto auto}.office .office-address{min-height:0;margin-bottom:18px}.office .office-phone,.office .office-email{width:100%}}
+.btn:not(.primary){color:#fff}.marketplace{display:none!important}
 
 </style>
 </head>
@@ -169,7 +170,7 @@ section[id]{scroll-margin-top:92px}
     <nav>
       <a href="#framework" data-en>Capabilities</a><a href="#framework" data-es>Capacidades</a>
       <a href="#ecosystem">Ecosystem</a>
-      <a href="#marketplace">Marketplace</a>
+      <a href="qu-market.html">Marketplace</a>
       <a href="#technology" data-en>Technology</a><a href="#technology" data-es>Tecnología</a>
       <a href="#services" data-en>Services</a><a href="#services" data-es>Servicios</a>
       <a href="#presence" data-en>Presence</a><a href="#presence" data-es>Presencia</a>
@@ -190,7 +191,7 @@ section[id]{scroll-margin-top:92px}
   <div class="mobile-menu" id="mobileMenu">
     <a href="#framework" data-en>Capabilities</a><a href="#framework" data-es>Capacidades</a>
     <a href="#ecosystem">Ecosystem</a>
-    <a href="#marketplace">Marketplace</a>
+    <a href="qu-market.html">Marketplace</a>
     <a href="#technology" data-en>Technology</a><a href="#technology" data-es>Tecnología</a>
     <a href="#services" data-en>Services</a><a href="#services" data-es>Servicios</a>
     <a href="#presence" data-en>Global Presence</a><a href="#presence" data-es>Presencia regional</a>
@@ -216,12 +217,13 @@ section[id]{scroll-margin-top:92px}
       <p class="sub" data-es>SECQUOIA Cybersecurity comercializa, integra, implementa y opera capacidades avanzadas para fortalecer la postura de seguridad, reducir el riesgo y proteger la continuidad operacional.</p>
       <div class="hero-actions">
         <a class="btn primary" href="#framework" data-en>Explore Capabilities</a><a class="btn primary" href="#framework" data-es>Explorar capacidades</a>
+        <a class="btn primary" href="qu-market.html" data-en>Open Marketplace</a><a class="btn primary" href="qu-market.html" data-es>Abrir Marketplace</a>
         <a class="btn" href="#contact" data-en>Talk to an Expert</a><a class="btn" href="#contact" data-es>Hablar con un experto</a>
       </div>
       <div class="hero-sections">
         <a href="#framework" data-en>Capabilities</a><a href="#framework" data-es>Capacidades</a>
         <a href="#ecosystem">Ecosystem</a>
-        <a href="#marketplace">Marketplace</a>
+        <a href="qu-market.html">Marketplace</a>
         <a href="#technology" data-en>Technology</a><a href="#technology" data-es>Tecnología</a>
         <a href="#services" data-en>Services</a><a href="#services" data-es>Servicios</a>
         <a href="#presence" data-en>Presence</a><a href="#presence" data-es>Presencia</a>
@@ -323,8 +325,8 @@ section[id]{scroll-margin-top:92px}
       <span data-es>Regla comercial: el cliente puede comprar módulos individuales, armar su carrito, gestionar su utilidad para productos propios o adquirir el paquete SECQUOIA completo con 15% de descuento. QuCFA/QVit calcula costos de proveedor, reservas, seguros y economía por endpoint antes del checkout.</span>
     </div>
     <div class="market-cta">
-      <a class="btn primary" href="#qumarket-cart" data-qumarket-bundle data-en>Buy complete package · Save 15%</a><a class="btn primary" href="#qumarket-cart" data-qumarket-bundle data-es>Comprar paquete completo · Ahorrar 15%</a>
-      <a class="btn" href="#qumarket" data-en>Add selected products to cart</a><a class="btn" href="#qumarket" data-es>Agregar productos al carrito</a>
+      <a class="btn primary" href="qu-market.html?bundle=1" data-en>Buy complete package - Save 15%</a><a class="btn primary" href="qu-market.html?bundle=1" data-es>Comprar paquete completo - Ahorrar 15%</a>
+      <a class="btn" href="qu-market.html" data-en>Add selected products to cart</a><a class="btn" href="qu-market.html" data-es>Agregar productos al carrito</a>
     </div>
     <div class="qumarket-shell" id="qumarket" data-market-domain="qu-market.secquoia.group">
       <div>
@@ -335,7 +337,7 @@ section[id]{scroll-margin-top:92px}
             <p data-en>Commercial storefront for SECQUOIA modular services. Add packages, drag products into the basket, simulate QuPay checkout and export the cart as a provisioning request.</p>
             <p data-es>Tienda comercial para servicios modulares SECQUOIA. Agrega paquetes, arrastra productos a la canasta, simula checkout QuPay y exporta el carrito como solicitud de aprovisionamiento.</p>
           </div>
-          <a class="btn" href="#qumarket-cart" data-en>Open basket</a><a class="btn" href="#qumarket-cart" data-es>Abrir canasta</a>
+          <a class="btn" href="qu-market.html" data-en>Open basket</a><a class="btn" href="qu-market.html" data-es>Abrir canasta</a>
         </div>
         <div class="qumarket-products" id="qumarketProducts" aria-live="polite"></div>
       </div>
@@ -618,6 +620,33 @@ section[id]{scroll-margin-top:92px}
   ['qumarketVoice','qumarketVoiceEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){const text=lang()==='es'?'QuVoice listo. Esta demo guiará al cliente por selección, pago y activación del servicio.':'QuVoice ready. This demo guides the customer through selection, payment and service activation.';assistant.textContent=text;if('speechSynthesis'in window){window.speechSynthesis.cancel();window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));}});});
   ['enBtn','esBtn'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){setTimeout(function(){renderProducts();updateCart();},0);});});
   renderProducts();updateCart();
+})();
+</script>
+
+<script>
+(function(){
+  const productRoute={
+    qufense:'qufense',quantfense:'qufense',quvault:'qufense',
+    qusoc:'qusoc',siem:'qusoc',xdr:'qusoc',mdr:'qusoc',
+    qupay:'qupay',qustripe:'qupay',stripe:'qupay',
+    quhub:'quhub',plaid:'quhub',siigo:'quhub',
+    quidentify:'quidentify',okta:'quidentify',
+    quchat:'quchat',quvoice:'quchat',quagent:'quchat',
+    qucfa:'qucfa',qvit:'qucfa',
+    quoptio:'quoptio',qmax:'quoptio'
+  };
+  function productIdFrom(card){
+    const text=(card.textContent||'').toLowerCase();
+    const key=Object.keys(productRoute).find(function(k){return text.indexOf(k)>-1});
+    return key?productRoute[key]:'';
+  }
+  document.addEventListener('click',function(e){
+    if(e.target.closest('a,button,input,textarea,select,label'))return;
+    const card=e.target.closest('article.card,article.market-item,.product-card,.capability-card');
+    if(!card)return;
+    const product=productIdFrom(card);
+    window.location.href=product?'qu-market.html?product='+encodeURIComponent(product):'qu-market.html';
+  });
 })();
 </script>
 

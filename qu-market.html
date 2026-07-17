@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QuMarket | SECQUOIA</title>
+<meta name="description" content="QuMarket by SECQUOIA: modular cybersecurity marketplace for QuFense, QuSOC, QuPay, QuHub, QuIdentify, QuChat, QuCFA and QuOptio.">
+<style>
+:root{--bg:#020806;--panel:#07130d;--panel2:#0b1b13;--txt:#f5fff8;--mut:#a9b9ad;--g:#35ff8c;--g2:#00d46a;--line:rgba(255,255,255,.12);--gold:#ffe08a;--red:#ff6b6b}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 20% 0%,rgba(53,255,140,.16),transparent 30%),linear-gradient(180deg,#020806,#000);color:var(--txt);font-family:Inter,Segoe UI,Arial,sans-serif}
+a{color:inherit;text-decoration:none}.wrap{width:min(1180px,calc(100% - 32px));margin:auto}.top{position:sticky;top:0;z-index:50;background:rgba(2,8,6,.86);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.nav{height:78px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:42px;height:42px;object-fit:contain}.brand strong{display:block;letter-spacing:.08em}.brand span{display:block;color:var(--mut);font-size:12px}.navlinks{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.06);color:#fff;padding:11px 16px;font-weight:850;cursor:pointer;transition:.18s ease}.btn:hover{transform:translateY(-1px);border-color:rgba(53,255,140,.5)}.btn.primary{background:linear-gradient(135deg,var(--g),var(--g2));color:#031008;border:0}.btn.gold{background:linear-gradient(135deg,#fff2a8,#ffc94d);color:#201500;border:0}.btn.active{border-color:var(--g);box-shadow:0 0 0 1px rgba(53,255,140,.35)}
+.hero{padding:70px 0 36px}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:stretch}.panel{border:1px solid var(--line);border-radius:30px;background:linear-gradient(180deg,rgba(12,32,22,.84),rgba(4,10,7,.9));box-shadow:0 28px 90px rgba(0,0,0,.38)}.hero-card{padding:34px}.eyebrow{color:var(--g);font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;display:flex;gap:10px;align-items:center}.dot{width:9px;height:9px;border-radius:50%;background:var(--g);box-shadow:0 0 18px var(--g)}h1{font-size:clamp(42px,7vw,84px);line-height:.92;margin:18px 0}p{color:var(--mut);line-height:1.65}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}.flow{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.flow span,.features span{border:1px solid rgba(53,255,140,.22);border-radius:999px;padding:7px 10px;color:#dfffea;background:rgba(53,255,140,.06);font-size:12px}
+.cart{padding:24px;position:sticky;top:98px}.cart h2{margin:0 0 8px}.cart-list{display:grid;gap:8px;min-height:98px;margin:16px 0}.cart-item{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:16px;padding:11px;background:rgba(255,255,255,.04)}.cart-item button{border:0;background:transparent;color:var(--red);font-weight:900;cursor:pointer}.totals{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:8px}.row{display:flex;justify-content:space-between;gap:12px}.total{font-size:24px;font-weight:950;color:var(--g)}.drop-ready{outline:2px dashed var(--g);outline-offset:6px}.status{color:var(--mut);font-size:13px}.products-head{padding:28px 0 10px;display:flex;justify-content:space-between;gap:16px;align-items:end}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-bottom:70px}.product{border:1px solid var(--line);border-radius:26px;padding:22px;background:linear-gradient(180deg,rgba(14,34,24,.88),rgba(4,10,7,.9));min-height:360px;display:flex;flex-direction:column;gap:12px;cursor:grab}.product.featured{grid-column:span 3;border-color:rgba(53,255,140,.55);background:radial-gradient(circle at 78% 12%,rgba(53,255,140,.25),transparent 28%),linear-gradient(180deg,rgba(13,42,26,.94),rgba(4,10,7,.92))}.product h2{font-size:28px;margin:0}.product p{margin:0}.tag{align-self:flex-start;border:1px solid rgba(53,255,140,.26);border-radius:999px;padding:7px 10px;color:var(--g);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.1em}.price{font-size:34px;color:var(--g);font-weight:950}.unit{color:var(--mut)}.features{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.assistant{position:fixed;right:18px;bottom:18px;width:min(410px,calc(100% - 36px));z-index:80;border:1px solid rgba(53,255,140,.32);border-radius:26px;background:linear-gradient(180deg,rgba(5,31,17,.98),rgba(0,0,0,.96));box-shadow:0 24px 90px rgba(0,0,0,.55);overflow:hidden;transform:translateY(calc(100% - 66px));transition:transform .25s ease}.assistant.open{transform:translateY(0)}.assistant-head{height:66px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);cursor:pointer}.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--g),var(--g2));color:#031008;font-weight:950}.assistant-title strong{display:block}.assistant-title span{display:block;color:var(--mut);font-size:12px}.assistant-body{padding:14px}.conversation{height:230px;overflow:auto;display:grid;gap:10px;align-content:start;padding-right:4px}.msg{border-radius:16px;padding:10px 12px;font-size:13px}.msg.agent{background:rgba(53,255,140,.10);border:1px solid rgba(53,255,140,.18)}.msg.user{background:rgba(255,255,255,.07);justify-self:end}.assistant-input{display:flex;gap:8px;margin-top:12px}.assistant-input input{flex:1;border:1px solid rgba(255,255,255,.13);border-radius:999px;background:rgba(255,255,255,.05);color:#fff;padding:11px 13px}.mic.listening{outline:2px solid var(--g);box-shadow:0 0 24px rgba(53,255,140,.28)}
+[data-es]{display:none}body.es [data-en]{display:none}body.es [data-es]{display:inline-flex}body.es span[data-es],body.es p[data-es],body.es h1[data-es],body.es h2[data-es]{display:block}
+@media(max-width:900px){.grid,.cards{grid-template-columns:1fr}.product.featured{grid-column:auto}.nav{height:auto;padding:14px 0;align-items:flex-start}.navlinks{justify-content:flex-end}.cart{position:relative;top:auto}}
+</style>
+</head>
+<body class="en">
+<header class="top">
+  <nav class="wrap nav">
+    <a class="brand" href="index.html"><img src="secquoia-logo.png" alt="SECQUOIA logo"><div><strong>SECQUOIA.NET</strong><span>QuMarket</span></div></a>
+    <div class="navlinks">
+      <a class="btn" href="index.html">SECQUOIA.NET</a>
+      <a class="btn" href="#products">Products</a>
+      <a class="btn primary" href="#cart" data-bundle data-en>Buy complete package - Save 15%</a><a class="btn primary" href="#cart" data-bundle data-es>Comprar paquete completo - Ahorrar 15%</a>
+      <button class="btn active" id="enBtn" type="button">EN</button><button class="btn" id="esBtn" type="button">ES</button>
+    </div>
+  </nav>
+</header>
+<main>
+  <section class="wrap hero">
+    <div class="grid">
+      <div class="panel hero-card">
+        <div class="eyebrow"><span class="dot"></span><span>qu-market.secquoia.group</span></div>
+        <h1 data-en>Build your cyber stack as a modular marketplace.</h1>
+        <h1 data-es>Construye tu stack cyber como marketplace modular.</h1>
+        <p data-en>Choose each SECQUOIA product as an independent business unit, add it to your basket, and let QuChat guide the flow: QuIdentify, QuCFA/QVit pricing, QuPay checkout, QuHub provisioning, QuFense activation and QuAudit evidence.</p>
+        <p data-es>Elige cada producto SECQUOIA como unidad independiente, agregalo a la canasta y deja que QuChat guie el flujo: QuIdentify, precio QuCFA/QVit, checkout QuPay, aprovisionamiento QuHub, activacion QuFense y evidencia QuAudit.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#products" data-en>Explore products</a><a class="btn primary" href="#products" data-es>Explorar productos</a>
+          <button class="btn" type="button" data-bundle data-en>Add selected products to cart</button><button class="btn" type="button" data-bundle data-es>Agregar productos al carrito</button>
+        </div>
+        <div class="flow"><span>QuIdentify / Okta</span><span>QuCFA / QVit</span><span>QuPay</span><span>QuHub</span><span>QuFense</span><span>QuAudit</span><span>QuChat / QuVoice / QuAgent</span></div>
+      </div>
+      <aside class="panel cart" id="cart">
+        <div class="eyebrow"><span class="dot"></span><span data-en>Live basket</span><span data-es>Canasta activa</span></div>
+        <h2 data-en>Commercial stack</h2><h2 data-es>Stack comercial</h2>
+        <p class="status" id="status">QuPay ready - QuHub standby - QuAudit enabled</p>
+        <div class="cart-list" id="cartList"></div>
+        <div class="totals">
+          <div class="row"><span>Subtotal</span><strong id="subtotal">$0/mo</strong></div>
+          <div class="row"><span data-en>Bundle discount</span><span data-es>Descuento paquete</span><strong id="discount">-$0/mo</strong></div>
+          <div class="row total"><span>Total</span><strong id="total">$0/mo</strong></div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn primary" id="checkout" type="button" data-en>Simulate QuPay checkout</button><button class="btn primary" id="checkoutEs" type="button" data-es>Simular checkout QuPay</button>
+          <button class="btn" id="download" type="button" data-en>Download cart</button><button class="btn" id="downloadEs" type="button" data-es>Descargar canasta</button>
+          <button class="btn" id="clear" type="button" data-en>Clear</button><button class="btn" id="clearEs" type="button" data-es>Limpiar</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+  <section class="wrap" id="products">
+    <div class="products-head">
+      <div><div class="tag">Marketplace</div><h2 data-en>Available product modules</h2><h2 data-es>Modulos disponibles</h2></div>
+      <button class="btn gold" type="button" data-bundle data-en>Add full SECQUOIA bundle</button><button class="btn gold" type="button" data-bundle data-es>Agregar paquete completo</button>
+    </div>
+    <div class="cards" id="productCards"></div>
+  </section>
+</main>
+<section class="assistant" id="assistant" aria-live="polite">
+  <div class="assistant-head" id="assistantHead">
+    <div class="avatar">Q</div>
+    <div class="assistant-title"><strong>QuChat / QuVoice / QuAgent</strong><span id="agentState">Sales agent standby</span></div>
+    <button class="btn" type="button" id="assistantToggle">Open</button>
+  </div>
+  <div class="assistant-body">
+    <div class="conversation" id="conversation"></div>
+    <div class="assistant-input">
+      <input id="agentInput" placeholder="Ask about QuFense, pricing, bundle, onboarding...">
+      <button class="btn mic" type="button" id="mic">Mic</button>
+      <button class="btn primary" type="button" id="send">Send</button>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  const products=[
+    {id:'qufense',name:'QuFense Private Beta Core',price:715,badge:'Premium PQC',featured:true,endpoints:'25 endpoints',pitch:{en:'QuFense is SECQUOIAs quantum-safe cyber immune system. It governs PQC controls, ephemeral key ceremonies, QRNG-ready entropy, QuVault protection and cryptographic evidence for high-value environments.',es:'QuFense es el sistema inmunologico cyber quantum-safe de SECQUOIA. Gobierna controles PQC, ceremonias de llaves efimeras, entropia QRNG-ready, proteccion QuVault y evidencia criptografica para entornos de alto valor.'},features:['NIST PQC','QRNG-ready','QuVault','QuAudit','Private beta']},
+    {id:'qusoc',name:'QuSOC Starter',price:1950,badge:'SOC / MDR',endpoints:'25 endpoints',pitch:{en:'QuSOC delivers defensive operations: SIEM-ready monitoring, triage, threat intelligence, incident workflow and managed response roadmap.',es:'QuSOC entrega operacion defensiva: monitoreo SIEM-ready, triage, inteligencia de amenazas, flujo de incidentes y hoja de ruta MDR.'},features:['SIEM-ready','MDR','Threat intel','Alerting']},
+    {id:'qupay',name:'QuPay Global Checkout',price:149,badge:'Payments',endpoints:'API',pitch:{en:'QuPay is the commercial checkout layer for cards, recurring billing, crypto-ready flows and licensing.',es:'QuPay es la capa de checkout comercial para tarjetas, pagos recurrentes, flujos crypto-ready y licenciamiento.'},features:['Stripe-ready','Crypto-ready','Recurring','Ledger']},
+    {id:'quhub',name:'QuHub Connector Gateway',price:390,badge:'Integrations',endpoints:'Connectors',pitch:{en:'QuHub is the external integration gateway for Plaid, Okta, Stripe, Siigo, PayPal and provider APIs.',es:'QuHub es el gateway de integracion externa para Plaid, Okta, Stripe, Siigo, PayPal y APIs de proveedores.'},features:['API broker','Provider routing','Consent','Audit']},
+    {id:'quidentify',name:'QuIdentify / Okta Access',price:290,badge:'Identity',endpoints:'Tenant',pitch:{en:'QuIdentify anchors access through Okta/OIDC, scoped consent, MFA-ready patterns and audit evidence.',es:'QuIdentify ancla el acceso con Okta/OIDC, consentimiento por alcance, patrones MFA-ready y evidencia de auditoria.'},features:['Okta OIDC','SSO','MFA-ready','Consent']},
+    {id:'quchat',name:'QuChat / QuVoice / QuAgent',price:590,badge:'AI Experience',endpoints:'Workspace',pitch:{en:'QuChat, QuVoice and QuAgent guide customers through product selection, onboarding, support and autonomous workflows.',es:'QuChat, QuVoice y QuAgent guian al cliente en seleccion de productos, onboarding, soporte y flujos autonomos.'},features:['Chat','Voice','Agent guidance','Support']},
+    {id:'qucfa',name:'QuCFA / QVit',price:490,badge:'Finance',endpoints:'Finance',pitch:{en:'QuCFA and QVit calculate costs, package economics, provider pass-through, reserves, insurance buffers and customer profit controls.',es:'QuCFA y QVit calculan costos, economia de paquetes, proveedores, reservas, seguros y gestion de utilidad del cliente.'},features:['Cost model','QVit','Pricing','Manage your profit']},
+    {id:'quoptio',name:'QuOptio Optimization Sidecar',price:350,badge:'Optimization',endpoints:'Sidecar',pitch:{en:'QuOptio reduces waste, latency and cost across each QMax macro-iteration.',es:'QuOptio reduce desperdicio, latencia y costo en cada macroiteracion QMax.'},features:['QMax','Cost control','Latency','Horizon infinity']}
+  ];
+  const selected=new Map();
+  const body=document.body, productRoot=document.getElementById('productCards'), cart=document.getElementById('cart'), cartList=document.getElementById('cartList'), subtotalEl=document.getElementById('subtotal'), discountEl=document.getElementById('discount'), totalEl=document.getElementById('total'), statusEl=document.getElementById('status');
+  const assistant=document.getElementById('assistant'), conv=document.getElementById('conversation'), agentInput=document.getElementById('agentInput'), agentState=document.getElementById('agentState'), micBtn=document.getElementById('mic');
+  function lang(){return body.classList.contains('es')?'es':'en'} function money(v){return '$'+Math.round(v).toLocaleString('en-US')+'/mo'}
+  function speak(text){try{if('speechSynthesis'in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang()==='es'?'es-ES':'en-US';speechSynthesis.speak(u)}}catch(e){}}
+  function openAgent(){assistant.classList.add('open');document.getElementById('assistantToggle').textContent=lang()==='es'?'Cerrar':'Close'}
+  function addMsg(text,who){const d=document.createElement('div');d.className='msg '+(who||'agent');d.textContent=text;conv.appendChild(d);conv.scrollTop=conv.scrollHeight}
+  function agentSay(text,voice){openAgent();addMsg(text,'agent');agentState.textContent=lang()==='es'?'Agente activo':'Agent active';if(voice!==false)speak(text)}
+  function renderProducts(){
+    const l=lang();
+    productRoot.innerHTML=products.map(p=>'<article class="product '+(p.featured?'featured':'')+'" draggable="true" data-id="'+p.id+'"><div class="tag">'+p.badge+'</div><h2>'+p.name+'</h2><p>'+p.pitch[l]+'</p><span class="price">'+money(p.price)+'</span><span class="unit">'+p.endpoints+'</span><div class="features">'+p.features.map(f=>'<span>'+f+'</span>').join('')+'</div><div class="actions"><button class="btn primary" type="button" data-add="'+p.id+'">'+(l==='es'?'Agregar al carrito':'Add to cart')+'</button><button class="btn" type="button" data-talk="'+p.id+'">'+(l==='es'?'QuChat explicame':'QuChat explain')+'</button></div></article>').join('');
+  }
+  function addProduct(id){const p=products.find(x=>x.id===id);if(!p)return;selected.set(id,p);updateCart();agentSay((lang()==='es'?'Agregue ':'I added ')+p.name+'. '+p.pitch[lang()]);}
+  function updateCart(){const l=lang(),items=[...selected.values()];cartList.innerHTML=items.length?items.map(p=>'<div class="cart-item"><span><strong>'+p.name+'</strong><br><small>'+p.endpoints+'</small></span><span>'+money(p.price)+' <button data-remove="'+p.id+'">x</button></span></div>').join(''):'<div class="status">'+(l==='es'?'Canasta vacia. Arrastra un producto o usa Agregar.':'Basket empty. Drag a product or use Add to cart.')+'</div>';const subtotal=items.reduce((s,p)=>s+p.price,0),discount=items.length===products.length?subtotal*.15:0;subtotalEl.textContent=money(subtotal);discountEl.textContent='-'+money(discount);totalEl.textContent=money(subtotal-discount);statusEl.textContent=items.length===products.length?(l==='es'?'Paquete completo: 15% aplicado.':'Complete package: 15% applied.'):(l==='es'?'QuPay listo - QuHub en espera - QuAudit activo':'QuPay ready - QuHub standby - QuAudit enabled')}
+  function bundle(){products.forEach(p=>selected.set(p.id,p));updateCart();agentSay(lang()==='es'?'Paquete completo agregado. Aplique 15% de descuento y prepare el checkout QuPay simulado.':'Full bundle added. I applied the 15% discount and prepared the simulated QuPay checkout.')}
+  function answer(q){const l=lang();q=(q||'').toLowerCase();let p=products.find(x=>q.includes(x.id)||q.includes(x.name.toLowerCase().split(' ')[0].toLowerCase()));if(p)return p.pitch[l]+' '+(l==='es'?'Precio estimado: ':'Estimated price: ')+money(p.price)+'.';if(q.includes('bundle')||q.includes('paquete'))return l==='es'?'El paquete completo integra todos los modulos, aplica 15% de descuento y QuHub coordina aprovisionamiento con QuPay, QuFense y QuAudit.':'The full bundle integrates all modules, applies a 15% discount, and QuHub coordinates provisioning with QuPay, QuFense and QuAudit.';if(q.includes('price')||q.includes('precio')||q.includes('cost'))return l==='es'?'Los precios son estimados mensuales. QuCFA/QVit recalcula segun endpoints, proveedores, reservas y alcance contractual.':'Prices are monthly estimates. QuCFA/QVit recalculates by endpoints, providers, reserves and contractual scope.';return l==='es'?'Puedo explicarte cada producto, comparar paquetes, agregarlo al carrito y simular el flujo QuPay, QuHub, QuFense y QuAudit.':'I can explain each product, compare packages, add them to the cart and simulate the QuPay, QuHub, QuFense and QuAudit flow.'}
+  document.addEventListener('click',e=>{const add=e.target.closest('[data-add]');if(add)addProduct(add.dataset.add);const talk=e.target.closest('[data-talk]');if(talk){const p=products.find(x=>x.id===talk.dataset.talk);if(p)agentSay(p.pitch[lang()]+' '+(lang()==='es'?'Puedo agregarlo al carrito o compararlo con otro modulo.':'I can add it to the cart or compare it with another module.'))}const rem=e.target.closest('[data-remove]');if(rem){selected.delete(rem.dataset.remove);updateCart()}if(e.target.closest('[data-bundle]')){e.preventDefault();bundle();cart.scrollIntoView({behavior:'smooth',block:'start'})}});
+  productRoot.addEventListener('click',e=>{const card=e.target.closest('[data-id]');if(card&&!e.target.closest('button')){const p=products.find(x=>x.id===card.dataset.id);if(p)agentSay(p.pitch[lang()]+' '+(lang()==='es'?'Haz clic en Agregar al carrito para incluirlo.':'Click Add to cart to include it.'))}});
+  productRoot.addEventListener('dragstart',e=>{const item=e.target.closest('[data-id]');if(item)e.dataTransfer.setData('text/plain',item.dataset.id)});cart.addEventListener('dragover',e=>{e.preventDefault();cart.classList.add('drop-ready')});cart.addEventListener('dragleave',()=>cart.classList.remove('drop-ready'));cart.addEventListener('drop',e=>{e.preventDefault();cart.classList.remove('drop-ready');addProduct(e.dataTransfer.getData('text/plain'))});
+  document.getElementById('assistantHead').onclick=openAgent;document.getElementById('assistantToggle').onclick=e=>{e.stopPropagation();assistant.classList.toggle('open');e.target.textContent=assistant.classList.contains('open')?(lang()==='es'?'Cerrar':'Close'):'Open'};
+  document.getElementById('send').onclick=()=>{const q=agentInput.value.trim();if(!q)return;addMsg(q,'user');agentInput.value='';agentSay(answer(q))};agentInput.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('send').click()});
+  document.getElementById('checkout').onclick=document.getElementById('checkoutEs').onclick=()=>agentSay(lang()==='es'?'Checkout QuPay simulado. Siguiente: QuIdentify valida acceso, QuHub aprovisiona, QuFense activa controles y QuAudit registra evidencia.':'Simulated QuPay checkout. Next: QuIdentify validates access, QuHub provisions, QuFense activates controls and QuAudit records evidence.');
+  document.getElementById('clear').onclick=document.getElementById('clearEs').onclick=()=>{selected.clear();updateCart();agentSay(lang()==='es'?'Canasta limpia. Puedes empezar de nuevo.':'Basket cleared. You can start again.',false)};
+  document.getElementById('download').onclick=document.getElementById('downloadEs').onclick=()=>{const items=[...selected.values()],subtotal=items.reduce((s,p)=>s+p.price,0),discount=items.length===products.length?subtotal*.15:0;const payload={schema:'secquoia.qumarket.cart.v1',domain:'qu-market.secquoia.group',createdAt:new Date().toISOString(),items:items.map(p=>({id:p.id,name:p.name,monthlyUsd:p.price,features:p.features})),subtotalMonthlyUsd:subtotal,bundleDiscountMonthlyUsd:discount,totalMonthlyUsd:subtotal-discount,workflow:['QuIdentify','QuCFA/QVit','QuPay','QuHub','QuFense','QuChat/QuVoice/QuAgent','QuAudit']};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='secquoia-qumarket-cart.json';a.click();URL.revokeObjectURL(url);};
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const rec=new SR();rec.continuous=false;rec.interimResults=false;rec.lang=lang()==='es'?'es-ES':'en-US';micBtn.onclick=()=>{rec.lang=lang()==='es'?'es-ES':'en-US';micBtn.classList.add('listening');rec.start()};rec.onresult=e=>{micBtn.classList.remove('listening');const q=e.results[0][0].transcript;addMsg(q,'user');agentSay(answer(q))};rec.onerror=()=>{micBtn.classList.remove('listening');agentSay(lang()==='es'?'No pude escuchar bien. Escribe o intenta de nuevo.':'I could not hear clearly. Type or try again.',false)};rec.onend=()=>micBtn.classList.remove('listening')}else{micBtn.onclick=()=>agentSay(lang()==='es'?'El reconocimiento de voz no esta disponible en este navegador. La voz de salida si puede funcionar.':'Speech recognition is not available in this browser. Voice output may still work.',false)}
+  function setLang(l){body.classList.remove('en','es');body.classList.add(l);document.documentElement.lang=l;document.getElementById('enBtn').classList.toggle('active',l==='en');document.getElementById('esBtn').classList.toggle('active',l==='es');renderProducts();updateCart()}document.getElementById('enBtn').onclick=()=>setLang('en');document.getElementById('esBtn').onclick=()=>setLang('es');
+  const params=new URLSearchParams(location.search);const product=params.get('product');renderProducts();updateCart();agentSay(lang()==='es'?'Soy QuChat. Haz clic en cualquier producto y te explico capacidades, precio y activacion.':'I am QuChat. Click any product and I will explain capabilities, pricing and activation.',false);if(params.get('bundle')==='1')bundle();else if(product)addProduct(product.toLowerCase());
+})();
+</script>
+</body>
+</html>
