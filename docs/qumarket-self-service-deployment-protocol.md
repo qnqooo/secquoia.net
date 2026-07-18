@@ -11,7 +11,7 @@ Status: production-ready design contract; backend enforcement required in QuIden
 5. QuPay opens Stripe checkout only after identity and policy are approved.
 6. QuHub sends fulfillment email after payment confirmation.
 7. QuVault exposes ephemeral activation material only after QuIdentify re-authentication.
-8. QuAgent guides installation and verification.
+8. Agenty guides installation and verification.
 9. QuAudit records identity, quote, payment, fulfillment, key ceremony, activation and deployment evidence.
 
 ## Fulfillment email package
@@ -23,7 +23,7 @@ The post-payment email should include attachments or secure links for:
 - Certification and compliance pack.
 - Installation guide.
 - Deployment manifest.
-- QuAgent onboarding URL.
+- Agenty onboarding URL.
 - Time-bound activation link.
 
 The email must not contain raw secrets, permanent API keys, cards, tokens or unencrypted credentials.
@@ -41,13 +41,13 @@ The email must not contain raw secrets, permanent API keys, cards, tokens or une
 ## Customer self-service deployment
 
 1. Upload or paste endpoint inventory.
-2. QuAgent validates IP format, duplicates and package limits.
+2. Agenty validates IP format, duplicates and package limits.
 3. QuIdentify validates the deployment owner.
 4. QuFense applies the purchased policy profile.
 5. QuVault retrieves ephemeral activation material after re-authentication.
 6. QuHub provisions connectors and product configuration.
 7. Customer installs endpoint agent/sensor or connector package.
-8. QuAgent runs health checks.
+8. Agenty runs health checks.
 9. QuSOC receives telemetry when included.
 10. QuAudit stores deployment evidence.
 
