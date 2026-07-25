@@ -57,6 +57,8 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/consistently feminine vocal presentation/);
   assert.match(voice,/natural Colombian Spanish pronunciation/);
   assert.match(voice,/AUTHORIZED_SECQUOIA_WEBSITES_DATA_ONLY|Authorized SECQUOIA website reference data/);
+  assert.match(voice,/Never require, force, delay, or block an answer because a source URL is not cited/);
+  assert.match(voice,/Do not speak raw URLs by default/);
   assert.doesNotMatch(voice,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}|OPENAI_API_KEY|Authorization:\s*`?Bearer/);
 });
 
