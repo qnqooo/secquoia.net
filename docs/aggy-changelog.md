@@ -2,6 +2,13 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.8 - 2026-07-25
+
+### Changed
+
+- Aggy Voice is now presented as “Voz de SQAILE - Acento neutro”.
+- Spanish speech guidance now uses a clear, warm, internationally neutral accent instead of a regional accent.
+
 ## 1.0.0-rc.7 - 2026-07-25
 
 ### Fixed

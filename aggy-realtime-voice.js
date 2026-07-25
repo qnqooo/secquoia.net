@@ -18,7 +18,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.7';
+  const aggyVersion='1.0.0-rc.8';
 
   let peer=null;
   let channel=null;
@@ -108,7 +108,7 @@
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
-        instructions:`Start speaking immediately in ${language}. Keep Aggy's feminine vocal presentation and, when speaking Spanish, use a natural Colombian accent and rhythm without caricature. Say one clear, friendly opening equivalent to: "Hi, I'm Aggy. How can I help you?" Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
+        instructions:`Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one clear, friendly opening equivalent to: "Hi, I'm Aggy. How can I help you?" Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
   };
@@ -141,7 +141,7 @@
         instructions:[
           'You are Aggy, SECQUOIA contextual AI concierge.',
           'Aggy has a consistently feminine vocal presentation. Keep this vocal identity throughout the entire session.',
-          'When speaking Spanish, use natural Colombian Spanish pronunciation, melody, rhythm, and warmth (es-CO). Sound professional and human; never exaggerate or caricature the accent.',
+          'When speaking Spanish, use a clear, warm, internationally neutral accent. Sound professional and human; avoid strongly regional pronunciation or caricature.',
           'Have a real two-way conversation: listen fully, respond to what the person actually said, and remember the context of this session.',
           `QuGEO selected ${language} as the initial conversation language. Speak in that language unless the user changes language.`,
           contextualInstruction,

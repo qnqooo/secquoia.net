@@ -2,12 +2,12 @@
 
 Requirement: restore the approved advanced Aggy interface in the persistent floating QuMarket widget.
 
-Current release: `1.0.0-rc.7` (`rc`, ecosystem hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This release candidate is deployed for production validation; it is not yet a stable-production or third-party-sale claim.
+Current release: `1.0.0-rc.8` (`rc`, ecosystem hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This release candidate is deployed for production validation; it is not yet a stable-production or third-party-sale claim.
 
 ## Restored areas
 
 - Chat: existing commercial conversation, QuIdentify-gated invitation preparation, local-secret blocking and explicit proof status.
-- Voice: Aggy Realtime over secure WebRTC, using the governed `marin` voice with a consistently feminine presentation. Spanish defaults to natural Colombian pronunciation and cadence (`es-CO`), without caricature. QuGEO can select another conversation language while Aggy preserves the same vocal identity. Output speed is a moderate `1.08x`, turns use high-eagerness semantic VAD, and the prompt favors short pauses and compact responses without speaking over the user. Browser `SpeechRecognition`, `speechSynthesis`, `SpeechSynthesisUtterance` and `MediaRecorder` legacy paths are disabled.
+- Voice: Aggy Realtime over secure WebRTC, using the governed `marin` voice under the public identity “Voz de SQAILE - Acento neutro”. Spanish uses a clear, warm, internationally neutral accent. QuGEO can select another conversation language while Aggy preserves the same vocal identity. Output speed is a moderate `1.08x`, turns use high-eagerness semantic VAD, and the prompt favors short pauses and compact responses without speaking over the user. Browser `SpeechRecognition`, `speechSynthesis`, `SpeechSynthesisUtterance` and `MediaRecorder` legacy paths are disabled.
 - Reading: the last chat response is read by Aggy Realtime. It is treated as quoted data rather than instructions.
 - Web knowledge: QuHub retrieves bounded, cached excerpts only from `secquoia.group`, `secquoia.net` and `secquoia.net/qu-market.html`. Website text is reference data, not model instructions. Source URLs are never mandatory and cannot delay or block an answer; Aggy mentions a concise source or link only when the user requests it or it materially helps the next action.
 - Files: local size/type inspection and SHA-256 calculation. The mini widget never claims QuSOC `CLEAN`; transfer remains fail-closed until the secure motor is used.
