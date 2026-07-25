@@ -2,14 +2,20 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.5 - 2026-07-25
+
+### Fixed
+
+- Restored the current documented `gpt-realtime-2.1` model and text multipart fields required by the unified WebRTC interface.
+- Added a valid end-to-end SDP negotiation probe before declaring the mobile voice path healthy.
+
 ## 1.0.0-rc.4 - 2026-07-25
 
 Realtime provider contract correction.
 
 ### Fixed
 
-- Replaced the unsupported `gpt-realtime-2.1` identifier with the current official `gpt-realtime` model alias.
-- Added the documented `application/sdp` and `application/json` MIME types to the multipart Realtime call.
+- Internal transport experiment; superseded by `1.0.0-rc.5` before production validation completed.
 - Versioned all ecosystem loaders again so mobile browsers receive the corrected provider contract immediately.
 
 ## 1.0.0-rc.3 - 2026-07-25

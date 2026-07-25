@@ -15,10 +15,10 @@
   const healthEndpoint='https://aggy.secquoia.group/api/aggy/realtime/health';
   const qugeoEndpoint='https://qugeo.secquoia.group/v1/context';
   const knowledgeEndpoint='https://quhub.secquoia.group/v1/knowledge/context?q=SECQUOIA%20products%20services%20cybersecurity%20marketplace';
-  const realtimeModel='gpt-realtime';
+  const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.4';
+  const aggyVersion='1.0.0-rc.5';
 
   let peer=null;
   let channel=null;
