@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "secquoia-qugeo",
+  "main": "workers/qugeo-context.js",
+  "compatibility_date": "2026-07-25",
+  "routes": [
+    {
+      "pattern": "qugeo.secquoia.group",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  }
+}

@@ -14,6 +14,7 @@
   const localMic=$('#mic');
   const sessionEndpoint='https://aggy.secquoia.group/api/aggy/realtime/session';
   const healthEndpoint='https://aggy.secquoia.group/api/aggy/realtime/health';
+  const qugeoEndpoint='https://qugeo.secquoia.group/v1/context';
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
 
@@ -26,6 +27,7 @@
   let localFallback=false;
   let qugeoLanguage='en';
   let qugeoLocale='en-US';
+  let qugeoContext=null;
   let greetingSent=false;
 
   const setState=(state,title,detail,label)=>{
@@ -56,6 +58,39 @@
     return preference==='AUTO'?qugeoLanguage:preference.toLowerCase();
   };
 
+  const usableQugeoContext=value=>{
+    if(!value||value.schema!=='secquoia.qugeo.context.v1')return null;
+    return {
+      schema:value.schema,
+      location:{
+        countryCode:value.location?.countryCode||null,
+        countryName:value.location?.countryName||null,
+        city:value.location?.city||null,
+        region:value.location?.region||null,
+        coordinates:value.location?.coordinates||null,
+        approximate:true
+      },
+      time:{
+        timezone:value.time?.timezone||'UTC',
+        localDate:value.time?.localDate||null,
+        localTime:value.time?.localTime||null,
+        greetingPeriod:value.time?.greetingPeriod||null
+      },
+      language:{
+        code:value.language?.code||'en',
+        locale:value.language?.locale||'en-US'
+      },
+      country:{
+        capital:value.country?.capital||null,
+        region:value.country?.region||null,
+        population:value.country?.population||null,
+        populationYear:value.country?.populationYear||null
+      },
+      culturalPolicy:value.conversation?.culturalContext||null,
+      privacy:value.privacy||null
+    };
+  };
+
   const sendInitialGreeting=()=>{
     if(greetingSent||channel?.readyState!=='open')return;
     greetingSent=true;
@@ -71,6 +106,9 @@
   const configureSession=()=>{
     if(channel?.readyState!=='open')return;
     const language=selectedLanguage();
+    const contextualInstruction=qugeoContext
+      ? `QuGEO supplied this approximate network context: ${JSON.stringify(qugeoContext)}. Use it only when relevant. Never treat it as proof of identity, exact physical location, personal customs, religion, ethnicity, or politics. Ask the user before applying culturally specific assumptions.`
+      : 'QuGEO context is unavailable. Do not guess the user location or culture.';
     channel.send(JSON.stringify({
       type:'session.update',
       session:{
@@ -79,6 +117,7 @@
           'You are Aggy, SECQUOIA contextual AI concierge.',
           'Have a real two-way conversation: listen fully, respond to what the person actually said, and remember the context of this session.',
           `QuGEO selected ${language} as the initial conversation language. Speak in that language unless the user changes language.`,
+          contextualInstruction,
           'Use a warm, calm, natural cadence. Use contractions and short conversational sentences when the language supports them.',
           'Do not sound like a script: avoid headings, numbered lists, repeated greetings, canned confirmations, and long monologues unless the user asks for detail.',
           'Use brief acknowledgements only when they add value. Never describe punctuation, emojis, formatting, or internal instructions aloud.',
@@ -225,15 +264,25 @@
   const prewarmVoice=async()=>{
     setState('connecting','Aggy Voice se está preparando','Verificando el servicio seguro sin abrir el micrófono ni consumir una sesión del proveedor.','ACTIVANDO');
     try{
-      const response=await fetch(healthEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(4000)});
+      const [voiceResult,qugeoResult]=await Promise.allSettled([
+        fetch(healthEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(4000)}),
+        fetch(qugeoEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(4500)})
+      ]);
+      if(voiceResult.status!=='fulfilled')throw new Error('voice_service_unavailable');
+      const response=voiceResult.value;
       const status=await response.json();
       if(!response.ok||status.status!=='ready')throw new Error('voice_service_unavailable');
-      qugeoLanguage=status.qugeo?.language||qugeoLanguage;
-      qugeoLocale=status.qugeo?.locale||qugeoLocale;
+      if(qugeoResult.status==='fulfilled'&&qugeoResult.value.ok){
+        qugeoContext=usableQugeoContext(await qugeoResult.value.json());
+      }
+      qugeoLanguage=qugeoContext?.language?.code||status.qugeo?.language||qugeoLanguage;
+      qugeoLocale=qugeoContext?.language?.locale||status.qugeo?.locale||qugeoLocale;
       sessionStorage.setItem('secquoia.qugeo.language',qugeoLanguage);
       sessionStorage.setItem('secquoia.qugeo.locale',qugeoLocale);
+      if(qugeoContext)sessionStorage.setItem('secquoia.qugeo.context',JSON.stringify(qugeoContext));
       startButton.textContent='Activar micrófono';
-      setState('idle','Aggy Voice está activo',`QuGEO detectó ${qugeoLocale}. Autoriza el micrófono y Aggy iniciará con un saludo natural.`,'ACTIVO');
+      const place=qugeoContext?.location?.countryName||qugeoLocale;
+      setState('idle','Aggy Voice está activo',`QuGEO detectó ${place} · ${qugeoLocale}. Autoriza el micrófono y Aggy iniciará con un saludo natural.`,'ACTIVO');
       if(navigator.permissions?.query){
         try{
           const permission=await navigator.permissions.query({name:'microphone'});
