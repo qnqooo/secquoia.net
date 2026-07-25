@@ -111,8 +111,9 @@
       return;
     }
     if(message.type==='response.done'){
+      const completedTranscript=(caption.dataset.transcript||'').trim();
       caption.dataset.transcript='';
-      setState('listening','Continúa cuando quieras','La sesión permanece abierta y lista para escucharte.','EN VIVO');
+      setState('listening','Continúa cuando quieras',completedTranscript||'La sesión permanece abierta y lista para escucharte.','EN VIVO');
       return;
     }
     if(message.type==='error'){
