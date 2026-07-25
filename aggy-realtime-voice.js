@@ -63,7 +63,7 @@
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
-        instructions:`Start the conversation now with one short, warm, natural greeting in ${language}. Mention that you are Aggy and invite the person to speak. Do not use headings, lists, or repeat the greeting later.`
+        instructions:`Start the live voice conversation in ${language}. First say one short, warm greeting and mention that you are Aggy. After the greeting, in a separate sentence, ask one brief natural question equivalent to "How can I help you today?". Speak both sentences aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
   };

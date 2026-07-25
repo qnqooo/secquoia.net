@@ -38,6 +38,9 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/sendInitialGreeting\(\)/);
   assert.match(voice,/greetingSent/);
   assert.match(voice,/QuGEO selected \$\{language\}/);
+  assert.match(voice,/After the greeting, in a separate sentence/);
+  assert.match(voice,/Speak both sentences aloud through Realtime audio/);
+  assert.match(voice,/How can I help you today\?/);
   assert.match(voice,/new RTCPeerConnection\(\)/);
   assert.match(voice,/Content-Type':'application\/sdp'/);
   assert.match(voice,/credentials:'omit'/);
