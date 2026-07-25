@@ -12,12 +12,12 @@ const qugeo=request=>{
   const country=String(request.cf?.country||'').toUpperCase().slice(0,2);
   const accepted=(request.headers.get('Accept-Language')||'').toLowerCase();
   const browserLanguage=(accepted.match(/\b(es|en|fr|de|it|pt)(?:-|;|,|$)/)||[])[1];
-  const language=LANGUAGE_BY_COUNTRY[country]||browserLanguage||'en';
+  const language=LANGUAGE_BY_COUNTRY[country]||browserLanguage||'es';
   return Object.freeze({
     language,
     locale:LOCALE_BY_LANGUAGE[language],
     country:country||null,
-    source:LANGUAGE_BY_COUNTRY[country]?'QU_GEO_EDGE_COUNTRY':browserLanguage?'BROWSER_LANGUAGE_FALLBACK':'DEFAULT_EN',
+    source:LANGUAGE_BY_COUNTRY[country]?'QU_GEO_EDGE_COUNTRY':browserLanguage?'BROWSER_LANGUAGE_FALLBACK':'DEFAULT_ES_CO',
     preciseLocationStored:false,
     ipStored:false
   });
@@ -53,7 +53,9 @@ export default {
         service:'Aggy Voice',
         transport:'WebRTC',
         model:env.OPENAI_REALTIME_MODEL||DEFAULT_REALTIME_MODEL,
-        voice:env.OPENAI_REALTIME_VOICE||DEFAULT_REALTIME_VOICE,
+        voice:DEFAULT_REALTIME_VOICE,
+        voiceIdentity:'feminine',
+        defaultLocale:'es-CO',
         qugeo:qugeo(request),
         microphonePermissionRequired:true,
         providerCallExecuted:false
@@ -76,7 +78,7 @@ export default {
     }
 
     const model=env.OPENAI_REALTIME_MODEL||DEFAULT_REALTIME_MODEL;
-    const voice=env.OPENAI_REALTIME_VOICE||DEFAULT_REALTIME_VOICE;
+    const voice=DEFAULT_REALTIME_VOICE;
     const session=JSON.stringify({
       type:'realtime',
       model,

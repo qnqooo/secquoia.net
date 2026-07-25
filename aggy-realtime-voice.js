@@ -24,8 +24,8 @@
   let remoteAudio=null;
   let connecting=false;
   let connected=false;
-  let qugeoLanguage='en';
-  let qugeoLocale='en-US';
+  let qugeoLanguage='es';
+  let qugeoLocale='es-CO';
   let qugeoContext=null;
   let webKnowledgeContext=null;
   let greetingSent=false;
@@ -99,7 +99,7 @@
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
-        instructions:`Start the live voice conversation in ${language}. First say one short, warm greeting and mention that you are Aggy. After the greeting, in a separate sentence, ask one brief natural question equivalent to "How can I help you today?". Speak both sentences aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
+        instructions:`Start the live voice conversation in ${language}. Keep Aggy's feminine vocal presentation and, when speaking Spanish, use a natural Colombian accent and rhythm without caricature. First say one short, warm greeting and mention that you are Aggy. After the greeting, in a separate sentence, ask one brief natural question equivalent to "How can I help you today?". Speak both sentences aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
   };
@@ -131,6 +131,8 @@
         type:'realtime',
         instructions:[
           'You are Aggy, SECQUOIA contextual AI concierge.',
+          'Aggy has a consistently feminine vocal presentation. Keep this vocal identity throughout the entire session.',
+          'When speaking Spanish, use natural Colombian Spanish pronunciation, melody, rhythm, and warmth (es-CO). Sound professional and human; never exaggerate or caricature the accent.',
           'Have a real two-way conversation: listen fully, respond to what the person actually said, and remember the context of this session.',
           `QuGEO selected ${language} as the initial conversation language. Speak in that language unless the user changes language.`,
           contextualInstruction,

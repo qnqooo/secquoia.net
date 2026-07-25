@@ -52,6 +52,10 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/window\.AggyVoice=Object\.freeze/);
   assert.match(voice,/readAloud:text/);
   assert.match(voice,/const naturalVoice='marin'/);
+  assert.match(voice,/let qugeoLanguage='es'/);
+  assert.match(voice,/let qugeoLocale='es-CO'/);
+  assert.match(voice,/consistently feminine vocal presentation/);
+  assert.match(voice,/natural Colombian Spanish pronunciation/);
   assert.match(voice,/AUTHORIZED_SECQUOIA_WEBSITES_DATA_ONLY|Authorized SECQUOIA website reference data/);
   assert.doesNotMatch(voice,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}|OPENAI_API_KEY|Authorization:\s*`?Bearer/);
 });
@@ -59,6 +63,10 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
 test('Aggy backend keeps the current model and standard API key server-side',()=>{
   assert.match(worker,/DEFAULT_REALTIME_MODEL='gpt-realtime-2\.1'/);
   assert.match(worker,/DEFAULT_REALTIME_VOICE='marin'/);
+  assert.match(worker,/voice:DEFAULT_REALTIME_VOICE/);
+  assert.match(worker,/voiceIdentity:'feminine'/);
+  assert.match(worker,/defaultLocale:'es-CO'/);
+  assert.doesNotMatch(worker,/OPENAI_REALTIME_VOICE/);
   assert.match(worker,/https:\/\/api\.openai\.com\/v1\/realtime\/calls/);
   assert.match(worker,/env\.OPENAI_API_KEY/);
   assert.match(worker,/form\.set\('session',session\)/);
@@ -88,7 +96,7 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
       method:'POST',
       headers:{'Content-Type':'application/sdp'},
       body:'v=0\r\no=aggy 1 1 IN IP4 127.0.0.1\r\n'
-    }),{OPENAI_API_KEY:'test-only-key'});
+    }),{OPENAI_API_KEY:'test-only-key',OPENAI_REALTIME_VOICE:'echo'});
     assert.equal(response.status,200);
     assert.equal(upstreamRequest.url,'https://api.openai.com/v1/realtime/calls');
     assert.equal(upstreamRequest.init.headers.Authorization,'Bearer test-only-key');
@@ -110,12 +118,15 @@ test('Aggy Voice health probe activates without opening a paid provider session'
   try{
     const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/realtime/health',{
       headers:{Origin:'https://secquoia.net','Accept-Language':'es-CO,es;q=0.9,en;q=0.8'}
-    }),{OPENAI_API_KEY:'test-only-key'});
+    }),{OPENAI_API_KEY:'test-only-key',OPENAI_REALTIME_VOICE:'echo'});
     assert.equal(response.status,200);
     const body=await response.json();
     assert.equal(body.status,'ready');
     assert.equal(body.providerCallExecuted,false);
     assert.equal(body.microphonePermissionRequired,true);
+    assert.equal(body.voice,'marin');
+    assert.equal(body.voiceIdentity,'feminine');
+    assert.equal(body.defaultLocale,'es-CO');
     assert.equal(body.qugeo.language,'es');
     assert.equal(body.qugeo.locale,'es-CO');
     assert.equal(body.qugeo.source,'BROWSER_LANGUAGE_FALLBACK');

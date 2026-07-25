@@ -5,7 +5,7 @@ Requirement: restore the approved advanced Aggy interface in the persistent floa
 ## Restored areas
 
 - Chat: existing commercial conversation, QuIdentify-gated invitation preparation, local-secret blocking and explicit proof status.
-- Voice: Aggy Realtime over secure WebRTC, using the governed `marin` voice. Browser `SpeechRecognition`, `speechSynthesis`, `SpeechSynthesisUtterance` and `MediaRecorder` legacy paths are disabled.
+- Voice: Aggy Realtime over secure WebRTC, using the governed `marin` voice with a consistently feminine presentation. Spanish defaults to natural Colombian pronunciation and cadence (`es-CO`), without caricature. QuGEO can select another conversation language while Aggy preserves the same vocal identity. Browser `SpeechRecognition`, `speechSynthesis`, `SpeechSynthesisUtterance` and `MediaRecorder` legacy paths are disabled.
 - Reading: the last chat response is read by Aggy Realtime. It is treated as quoted data rather than instructions.
 - Web knowledge: QuHub retrieves bounded, cached excerpts only from `secquoia.group`, `secquoia.net` and `secquoia.net/qu-market.html`. Website text is reference data, not model instructions.
 - Files: local size/type inspection and SHA-256 calculation. The mini widget never claims QuSOC `CLEAN`; transfer remains fail-closed until the secure motor is used.
