@@ -18,7 +18,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.5';
+  const aggyVersion='1.0.0-rc.6';
 
   let peer=null;
   let channel=null;
@@ -108,7 +108,7 @@
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
-        instructions:`Start the live voice conversation in ${language}. Keep Aggy's feminine vocal presentation and, when speaking Spanish, use a natural Colombian accent and rhythm without caricature. First say one short, warm greeting and mention that you are Aggy. After the greeting, with only a brief natural pause, ask one short question equivalent to "How can I help you today?". Speak both sentences aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
+        instructions:`Start speaking immediately in ${language}. Keep Aggy's feminine vocal presentation and, when speaking Spanish, use a natural Colombian accent and rhythm without caricature. Say one clear, friendly opening equivalent to: "Hi, I'm Aggy. How can I help you?" Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
   };
@@ -325,16 +325,10 @@
       sessionStorage.setItem('secquoia.qugeo.language',qugeoLanguage);
       sessionStorage.setItem('secquoia.qugeo.locale',qugeoLocale);
       if(qugeoContext)sessionStorage.setItem('secquoia.qugeo.context',JSON.stringify(qugeoContext));
-      startButton.textContent='Activar micrófono';
       const place=qugeoContext?.location?.countryName||qugeoLocale;
-      setState('idle','Aggy Voice está activo',`QuGEO detectó ${place} · ${qugeoLocale}. Autoriza el micrófono y Aggy iniciará con un saludo natural.`,'ACTIVO');
-      if(navigator.permissions?.query){
-        try{
-          const permission=await navigator.permissions.query({name:'microphone'});
-          if(permission.state==='granted')await startRealtime();
-          else permission.addEventListener?.('change',()=>{if(permission.state==='granted')startRealtime()},{once:true});
-        }catch{}
-      }
+      startButton.textContent='Iniciando voz';
+      setState('connecting','Aggy está iniciando',`QuGEO detectó ${place} · ${qugeoLocale}. Abriendo voz en vivo para saludarte.`,'INICIANDO');
+      await startRealtime();
     }catch{
       setState('error','Aggy Voice no está disponible','No se pudo verificar el backend seguro. El modo local permanece disponible.','SIN CONEXIÓN');
     }

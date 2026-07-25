@@ -34,14 +34,16 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/const sessionEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/session'/);
   assert.match(voice,/const healthEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/health'/);
   assert.match(voice,/prewarmVoice\(\)/);
-  assert.match(voice,/permission\.state==='granted'/);
+  assert.match(voice,/setState\('connecting','Aggy está iniciando'/);
+  assert.match(voice,/await startRealtime\(\)/);
+  assert.doesNotMatch(voice,/navigator\.permissions/);
   assert.match(voice,/type:'response\.create'/);
   assert.match(voice,/sendInitialGreeting\(\)/);
   assert.match(voice,/greetingSent/);
   assert.match(voice,/QuGEO selected \$\{language\}/);
-  assert.match(voice,/After the greeting, with only a brief natural pause/);
-  assert.match(voice,/Speak both sentences aloud through Realtime audio/);
-  assert.match(voice,/How can I help you today\?/);
+  assert.match(voice,/Start speaking immediately/);
+  assert.match(voice,/Keep it compact, with no introductory filler or long pause/);
+  assert.match(voice,/How can I help you\?/);
   assert.match(voice,/new RTCPeerConnection\(\)/);
   assert.match(voice,/Content-Type':'application\/sdp'/);
   assert.match(voice,/credentials:'omit'/);
@@ -140,7 +142,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.5');
+  assert.equal(release.version,'1.0.0-rc.6');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);

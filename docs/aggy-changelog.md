@@ -2,6 +2,14 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.6 - 2026-07-25
+
+### Changed
+
+- Aggy now attempts to open the microphone and start the Realtime session automatically after QuGEO and service preflight complete.
+- The first spoken turn is compact and immediate: one friendly identification and one direct help question.
+- The application no longer inserts its own microphone-consent step; browsers may still require their native first-use permission.
+
 ## 1.0.0-rc.5 - 2026-07-25
 
 ### Fixed
