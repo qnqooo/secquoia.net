@@ -1,0 +1,67 @@
+{
+  "schema": "secquoia.aggy.rollout.v1",
+  "release": "1.0.0-rc.1",
+  "generatedAt": "2026-07-25T19:51:00Z",
+  "webSurfaces": [
+    {
+      "name": "SECQUOIA Marketplace and corporate site",
+      "url": "https://secquoia.net/",
+      "access": "public",
+      "integration": "native-plus-universal-loader",
+      "status": "deployed"
+    },
+    {
+      "name": "SECQUOIA Strategic Holdings",
+      "url": "https://secquoia.group/",
+      "access": "public",
+      "integration": "universal-loader",
+      "status": "deployed"
+    },
+    {
+      "name": "QnQ",
+      "url": "https://qnq.ooo/",
+      "access": "public",
+      "integration": "universal-loader",
+      "status": "deployed"
+    },
+    {
+      "name": "QuChat",
+      "url": "https://qu-chat.m2m-telecom-7238.chatgpt.site/",
+      "access": "owner-only",
+      "integration": "universal-loader",
+      "siteVersion": 24,
+      "status": "deployed"
+    },
+    {
+      "name": "QuSpace / QuHub",
+      "url": "https://quhub-financial-intelligence.m2m-telecom-7238.chatgpt.site/",
+      "access": "owner-only",
+      "integration": "universal-loader",
+      "siteVersion": 3,
+      "status": "deployed"
+    }
+  ],
+  "serviceEndpoints": [
+    {
+      "name": "Aggy Realtime Voice",
+      "url": "https://aggy.secquoia.group/api/aggy/realtime/health",
+      "status": "ready"
+    },
+    {
+      "name": "QuGEO",
+      "url": "https://qugeo.secquoia.group/health",
+      "status": "ready"
+    },
+    {
+      "name": "QuHub model and knowledge gateway",
+      "url": "https://quhub.secquoia.group/",
+      "status": "service-route"
+    }
+  ],
+  "promotion": {
+    "technicalProductionDeployment": true,
+    "productionApproved": false,
+    "thirdPartySale": false,
+    "reason": "Release candidate remains under production validation; stable GA requires all policy gates to be evidenced and approved."
+  }
+}

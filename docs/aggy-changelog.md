@@ -2,6 +2,32 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.1 - 2026-07-25
+
+Production-validation release candidate.
+
+### Added
+
+- Universal, isolated Aggy launcher for the SECQUOIA/QnQ website ecosystem.
+- Compact Realtime Voice surface shared by public sites and private microsites.
+- Explicit rollout inventory for SECQUOIA, QnQ, QuChat and QuSpace.
+
+### Changed
+
+- Marketplace hero content now starts at the top of its card and its primary message is 10% larger.
+- Voice health prewarm retries bounded cold starts before reporting an outage.
+- Distribution advances from first-party beta to ecosystem-hosted release candidate.
+
+### Validation
+
+- 44 automated tests pass.
+- QuChat and QuSpace production builds complete with the pinned dependency set.
+- Public routes, Aggy Voice health, CORS and mult/site loader delivery are externally verified.
+
+### Commercial status
+
+This release candidate is deployed for production validation. Stable GA and third-party sale remain disabled until the operational, security, billing, SLA, licensing and compatibility gates in the versioning policy are approved with evidence.
+
 ## 0.1.0-beta.1 - 2026-07-25
 
 First formally versioned public beta.

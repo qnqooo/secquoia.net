@@ -1,10 +1,10 @@
 const DEFAULT_REALTIME_MODEL='gpt-realtime-2.1';
 const DEFAULT_REALTIME_VOICE='marin';
 const AGGY_RELEASE=Object.freeze({
-  version:'0.1.0-beta.1',
-  channel:'public-beta',
-  lifecycle:'evaluation',
-  distribution:'first-party-hosted',
+  version:'1.0.0-rc.1',
+  channel:'rc',
+  lifecycle:'production-validation',
+  distribution:'ecosystem-hosted',
   productionApproved:false,
   thirdPartySale:false
 });

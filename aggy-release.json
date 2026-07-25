@@ -1,12 +1,12 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "0.1.0-beta.1",
-  "releaseId": "aggy-0.1.0-beta.1",
-  "releasedAt": "2026-07-25T17:30:36Z",
-  "channel": "public-beta",
-  "lifecycle": "evaluation",
-  "distribution": "first-party-hosted",
+  "version": "1.0.0-rc.1",
+  "releaseId": "aggy-1.0.0-rc.1",
+  "releasedAt": "2026-07-25T19:51:00Z",
+  "channel": "rc",
+  "lifecycle": "production-validation",
+  "distribution": "ecosystem-hosted",
   "productionApproved": false,
   "thirdPartySale": false,
   "releaseNotes": "https://secquoia.net/docs/aggy-changelog.md"

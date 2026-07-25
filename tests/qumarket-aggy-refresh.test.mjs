@@ -119,8 +119,8 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'0.1.0-beta.1');
-  assert.equal(release.channel,'public-beta');
+  assert.equal(release.version,'1.0.0-rc.1');
+  assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
   assert.match(voice,new RegExp(`const aggyVersion='${release.version.replaceAll('.','\\.')}';`));
@@ -153,7 +153,7 @@ test('Aggy Voice health probe activates without opening a paid provider session'
     assert.equal(body.voiceIdentity,'feminine');
     assert.equal(body.defaultLocale,'es-CO');
     assert.equal(body.release.version,release.version);
-    assert.equal(body.release.channel,'public-beta');
+    assert.equal(body.release.channel,'rc');
     assert.equal(body.release.productionApproved,false);
     assert.equal(body.release.thirdPartySale,false);
     assert.equal(body.qugeo.language,'es');
