@@ -9,6 +9,7 @@ const css=await readFile(new URL('../agenty-marketplace.css',import.meta.url),'u
 const addons=await readFile(new URL('../qumarket-addons.js',import.meta.url),'utf8');
 const addonsCss=await readFile(new URL('../qumarket-addons.css',import.meta.url),'utf8');
 const intake=await readFile(new URL('../qusoc-universal-intake.js',import.meta.url),'utf8');
+const qucfaDashboard=await readFile(new URL('../modules/qucfa-commercial-process-dashboard.js',import.meta.url),'utf8');
 
 test('Agenty advanced marketplace assets have valid JavaScript syntax',()=>{
   const scripts=[...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(match=>match[1]);
@@ -121,6 +122,10 @@ test('QuCFA separates endpoint pricing from service pricing',()=>{
   assert.match(html,/serviceMultiplier:1/);
   assert.doesNotMatch(html,/flatMultiplier/);
   assert.match(html,/marginStatus:'UNVERIFIED_NO_COST_RATE_CARD'/);
-  assert.match(html,/\['Producto','Medición','Alcance','Variable adicional','Tarifa base'/);
   assert.match(html,/function orderNeedsConsult\(\).*billingModel\(p\)\.endpoint/);
+  assert.doesNotMatch(html,/id="qucfa"|id="costTable"|saleProcessParts|commercialAllocationUsd/);
+  new Function(qucfaDashboard);
+  assert.match(qucfaDashboard,/authenticated===true&&context\.authorized===true/);
+  assert.match(qucfaDashboard,/AUTHORIZATION_REQUIRED/);
+  assert.match(qucfaDashboard,/window\.QuCFADashboardModules/);
 });
