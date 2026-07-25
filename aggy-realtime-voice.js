@@ -12,7 +12,7 @@
   const muteButton=$('#aggyVoiceMute');
   const endButton=$('#aggyVoiceEnd');
   const localMic=$('#mic');
-  const sessionEndpoint='/api/aggy/realtime/session';
+  const sessionEndpoint='https://aggy.secquoia.group/api/aggy/realtime/session';
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
 
@@ -164,7 +164,7 @@
       await peer.setLocalDescription(offer);
       const response=await fetch(sessionEndpoint,{
         method:'POST',
-        credentials:'same-origin',
+        credentials:'omit',
         headers:{
           'Content-Type':'application/sdp',
           'Accept':'application/sdp'

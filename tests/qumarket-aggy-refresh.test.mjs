@@ -30,10 +30,10 @@ test('Marketplace uses a compact four-column catalog and limits premium width',(
 test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   new Function(voice);
   assert.match(voice,/const realtimeModel='gpt-realtime-2\.1'/);
-  assert.match(voice,/const sessionEndpoint='\/api\/aggy\/realtime\/session'/);
+  assert.match(voice,/const sessionEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/session'/);
   assert.match(voice,/new RTCPeerConnection\(\)/);
   assert.match(voice,/Content-Type':'application\/sdp'/);
-  assert.match(voice,/credentials:'same-origin'/);
+  assert.match(voice,/credentials:'omit'/);
   assert.match(voice,/turn_detection:\{type:'semantic_vad',eagerness:'auto',create_response:true,interrupt_response:true\}/);
   assert.match(voice,/output:\{voice:naturalVoice\}/);
   assert.match(voice,/contentHint='speech'/);
@@ -51,6 +51,8 @@ test('Aggy backend keeps the current model and standard API key server-side',()=
   assert.match(worker,/form\.set\('session',session\)/);
   assert.match(worker,/model=env\.OPENAI_REALTIME_MODEL\|\|DEFAULT_REALTIME_MODEL/);
   assert.doesNotMatch(worker,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}/);
+  assert.match(worker,/https:\/\/secquoia\.net/);
+  assert.match(worker,/Access-Control-Allow-Origin/);
 });
 
 test('Aggy backend validates SDP and builds the trusted Realtime session',async()=>{
