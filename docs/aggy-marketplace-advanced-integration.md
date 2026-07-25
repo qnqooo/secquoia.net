@@ -2,6 +2,8 @@
 
 Requirement: restore the approved advanced Aggy interface in the persistent floating QuMarket widget.
 
+Current release: `0.1.0-beta.1` (`public-beta`, first-party hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This prerelease is not a stable-production or third-party-sale claim.
+
 ## Restored areas
 
 - Chat: existing commercial conversation, QuIdentify-gated invitation preparation, local-secret blocking and explicit proof status.

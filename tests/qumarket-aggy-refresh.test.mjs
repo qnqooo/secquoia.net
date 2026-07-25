@@ -6,6 +6,7 @@ const html=await readFile(new URL('../qu-market.html',import.meta.url),'utf8');
 const css=await readFile(new URL('../aggy-marketplace.css',import.meta.url),'utf8');
 const voice=await readFile(new URL('../aggy-realtime-voice.js',import.meta.url),'utf8');
 const worker=await readFile(new URL('../workers/aggy-realtime-session.js',import.meta.url),'utf8');
+const release=JSON.parse(await readFile(new URL('../aggy-release.json',import.meta.url),'utf8'));
 const workerModule=await import(`data:text/javascript;base64,${Buffer.from(worker).toString('base64')}`);
 const header=html.match(/<header class="top">([\s\S]*?)<\/header>/)?.[1]||'';
 
@@ -116,6 +117,25 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
   }
 });
 
+test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
+  assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
+  assert.equal(release.version,'0.1.0-beta.1');
+  assert.equal(release.channel,'public-beta');
+  assert.equal(release.productionApproved,false);
+  assert.equal(release.thirdPartySale,false);
+  assert.match(voice,new RegExp(`const aggyVersion='${release.version.replaceAll('.','\\.')}';`));
+  assert.equal(workerModule.AGGY_RELEASE.version,release.version);
+  assert.match(html,new RegExp(`Aggy v${release.version.replaceAll('.','\\.')}`));
+
+  const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/version'));
+  assert.equal(response.status,200);
+  const body=await response.json();
+  assert.equal(body.version,release.version);
+  assert.equal(body.channel,release.channel);
+  assert.equal(body.productionApproved,false);
+  assert.equal(body.thirdPartySale,false);
+});
+
 test('Aggy Voice health probe activates without opening a paid provider session',async()=>{
   const originalFetch=globalThis.fetch;
   let called=false;
@@ -132,6 +152,10 @@ test('Aggy Voice health probe activates without opening a paid provider session'
     assert.equal(body.voice,'marin');
     assert.equal(body.voiceIdentity,'feminine');
     assert.equal(body.defaultLocale,'es-CO');
+    assert.equal(body.release.version,release.version);
+    assert.equal(body.release.channel,'public-beta');
+    assert.equal(body.release.productionApproved,false);
+    assert.equal(body.release.thirdPartySale,false);
     assert.equal(body.qugeo.language,'es');
     assert.equal(body.qugeo.locale,'es-CO');
     assert.equal(body.qugeo.source,'BROWSER_LANGUAGE_FALLBACK');

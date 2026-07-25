@@ -1,5 +1,13 @@
 const DEFAULT_REALTIME_MODEL='gpt-realtime-2.1';
 const DEFAULT_REALTIME_VOICE='marin';
+const AGGY_RELEASE=Object.freeze({
+  version:'0.1.0-beta.1',
+  channel:'public-beta',
+  lifecycle:'evaluation',
+  distribution:'first-party-hosted',
+  productionApproved:false,
+  thirdPartySale:false
+});
 const MAX_SDP_BYTES=64*1024;
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
 const LANGUAGE_BY_COUNTRY=Object.freeze({
@@ -47,6 +55,13 @@ const json=(body,status=400,request)=>new Response(JSON.stringify(body),{
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
+    if(url.pathname==='/api/aggy/version'&&request.method==='GET'){
+      return json({
+        schema:'secquoia.aggy.release.v1',
+        product:'Aggy',
+        ...AGGY_RELEASE
+      },200,request);
+    }
     if(url.pathname==='/api/aggy/realtime/health'&&request.method==='GET'){
       return json({
         status:env.OPENAI_API_KEY?'ready':'not_configured',
@@ -56,6 +71,7 @@ export default {
         voice:DEFAULT_REALTIME_VOICE,
         voiceIdentity:'feminine',
         defaultLocale:'es-CO',
+        release:AGGY_RELEASE,
         qugeo:qugeo(request),
         microphonePermissionRequired:true,
         providerCallExecuted:false
@@ -118,4 +134,4 @@ export default {
   }
 };
 
-export {DEFAULT_REALTIME_MODEL,DEFAULT_REALTIME_VOICE,qugeo};
+export {AGGY_RELEASE,DEFAULT_REALTIME_MODEL,DEFAULT_REALTIME_VOICE,qugeo};
