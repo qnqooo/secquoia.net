@@ -2,6 +2,26 @@ const DEFAULT_REALTIME_MODEL='gpt-realtime-2.1';
 const DEFAULT_REALTIME_VOICE='marin';
 const MAX_SDP_BYTES=64*1024;
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
+const LANGUAGE_BY_COUNTRY=Object.freeze({
+  ES:'es',MX:'es',CO:'es',AR:'es',CL:'es',PE:'es',EC:'es',VE:'es',BO:'es',PY:'es',UY:'es',PA:'es',CR:'es',GT:'es',HN:'es',SV:'es',NI:'es',DO:'es',CU:'es',PR:'es',
+  FR:'fr',BE:'fr',MC:'fr',LU:'fr',DE:'de',AT:'de',CH:'de',IT:'it',SM:'it',VA:'it',PT:'pt',BR:'pt'
+});
+const LOCALE_BY_LANGUAGE=Object.freeze({es:'es-CO',en:'en-US',fr:'fr-FR',de:'de-DE',it:'it-IT',pt:'pt-BR'});
+
+const qugeo=request=>{
+  const country=String(request.cf?.country||'').toUpperCase().slice(0,2);
+  const accepted=(request.headers.get('Accept-Language')||'').toLowerCase();
+  const browserLanguage=(accepted.match(/\b(es|en|fr|de|it|pt)(?:-|;|,|$)/)||[])[1];
+  const language=LANGUAGE_BY_COUNTRY[country]||browserLanguage||'en';
+  return Object.freeze({
+    language,
+    locale:LOCALE_BY_LANGUAGE[language],
+    country:country||null,
+    source:LANGUAGE_BY_COUNTRY[country]?'QU_GEO_EDGE_COUNTRY':browserLanguage?'BROWSER_LANGUAGE_FALLBACK':'DEFAULT_EN',
+    preciseLocationStored:false,
+    ipStored:false
+  });
+};
 
 const corsHeaders=request=>{
   const origin=request.headers.get('Origin');
@@ -34,6 +54,7 @@ export default {
         transport:'WebRTC',
         model:env.OPENAI_REALTIME_MODEL||DEFAULT_REALTIME_MODEL,
         voice:env.OPENAI_REALTIME_VOICE||DEFAULT_REALTIME_VOICE,
+        qugeo:qugeo(request),
         microphonePermissionRequired:true,
         providerCallExecuted:false
       },env.OPENAI_API_KEY?200:503,request);
@@ -95,4 +116,4 @@ export default {
   }
 };
 
-export {DEFAULT_REALTIME_MODEL,DEFAULT_REALTIME_VOICE};
+export {DEFAULT_REALTIME_MODEL,DEFAULT_REALTIME_VOICE,qugeo};

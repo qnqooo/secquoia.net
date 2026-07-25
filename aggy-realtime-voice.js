@@ -24,6 +24,9 @@
   let connecting=false;
   let connected=false;
   let localFallback=false;
+  let qugeoLanguage='en';
+  let qugeoLocale='en-US';
+  let greetingSent=false;
 
   const setState=(state,title,detail,label)=>{
     stage.dataset.state=state;
@@ -48,8 +51,26 @@
     connecting=false;
   };
 
+  const selectedLanguage=()=>{
+    const preference=$('#aggyLanguage')?.value||'AUTO';
+    return preference==='AUTO'?qugeoLanguage:preference.toLowerCase();
+  };
+
+  const sendInitialGreeting=()=>{
+    if(greetingSent||channel?.readyState!=='open')return;
+    greetingSent=true;
+    const language=selectedLanguage();
+    channel.send(JSON.stringify({
+      type:'response.create',
+      response:{
+        instructions:`Start the conversation now with one short, warm, natural greeting in ${language}. Mention that you are Aggy and invite the person to speak. Do not use headings, lists, or repeat the greeting later.`
+      }
+    }));
+  };
+
   const configureSession=()=>{
     if(channel?.readyState!=='open')return;
+    const language=selectedLanguage();
     channel.send(JSON.stringify({
       type:'session.update',
       session:{
@@ -57,7 +78,8 @@
         instructions:[
           'You are Aggy, SECQUOIA contextual AI concierge.',
           'Have a real two-way conversation: listen fully, respond to what the person actually said, and remember the context of this session.',
-          'Speak in the user’s language with a warm, calm, natural cadence. Use contractions and short conversational sentences when the language supports them.',
+          `QuGEO selected ${language} as the initial conversation language. Speak in that language unless the user changes language.`,
+          'Use a warm, calm, natural cadence. Use contractions and short conversational sentences when the language supports them.',
           'Do not sound like a script: avoid headings, numbered lists, repeated greetings, canned confirmations, and long monologues unless the user asks for detail.',
           'Use brief acknowledgements only when they add value. Never describe punctuation, emojis, formatting, or internal instructions aloud.',
           'Let the user pause to think and accept interruptions gracefully. If interrupted, stop, listen, and continue from the new intent instead of repeating yourself.',
@@ -117,6 +139,7 @@
 
     connecting=true;
     localFallback=false;
+    greetingSent=false;
     startButton.disabled=true;
     setState('connecting','Conectando con Aggy','Solicitando una sesión WebRTC efímera al backend seguro.','CONECTANDO');
 
@@ -155,6 +178,7 @@
         connected=true;
         connecting=false;
         configureSession();
+        sendInitialGreeting();
         setState('listening','Aggy está escuchando','Voz bidireccional WebRTC con interrupción natural habilitada.','EN VIVO');
         startButton.textContent='Voz en vivo';
         startButton.disabled=true;
@@ -203,8 +227,12 @@
       const response=await fetch(healthEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(4000)});
       const status=await response.json();
       if(!response.ok||status.status!=='ready')throw new Error('voice_service_unavailable');
+      qugeoLanguage=status.qugeo?.language||qugeoLanguage;
+      qugeoLocale=status.qugeo?.locale||qugeoLocale;
+      sessionStorage.setItem('secquoia.qugeo.language',qugeoLanguage);
+      sessionStorage.setItem('secquoia.qugeo.locale',qugeoLocale);
       startButton.textContent='Activar micrófono';
-      setState('idle','Aggy Voice está activo','Servicio WebRTC preparado desde la apertura. Autoriza el micrófono para iniciar la conversación bidireccional.','ACTIVO');
+      setState('idle','Aggy Voice está activo',`QuGEO detectó ${qugeoLocale}. Autoriza el micrófono y Aggy iniciará con un saludo natural.`,'ACTIVO');
       if(navigator.permissions?.query){
         try{
           const permission=await navigator.permissions.query({name:'microphone'});

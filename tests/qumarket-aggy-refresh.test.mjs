@@ -34,6 +34,10 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/const healthEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/health'/);
   assert.match(voice,/prewarmVoice\(\)/);
   assert.match(voice,/permission\.state==='granted'/);
+  assert.match(voice,/type:'response\.create'/);
+  assert.match(voice,/sendInitialGreeting\(\)/);
+  assert.match(voice,/greetingSent/);
+  assert.match(voice,/QuGEO selected \$\{language\}/);
   assert.match(voice,/new RTCPeerConnection\(\)/);
   assert.match(voice,/Content-Type':'application\/sdp'/);
   assert.match(voice,/credentials:'omit'/);
@@ -99,13 +103,17 @@ test('Aggy Voice health probe activates without opening a paid provider session'
   globalThis.fetch=async()=>{called=true;return new Response('unexpected')};
   try{
     const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/realtime/health',{
-      headers:{Origin:'https://secquoia.net'}
+      headers:{Origin:'https://secquoia.net','Accept-Language':'es-CO,es;q=0.9,en;q=0.8'}
     }),{OPENAI_API_KEY:'test-only-key'});
     assert.equal(response.status,200);
     const body=await response.json();
     assert.equal(body.status,'ready');
     assert.equal(body.providerCallExecuted,false);
     assert.equal(body.microphonePermissionRequired,true);
+    assert.equal(body.qugeo.language,'es');
+    assert.equal(body.qugeo.locale,'es-CO');
+    assert.equal(body.qugeo.source,'BROWSER_LANGUAGE_FALLBACK');
+    assert.equal(body.qugeo.ipStored,false);
     assert.equal(called,false);
   }finally{
     globalThis.fetch=originalFetch;
