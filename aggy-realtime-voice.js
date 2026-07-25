@@ -13,6 +13,7 @@
   const endButton=$('#aggyVoiceEnd');
   const localMic=$('#mic');
   const sessionEndpoint='https://aggy.secquoia.group/api/aggy/realtime/session';
+  const healthEndpoint='https://aggy.secquoia.group/api/aggy/realtime/health';
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
 
@@ -131,7 +132,9 @@
       document.body.append(remoteAudio);
       peer.ontrack=event=>{
         remoteAudio.srcObject=event.streams[0];
-        remoteAudio.play().catch(()=>{});
+        remoteAudio.play().catch(()=>{
+          document.addEventListener('pointerdown',()=>remoteAudio?.play().catch(()=>{}),{once:true});
+        });
       };
       peer.onconnectionstatechange=()=>{
         if(['failed','disconnected','closed'].includes(peer?.connectionState)&&connected){
@@ -194,6 +197,26 @@
     setState('idle','Habla con Aggy','GPT‑Realtime‑2.1 por WebRTC cuando el backend seguro esté disponible; modo local visible como respaldo.','LISTA');
   };
 
+  const prewarmVoice=async()=>{
+    setState('connecting','Aggy Voice se está preparando','Verificando el servicio seguro sin abrir el micrófono ni consumir una sesión del proveedor.','ACTIVANDO');
+    try{
+      const response=await fetch(healthEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(4000)});
+      const status=await response.json();
+      if(!response.ok||status.status!=='ready')throw new Error('voice_service_unavailable');
+      startButton.textContent='Activar micrófono';
+      setState('idle','Aggy Voice está activo','Servicio WebRTC preparado desde la apertura. Autoriza el micrófono para iniciar la conversación bidireccional.','ACTIVO');
+      if(navigator.permissions?.query){
+        try{
+          const permission=await navigator.permissions.query({name:'microphone'});
+          if(permission.state==='granted')await startRealtime();
+          else permission.addEventListener?.('change',()=>{if(permission.state==='granted')startRealtime()},{once:true});
+        }catch{}
+      }
+    }catch{
+      setState('error','Aggy Voice no está disponible','No se pudo verificar el backend seguro. El modo local permanece disponible.','SIN CONEXIÓN');
+    }
+  };
+
   startButton.addEventListener('click',startRealtime);
   endButton.addEventListener('click',endVoice);
   muteButton.addEventListener('click',()=>{
@@ -204,4 +227,5 @@
     setState(track.enabled?'listening':'idle',track.enabled?'Te escucho':'Micrófono silenciado',track.enabled?'La conversación continúa abierta.':'Aggy no recibe audio mientras el micrófono está silenciado.',track.enabled?'EN VIVO':'SILENCIADA');
   });
   window.addEventListener('beforeunload',cleanupRealtime,{once:true});
+  prewarmVoice();
 })();

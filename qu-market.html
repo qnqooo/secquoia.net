@@ -272,10 +272,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <div class="aggy-panel-head"><div><strong>Aggy Voice Live</strong><small>Conversación natural, continua e interrumpible</small></div><span class="aggy-state checking" id="aggyVoiceBadge">LISTA</span></div>
       <div class="aggy-voice-stage" id="aggyVoiceStage" data-state="idle">
         <div class="aggy-orb" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        <strong id="aggyVoiceHeadline">Habla con Aggy</strong>
-        <small id="aggyVoiceCaption">GPT‑Realtime‑2.1 por WebRTC cuando el backend seguro esté disponible; modo local visible como respaldo.</small>
+        <strong id="aggyVoiceHeadline">Activando Aggy Voice</strong>
+        <small id="aggyVoiceCaption">El servicio WebRTC se prepara al abrir el Marketplace. El micrófono requiere permiso explícito del navegador.</small>
         <div class="aggy-live-actions">
-          <button type="button" class="btn primary" id="aggyLiveVoice">Iniciar voz en vivo</button>
+          <button type="button" class="btn primary" id="aggyLiveVoice">Activar micrófono</button>
           <button type="button" class="btn" id="aggyVoiceMute" disabled>Silenciar</button>
           <button type="button" class="btn" id="aggyVoiceEnd" disabled>Finalizar</button>
         </div>
@@ -469,7 +469,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
 })();
 </script>
 <script src="aggy-marketplace.js?v=20260725-quhub-qvit"></script>
-<script src="aggy-realtime-voice.js"></script>
+<script src="aggy-realtime-voice.js?v=20260725-autostart"></script>
 <script src="qumarket-addons.js"></script>
 </body>
 </html>

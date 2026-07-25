@@ -31,6 +31,9 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   new Function(voice);
   assert.match(voice,/const realtimeModel='gpt-realtime-2\.1'/);
   assert.match(voice,/const sessionEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/session'/);
+  assert.match(voice,/const healthEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/health'/);
+  assert.match(voice,/prewarmVoice\(\)/);
+  assert.match(voice,/permission\.state==='granted'/);
   assert.match(voice,/new RTCPeerConnection\(\)/);
   assert.match(voice,/Content-Type':'application\/sdp'/);
   assert.match(voice,/credentials:'omit'/);
@@ -90,11 +93,31 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
   }
 });
 
+test('Aggy Voice health probe activates without opening a paid provider session',async()=>{
+  const originalFetch=globalThis.fetch;
+  let called=false;
+  globalThis.fetch=async()=>{called=true;return new Response('unexpected')};
+  try{
+    const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/realtime/health',{
+      headers:{Origin:'https://secquoia.net'}
+    }),{OPENAI_API_KEY:'test-only-key'});
+    assert.equal(response.status,200);
+    const body=await response.json();
+    assert.equal(body.status,'ready');
+    assert.equal(body.providerCallExecuted,false);
+    assert.equal(body.microphonePermissionRequired,true);
+    assert.equal(called,false);
+  }finally{
+    globalThis.fetch=originalFetch;
+  }
+});
+
 test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
   for(const id of ['aggyLiveVoice','aggyVoiceMute','aggyVoiceEnd','aggyVoiceBadge','aggyVoiceStage']){
     assert.match(html,new RegExp(`id="${id}"`));
   }
-  assert.match(html,/GPT‑Realtime‑2\.1 por WebRTC/);
+  assert.match(html,/servicio WebRTC se prepara al abrir el Marketplace/);
+  assert.match(html,/micrófono requiere permiso explícito/);
   assert.match(css,/\.aggy-voice-stage/);
   assert.match(css,/\.aggy-orb/);
 });

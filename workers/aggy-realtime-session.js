@@ -8,7 +8,7 @@ const corsHeaders=request=>{
   if(!ALLOWED_ORIGINS.has(origin))return {};
   return {
     'Access-Control-Allow-Origin':origin,
-    'Access-Control-Allow-Methods':'POST, OPTIONS',
+    'Access-Control-Allow-Methods':'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers':'Content-Type',
     'Access-Control-Max-Age':'86400',
     'Vary':'Origin'
@@ -27,6 +27,17 @@ const json=(body,status=400,request)=>new Response(JSON.stringify(body),{
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
+    if(url.pathname==='/api/aggy/realtime/health'&&request.method==='GET'){
+      return json({
+        status:env.OPENAI_API_KEY?'ready':'not_configured',
+        service:'Aggy Voice',
+        transport:'WebRTC',
+        model:env.OPENAI_REALTIME_MODEL||DEFAULT_REALTIME_MODEL,
+        voice:env.OPENAI_REALTIME_VOICE||DEFAULT_REALTIME_VOICE,
+        microphonePermissionRequired:true,
+        providerCallExecuted:false
+      },env.OPENAI_API_KEY?200:503,request);
+    }
     if(url.pathname!=='/api/aggy/realtime/session')return json({error:'not_found'},404,request);
     if(request.method==='OPTIONS'){
       if(!ALLOWED_ORIGINS.has(request.headers.get('Origin')))return json({error:'origin_not_allowed'},403,request);
