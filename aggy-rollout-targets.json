@@ -1,7 +1,7 @@
 {
   "schema": "secquoia.aggy.rollout.v1",
   "release": "1.0.0-rc.3",
-  "generatedAt": "2026-07-25T20:00:00Z",
+  "generatedAt": "2026-07-25T20:05:10Z",
   "webSurfaces": [
     {
       "name": "SECQUOIA Marketplace and corporate site",
@@ -29,7 +29,7 @@
       "url": "https://qu-chat.m2m-telecom-7238.chatgpt.site/",
       "access": "owner-only",
       "integration": "universal-loader",
-      "siteVersion": 24,
+      "siteVersion": 25,
       "status": "deployed"
     },
     {
@@ -37,7 +37,7 @@
       "url": "https://quhub-financial-intelligence.m2m-telecom-7238.chatgpt.site/",
       "access": "owner-only",
       "integration": "universal-loader",
-      "siteVersion": 3,
+      "siteVersion": 4,
       "status": "deployed"
     }
   ],
