@@ -48,8 +48,11 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/output:\{voice:naturalVoice\}/);
   assert.match(voice,/contentHint='speech'/);
   assert.doesNotMatch(voice,/X-Aggy-Voice-Model/);
-  assert.match(voice,/startLocalFallback/);
-  assert.match(voice,/no es una sesión OpenAI/);
+  assert.doesNotMatch(voice,/startLocalFallback|localFallback|speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|MediaRecorder/);
+  assert.match(voice,/window\.AggyVoice=Object\.freeze/);
+  assert.match(voice,/readAloud:text/);
+  assert.match(voice,/const naturalVoice='marin'/);
+  assert.match(voice,/AUTHORIZED_SECQUOIA_WEBSITES_DATA_ONLY|Authorized SECQUOIA website reference data/);
   assert.doesNotMatch(voice,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}|OPENAI_API_KEY|Authorization:\s*`?Bearer/);
 });
 

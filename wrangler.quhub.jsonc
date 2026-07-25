@@ -2,6 +2,9 @@
   "name": "secquoia-quhub-llm",
   "main": "workers/quhub-llm-gateway.js",
   "compatibility_date": "2026-07-25",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "routes": [
     {
       "pattern": "quhub.secquoia.group",
@@ -10,5 +13,9 @@
   ],
   "vars": {
     "SQAILE_LLM_POLICY": "FAIL_CLOSED_CONFIGURED_PROVIDERS_ONLY"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
   }
 }

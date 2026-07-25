@@ -562,7 +562,6 @@ section[id]{scroll-margin-top:92px}
   const discountEl=document.getElementById('qumarketDiscount');
   const totalEl=document.getElementById('qumarketTotal');
   const statusEl=document.getElementById('qumarketStatus');
-  const assistant=document.getElementById('qumarketAssistant');
   if(!productRoot||!cart||!cartList)return;
   function lang(){return document.body.classList.contains('es')?'es':'en'}
   function money(v){return '$'+Math.round(v).toLocaleString('en-US')+'/mo'}
@@ -627,8 +626,8 @@ section[id]{scroll-margin-top:92px}
   ['qumarketDownload','qumarketDownloadEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',downloadCart);});
   ['qumarketClear','qumarketClearEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){selected.clear();updateCart();});});
   ['qumarketCheckout','qumarketCheckoutEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){window.location.href='qu-market.html';});});
-  ['qumarketGuide','qumarketGuideEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){assistant.textContent=lang()==='es'?'Paso 1: elige módulos. Paso 2: QuCFA estima costos. Paso 3: QuPay cobra. Paso 4: QuHub aprovisiona. Paso 5: QuFense protege y QuAudit registra.':'Step 1: choose modules. Step 2: QuCFA estimates costs. Step 3: QuPay collects payment. Step 4: QuHub provisions. Step 5: QuFense protects and QuAudit records evidence.';});});
-  ['qumarketVoice','qumarketVoiceEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){const text=lang()==='es'?'Aggy está listo. Esta experiencia guía al cliente durante la selección, el pago y la activación del servicio.':'Aggy is ready. This experience guides the customer through selection, payment and service activation.';assistant.textContent=text;if('speechSynthesis'in window){window.speechSynthesis.cancel();window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));}});});
+  ['qumarketGuide','qumarketGuideEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){window.location.href='qu-market.html?aggy=chat';});});
+  ['qumarketVoice','qumarketVoiceEs'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){window.location.href='qu-market.html?aggy=voice';});});
   ['enBtn','esBtn'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener('click',function(){setTimeout(function(){renderProducts();updateCart();},0);});});
   renderProducts();updateCart();
 })();

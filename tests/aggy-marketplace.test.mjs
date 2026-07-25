@@ -39,7 +39,8 @@ test('Aggy exposes the approved contextual roles and six languages',()=>{
 
 test('Aggy advanced inputs remain fail closed',()=>{
   assert.match(html,/function unsafeAggyInput/);
-  assert.match(bridge,/new MediaRecorder/);
+  assert.doesNotMatch(bridge,/MediaRecorder|speechSynthesis|SpeechSynthesisUtterance/);
+  assert.match(bridge,/window\.AggyVoice\.readAloud/);
   assert.match(intake,/crypto\.subtle\.digest\('SHA-256'/);
   assert.match(bridge,/PENDIENTE: antimalware \+ sandbox \+ CDR \+ verificación backend/);
   assert.match(bridge,/LOCAL · SIN PRUEBA E2EE\/PQC/);
@@ -75,12 +76,12 @@ test('Aggy markup contains no duplicate element IDs',()=>{
   assert.equal(new Set(ids).size,ids.length);
 });
 
-test('Aggy voice groups complete ideas without artificial comma pauses',()=>{
-  assert.match(html,/length<=460/);
-  assert.doesNotMatch(html,/clean\.split\(\/\(\?<=\[,;:\]\)/);
-  assert.match(html,/u\.onend=\(\)=>next\(index\+1\)/);
-  assert.match(html,/friendly:\{rate:1\.06,pitch:1\.03\}/);
-  assert.match(bridge,/friendly:\[1\.06,1\.03\]/);
+test('Aggy Realtime replaces browser legacy speech and recording',()=>{
+  assert.doesNotMatch(html,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder|id="voiceSelect"/);
+  assert.doesNotMatch(bridge,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
+  assert.match(html,/Aggy Voice · marin/);
+  assert.match(html,/Leer con Aggy/);
+  assert.match(bridge,/window\.AggyVoice\.start/);
 });
 
 test('Aggy chat exposes one-click collaboration actions',()=>{
