@@ -37,10 +37,32 @@
   const inspectFile=async()=>{const input=$('#aggyFile'),output=$('#aggyFileState'),file=input.files?.[0];if(!file){output.className='aggy-result blocked';output.textContent='BLOQUEADO · seleccione un archivo.';return}if(!window.QuSOCIntake){output.className='aggy-result blocked';output.textContent='BLOQUEADO · compuerta QuSOC no disponible.';return}const receipt=await window.QuSOCIntake.preflight(file),hash=receipt.originalSha256||'no calculado';if(receipt.verdict==='BLOCKED'){output.className='aggy-result blocked';output.textContent=`BLOQUEADO Y EN CUARENTENA · ${receipt.reason} · SHA-256 ${hash} · no ingresó al ecosistema`;return}output.className='aggy-result checking';output.textContent=`CUARENTENA ACTIVA · ${file.name} · ${file.size} bytes · SHA-256 ${hash} · PENDIENTE: antimalware + sandbox + CDR + verificación backend · QuVault DENEGADO`};
   $('#aggyInspectFile')?.addEventListener('click',()=>inspectFile().catch(()=>{const output=$('#aggyFileState');output.className='aggy-result blocked';output.textContent='BLOQUEADO · no fue posible inspeccionar el archivo.'}));
 
-  const contextualUpdate=()=>{const role=$('#aggyRole')?.value||'SUPPORT',language=$('#aggyLanguage')?.value||'AUTO';sessionStorage.setItem('secquoia.aggy.role',role);sessionStorage.setItem('secquoia.aggy.language',language);$('#aggyContextState').textContent=`${language} · ${role} · autoridad consultiva · proveedor externo no ejecutado`;agentState.textContent=`Aggy · ${role} · ${language}`};
+  const modelEndpoint='https://quhub.secquoia.group/v1/llm/catalog';
+  const refreshModelCatalog=async()=>{
+    const badge=$('#aggyModelsBadge');
+    try{
+      const response=await fetch(modelEndpoint,{cache:'no-store',signal:AbortSignal.timeout(5000)}),data=await response.json();
+      if(!response.ok||!Array.isArray(data.providers))throw new Error('catalog_unavailable');
+      let available=0;
+      for(const provider of data.providers){
+        const button=$(`[data-aggy-provider="${provider.id}"]`);
+        if(!button)continue;
+        button.dataset.available=provider.available?'true':'false';
+        const pricing=provider.pricing?.status==='VERIFIED_PUBLIC_RATE_CARD'?'tarifa verificada':'tarifa contractual';
+        button.querySelector('small').textContent=`${provider.model} · ${provider.available?'disponible':'sin credencial'} · ${pricing}`;
+        if(provider.available)available++;
+      }
+      badge.className=`aggy-state ${available?'ready':'blocked'}`;
+      badge.textContent=available?`${available} DISPONIBLE${available===1?'':'S'}`:'SIN PROVEEDOR';
+    }catch{
+      badge.className='aggy-state blocked';badge.textContent='QUHUB NO DISPONIBLE';
+      $$('[data-aggy-provider]:not([data-aggy-provider="sqaile"]) small').forEach(label=>label.textContent='Estado no verificado');
+    }
+  };
+  const contextualUpdate=()=>{const role=$('#aggyRole')?.value||'SUPPORT',language=$('#aggyLanguage')?.value||'AUTO';sessionStorage.setItem('secquoia.aggy.role',role);sessionStorage.setItem('secquoia.aggy.language',language);const provider=sessionStorage.getItem('secquoia.aggy.provider')||'sqaile';$('#aggyContextState').textContent=`${language} · ${role} · ${provider==='sqaile'?'SQAILE Core orquesta':'selección manual: '+provider}`;agentState.textContent=`Aggy · ${role} · ${language}`};
   $('#aggyRole')?.addEventListener('change',contextualUpdate);$('#aggyLanguage')?.addEventListener('change',contextualUpdate);
-  $$('[data-aggy-mode]').forEach(button=>button.addEventListener('click',()=>{$$('[data-aggy-mode]').forEach(item=>item.classList.toggle('active',item===button));$('#aggyContextState').textContent=`Modo ${button.textContent.trim()} seleccionado · ejecución externa: 0`}));
-  $$('[data-aggy-provider]').forEach(button=>button.addEventListener('click',()=>{button.classList.toggle('selected');button.querySelector('small').textContent=button.classList.contains('selected')?'Seleccionado · no conectado':(button.dataset.aggyProvider==='SQAILE Auto'?'Gobernado':'No conectado');$('#aggyContextState').textContent=`${$$('[data-aggy-provider].selected').length} modelo(s) seleccionados · llamadas externas: 0`}));
+  $$('[data-aggy-mode]').forEach(button=>button.addEventListener('click',()=>{$$('[data-aggy-mode]').forEach(item=>item.classList.toggle('active',item===button));sessionStorage.setItem('secquoia.aggy.taskMode',button.dataset.aggyMode);contextualUpdate()}));
+  $$('[data-aggy-provider]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.aggyProvider!=='sqaile'&&button.dataset.available!=='true'){$('#aggyContextState').textContent=`${button.textContent.trim()} no está habilitado: agrega su secreto en QuHub.`;return}const provider=button.dataset.aggyProvider,label=provider==='sqaile'?'SQAILE Core (puede seleccionar proveedores de pago)':button.childNodes[0]?.textContent?.trim()||provider;if(!confirm(`Activar ${label} puede consumir saldo QVit y generar costos adicionales del proveedor. QuCFA los calculará con el tarifario vigente. ¿Continuar?`))return;$$('[data-aggy-provider]').forEach(item=>item.classList.toggle('selected',item===button));sessionStorage.setItem('secquoia.aggy.provider',provider);sessionStorage.setItem('secquoia.aggy.qvitCostAcknowledged','true');contextualUpdate()}));
 
   $('#aggyInvite')?.addEventListener('click',()=>{const state=$('#aggyInviteState'),from=$('#aggyInviteFrom').value.trim().toLowerCase(),to=$('#aggyInviteTo').value.trim().toLowerCase(),email=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;if(!email.test(from)||!email.test(to)||from===to){state.className='blocked';state.textContent='× Correos inválidos o idénticos.';return}if(localStorage.getItem('secquoia.qumarket.quidentifyVerified')!=='true'){state.className='blocked';state.textContent='× QuIdentify/Okta no está verificado. No se envió invitación.';return}state.className='ready';state.textContent=`Solicitud preparada para ${to}. La invitación real requiere el backend Aggy y validación QuIdentify del destinatario.`});
 
@@ -49,5 +71,7 @@
   function openSecure(){assistant.classList.add('aggy-full');full.textContent='↙';setPanel('security');const wrap=$('#aggySecureFrameWrap'),frame=$('#aggySecureFrame');wrap.classList.remove('hidden');if(pendingPeerEmail)frame.dataset.pendingPeer='validated-by-backend-required';if(!frame.getAttribute('src'))frame.setAttribute('src',frame.dataset.src)}
   $$('[data-open-secure-aggy]').forEach(button=>button.addEventListener('click',openSecure));
   $('#aggyCloseSecure')?.addEventListener('click',()=>$('#aggySecureFrameWrap').classList.add('hidden'));
-  contextualUpdate();
+  const savedProvider=sessionStorage.getItem('secquoia.aggy.provider')||'sqaile';
+  $$('[data-aggy-provider]').forEach(button=>button.classList.toggle('selected',button.dataset.aggyProvider===savedProvider));
+  contextualUpdate();refreshModelCatalog();
 })();
