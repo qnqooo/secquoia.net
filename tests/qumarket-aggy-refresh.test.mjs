@@ -117,6 +117,27 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
   }
 });
 
+test('Aggy backend returns only a bounded provider error code',async()=>{
+  const originalFetch=globalThis.fetch;
+  globalThis.fetch=async()=>new Response(JSON.stringify({
+    error:{type:'invalid_request_error',code:'invalid_sdp',message:'provider detail'}
+  }),{status:400});
+  try{
+    const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/realtime/session',{
+      method:'POST',
+      headers:{'Content-Type':'application/sdp'},
+      body:'v=0\r\no=aggy 1 1 IN IP4 127.0.0.1\r\n'
+    }),{OPENAI_API_KEY:'test-only-key'});
+    assert.equal(response.status,502);
+    const body=await response.json();
+    assert.equal(body.providerStatus,400);
+    assert.equal(body.providerCode,'invalid_sdp');
+    assert.equal('message' in body,false);
+  }finally{
+    globalThis.fetch=originalFetch;
+  }
+});
+
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
   assert.equal(release.version,'1.0.0-rc.5');

@@ -118,7 +118,12 @@ export default {
 
     const body=await upstream.text();
     if(!upstream.ok){
-      return json({error:'realtime_session_rejected',providerStatus:upstream.status},502,request);
+      let providerCode='unknown';
+      try{
+        const detail=JSON.parse(body);
+        providerCode=String(detail?.error?.code||detail?.error?.type||'unknown').slice(0,80);
+      }catch{}
+      return json({error:'realtime_session_rejected',providerStatus:upstream.status,providerCode},502,request);
     }
     if(!body.startsWith('v=0'))return json({error:'invalid_provider_sdp'},502,request);
 
