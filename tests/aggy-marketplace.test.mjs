@@ -4,41 +4,41 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const html=await readFile(new URL('../qu-market.html',import.meta.url),'utf8');
-const bridge=await readFile(new URL('../agenty-marketplace.js',import.meta.url),'utf8');
-const css=await readFile(new URL('../agenty-marketplace.css',import.meta.url),'utf8');
+const bridge=await readFile(new URL('../aggy-marketplace.js',import.meta.url),'utf8');
+const css=await readFile(new URL('../aggy-marketplace.css',import.meta.url),'utf8');
 const addons=await readFile(new URL('../qumarket-addons.js',import.meta.url),'utf8');
 const addonsCss=await readFile(new URL('../qumarket-addons.css',import.meta.url),'utf8');
 const intake=await readFile(new URL('../qusoc-universal-intake.js',import.meta.url),'utf8');
 const qucfaDashboard=await readFile(new URL('../modules/qucfa-commercial-process-dashboard.js',import.meta.url),'utf8');
 
-test('Agenty advanced marketplace assets have valid JavaScript syntax',()=>{
+test('Aggy advanced marketplace assets have valid JavaScript syntax',()=>{
   const scripts=[...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(match=>match[1]);
   assert.equal(scripts.length,1);
   scripts.forEach(source=>new Function(source));
   new Function(bridge);
   new Function(addons);
   new Function(intake);
-  assert.ok(css.includes('.assistant.agenty-full'));
+  assert.ok(css.includes('.assistant.aggy-full'));
 });
 
-test('Agenty restores five advanced areas and responsive full mode',()=>{
+test('Aggy restores five advanced areas and responsive full mode',()=>{
   for(const name of ['chat','voice','files','models','security']){
-    assert.match(html,new RegExp(`data-market-agenty-tab="${name}"`));
-    assert.match(html,new RegExp(`data-market-agenty-panel="${name}"`));
+    assert.match(html,new RegExp(`data-market-aggy-tab="${name}"`));
+    assert.match(html,new RegExp(`data-market-aggy-panel="${name}"`));
   }
   assert.match(html,/id="assistantFull"/);
-  assert.match(html,/data-open-secure-agenty/);
+  assert.match(html,/data-open-secure-aggy/);
   assert.match(html,/http:\/\/127\.0\.0\.1:8793\//);
 });
 
-test('Agenty exposes the approved contextual roles and six languages',()=>{
+test('Aggy exposes the approved contextual roles and six languages',()=>{
   for(const role of ['SUPPORT','COMMERCIAL','COO','CISO','CIO','CMO','CFO','PQC_CYBER','AI_TECH','EXECUTIVE_GENERAL'])assert.match(html,new RegExp(`value="${role}"`));
   for(const language of ['EN','ES','FR','DE','IT','PT'])assert.match(html,new RegExp(`value="${language}"`));
   assert.match(html,/advisoryRole:sessionStorage/);
 });
 
-test('Agenty advanced inputs remain fail closed',()=>{
-  assert.match(html,/function unsafeAgentyInput/);
+test('Aggy advanced inputs remain fail closed',()=>{
+  assert.match(html,/function unsafeAggyInput/);
   assert.match(bridge,/new MediaRecorder/);
   assert.match(intake,/crypto\.subtle\.digest\('SHA-256'/);
   assert.match(bridge,/PENDIENTE: antimalware \+ sandbox \+ CDR \+ verificación backend/);
@@ -70,12 +70,12 @@ test('QuSOC browser preflight blocks executables and keeps text outside admissio
   await assert.rejects(gate.assertAdmission(textReceipt,textReceipt.sanitizedSha256),/admission_required/);
 });
 
-test('Agenty markup contains no duplicate element IDs',()=>{
+test('Aggy markup contains no duplicate element IDs',()=>{
   const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]);
   assert.equal(new Set(ids).size,ids.length);
 });
 
-test('Agenty voice groups complete ideas without artificial comma pauses',()=>{
+test('Aggy voice groups complete ideas without artificial comma pauses',()=>{
   assert.match(html,/length<=460/);
   assert.doesNotMatch(html,/clean\.split\(\/\(\?<=\[,;:\]\)/);
   assert.match(html,/u\.onend=\(\)=>next\(index\+1\)/);
@@ -83,9 +83,9 @@ test('Agenty voice groups complete ideas without artificial comma pauses',()=>{
   assert.match(bridge,/friendly:\[1\.06,1\.03\]/);
 });
 
-test('Agenty chat exposes one-click collaboration actions',()=>{
-  for(const action of ['chat','file','voice','contact','group'])assert.match(html,new RegExp(`data-agenty-quick="${action}"`));
-  for(const id of ['agentyStartChat','agentySaveContact','agentyCreateGroup','agentyChatEmail','agentyGroupMembers'])assert.match(html,new RegExp(`id="${id}"`));
+test('Aggy chat exposes one-click collaboration actions',()=>{
+  for(const action of ['chat','file','voice','contact','group'])assert.match(html,new RegExp(`data-aggy-quick="${action}"`));
+  for(const id of ['aggyStartChat','aggySaveContact','aggyCreateGroup','aggyChatEmail','aggyGroupMembers'])assert.match(html,new RegExp(`id="${id}"`));
   assert.match(bridge,/openQuick/);
   assert.match(bridge,/contacts\.push/);
   assert.match(bridge,/groups\.push/);
@@ -117,7 +117,7 @@ test('QuMarket cart keeps recurring and one-time service totals separate',()=>{
 test('QuCFA separates endpoint pricing from service pricing',()=>{
   assert.equal((html.match(/endpoint:true/g)||[]).length,2);
   assert.equal((html.match(/endpoint:false/g)||[]).length,6);
-  for(const metric of ['ENDPOINT_TIER_MONTH','TENANT_MONTH','GATEWAY_MONTH','IDENTITY_SERVICE_MONTH','AGENTY_SERVICE_MONTH','WORKSPACE_MONTH','STACK_MONTH'])assert.ok(html.includes(metric));
+  for(const metric of ['ENDPOINT_TIER_MONTH','TENANT_MONTH','GATEWAY_MONTH','IDENTITY_SERVICE_MONTH','AGGY_SERVICE_MONTH','WORKSPACE_MONTH','STACK_MONTH'])assert.ok(html.includes(metric));
   assert.match(html,/billingModel\(p\)\.endpoint\?endpointMultipliers\[tier\(\)\]:1/);
   assert.match(html,/serviceMultiplier:1/);
   assert.doesNotMatch(html,/flatMultiplier/);

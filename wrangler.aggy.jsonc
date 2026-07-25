@@ -1,0 +1,15 @@
+{
+  "name": "secquoia-aggy-realtime",
+  "main": "workers/aggy-realtime-session.js",
+  "compatibility_date": "2026-07-25",
+  "routes": [
+    {
+      "pattern": "qu-market.secquoia.group/api/aggy/realtime/session",
+      "zone_name": "secquoia.group"
+    }
+  ],
+  "vars": {
+    "OPENAI_REALTIME_MODEL": "gpt-realtime-2.1",
+    "OPENAI_REALTIME_VOICE": "marin"
+  }
+}

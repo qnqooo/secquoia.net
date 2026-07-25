@@ -17,7 +17,7 @@ Status: customer-facing draft calculated by QuCFA. It is not a binding quote and
 |---|---|---:|---:|
 | Capacity | Additional QuFense endpoint | endpoint/month | 19 |
 | Capacity | Additional QuSOC endpoint | endpoint/month | 29 |
-| Capacity | Additional Agenty user | user/month | 15 |
+| Capacity | Additional Aggy user | user/month | 15 |
 | Support | Human remote-support ticket | ticket | 149 |
 | Support | Remote specialist | hour | 195 |
 | Support | Live video support | hour | 245 |

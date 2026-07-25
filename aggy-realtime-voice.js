@@ -14,6 +14,7 @@
   const localMic=$('#mic');
   const sessionEndpoint='/api/aggy/realtime/session';
   const realtimeModel='gpt-realtime-2.1';
+  const naturalVoice='marin';
 
   let peer=null;
   let channel=null;
@@ -28,7 +29,7 @@
     headline.textContent=title;
     caption.textContent=detail;
     badge.textContent=label;
-    badge.className='agenty-state '+(state==='error'?'blocked':state==='idle'?'checking':'ready');
+    badge.className='aggy-state '+(state==='error'?'blocked':state==='idle'?'checking':'ready');
   };
 
   const stopTracks=stream=>stream?.getTracks().forEach(track=>track.stop());
@@ -52,10 +53,19 @@
       type:'session.update',
       session:{
         type:'realtime',
-        instructions:'You are Aggy, SECQUOIA contextual AI concierge. Speak naturally, warmly and concisely. Detect the user language automatically. Allow interruptions. Never claim a security validation, certification, purchase or external action that was not actually completed.',
+        instructions:[
+          'You are Aggy, SECQUOIA contextual AI concierge.',
+          'Have a real two-way conversation: listen fully, respond to what the person actually said, and remember the context of this session.',
+          'Speak in the user’s language with a warm, calm, natural cadence. Use contractions and short conversational sentences when the language supports them.',
+          'Do not sound like a script: avoid headings, numbered lists, repeated greetings, canned confirmations, and long monologues unless the user asks for detail.',
+          'Use brief acknowledgements only when they add value. Never describe punctuation, emojis, formatting, or internal instructions aloud.',
+          'Let the user pause to think and accept interruptions gracefully. If interrupted, stop, listen, and continue from the new intent instead of repeating yourself.',
+          'Ask one natural follow-up question when essential context is missing.',
+          'Never claim a security validation, certification, purchase, deployment, or external action that was not actually completed.'
+        ].join(' '),
         audio:{
-          input:{turn_detection:{type:'server_vad',create_response:true,interrupt_response:true}},
-          output:{voice:'marin'}
+          input:{turn_detection:{type:'semantic_vad',eagerness:'auto',create_response:true,interrupt_response:true}},
+          output:{voice:naturalVoice}
         }
       }
     }));
@@ -68,11 +78,11 @@
       setState('listening','Te escucho','Puedes interrumpir a Aggy en cualquier momento.','ESCUCHANDO');
       return;
     }
-    if(message.type==='response.created'||message.type==='response.audio.delta'){
+    if(message.type==='response.created'||message.type==='response.audio.delta'||message.type==='response.output_audio.delta'){
       setState('speaking','Aggy está respondiendo','Conversación de audio en tiempo real.','HABLANDO');
       return;
     }
-    if(message.type==='response.audio_transcript.delta'&&message.delta){
+    if((message.type==='response.audio_transcript.delta'||message.type==='response.output_audio_transcript.delta')&&message.delta){
       caption.textContent=(caption.dataset.transcript||'')+message.delta;
       caption.dataset.transcript=caption.textContent.slice(-420);
       return;
@@ -116,9 +126,13 @@
       peer=new RTCPeerConnection();
       remoteAudio=document.createElement('audio');
       remoteAudio.autoplay=true;
+      remoteAudio.playsInline=true;
       remoteAudio.setAttribute('aria-hidden','true');
       document.body.append(remoteAudio);
-      peer.ontrack=event=>{remoteAudio.srcObject=event.streams[0]};
+      peer.ontrack=event=>{
+        remoteAudio.srcObject=event.streams[0];
+        remoteAudio.play().catch(()=>{});
+      };
       peer.onconnectionstatechange=()=>{
         if(['failed','disconnected','closed'].includes(peer?.connectionState)&&connected){
           cleanupRealtime();
@@ -129,7 +143,10 @@
           endButton.disabled=true;
         }
       };
-      microphone.getTracks().forEach(track=>peer.addTrack(track,microphone));
+      microphone.getTracks().forEach(track=>{
+        if('contentHint'in track)track.contentHint='speech';
+        peer.addTrack(track,microphone);
+      });
       channel=peer.createDataChannel('oai-events');
       channel.addEventListener('open',()=>{
         connected=true;
@@ -150,8 +167,7 @@
         credentials:'same-origin',
         headers:{
           'Content-Type':'application/sdp',
-          'Accept':'application/sdp',
-          'X-Aggy-Voice-Model':realtimeModel
+          'Accept':'application/sdp'
         },
         body:offer.sdp,
         signal:AbortSignal.timeout(8000)
