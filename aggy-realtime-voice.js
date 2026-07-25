@@ -17,6 +17,7 @@
   const knowledgeEndpoint='https://quhub.secquoia.group/v1/knowledge/context?q=SECQUOIA%20products%20services%20cybersecurity%20marketplace';
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
+  const speechSpeed=1.08;
 
   let peer=null;
   let channel=null;
@@ -99,7 +100,7 @@
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
-        instructions:`Start the live voice conversation in ${language}. Keep Aggy's feminine vocal presentation and, when speaking Spanish, use a natural Colombian accent and rhythm without caricature. First say one short, warm greeting and mention that you are Aggy. After the greeting, in a separate sentence, ask one brief natural question equivalent to "How can I help you today?". Speak both sentences aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
+        instructions:`Start the live voice conversation in ${language}. Keep Aggy's feminine vocal presentation and, when speaking Spanish, use a natural Colombian accent and rhythm without caricature. First say one short, warm greeting and mention that you are Aggy. After the greeting, with only a brief natural pause, ask one short question equivalent to "How can I help you today?". Speak both sentences aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
   };
@@ -138,6 +139,7 @@
           contextualInstruction,
           websiteInstruction,
           'Use a warm, calm, natural cadence. Use contractions and short conversational sentences when the language supports them.',
+          'Keep the conversation dynamic: respond promptly, keep pauses between ideas and sentences brief, and prefer compact turns. Do not rush important words or speak over the user.',
           'Do not sound like a script: avoid headings, numbered lists, repeated greetings, canned confirmations, and long monologues unless the user asks for detail.',
           'Use brief acknowledgements only when they add value. Never describe punctuation, emojis, formatting, or internal instructions aloud.',
           'Let the user pause to think and accept interruptions gracefully. If interrupted, stop, listen, and continue from the new intent instead of repeating yourself.',
@@ -145,8 +147,8 @@
           'Never claim a security validation, certification, purchase, deployment, or external action that was not actually completed.'
         ].join(' '),
         audio:{
-          input:{turn_detection:{type:'semantic_vad',eagerness:'auto',create_response:true,interrupt_response:true}},
-          output:{voice:naturalVoice}
+          input:{turn_detection:{type:'semantic_vad',eagerness:'high',create_response:true,interrupt_response:true}},
+          output:{voice:naturalVoice,speed:speechSpeed}
         }
       }
     }));
