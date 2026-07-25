@@ -2,6 +2,16 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.2 - 2026-07-25
+
+Mobile voice compatibility correction.
+
+### Fixed
+
+- Replaced `AbortSignal.timeout()` with an `AbortController` timer compatible with Safari/iOS and older mobile browsers.
+- Applied the compatible timeout path to health, QuGEO, knowledge and Realtime session requests.
+- Preserved bounded retry behavior for cold starts without falsely reporting an active backend as disconnected.
+
 ## 1.0.0-rc.1 - 2026-07-25
 
 Production-validation release candidate.

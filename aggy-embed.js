@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.1';
+  const version='1.0.0-rc.2';
   const frameUrl=`https://secquoia.net/aggy-widget.html?site=${encodeURIComponent(site)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';

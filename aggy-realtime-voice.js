@@ -18,7 +18,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.1';
+  const aggyVersion='1.0.0-rc.2';
 
   let peer=null;
   let channel=null;
@@ -32,6 +32,13 @@
   let webKnowledgeContext=null;
   let greetingSent=false;
   let pendingReadAloud='';
+
+  const fetchWithTimeout=(url,options={},timeoutMs=8000)=>{
+    const controller=new AbortController();
+    const timeoutId=setTimeout(()=>controller.abort(),timeoutMs);
+    return fetch(url,{...options,signal:controller.signal})
+      .finally(()=>clearTimeout(timeoutId));
+  };
 
   const setState=(state,title,detail,label)=>{
     stage.dataset.state=state;
@@ -241,16 +248,15 @@
 
       const offer=await peer.createOffer();
       await peer.setLocalDescription(offer);
-      const response=await fetch(sessionEndpoint,{
+      const response=await fetchWithTimeout(sessionEndpoint,{
         method:'POST',
         credentials:'omit',
         headers:{
           'Content-Type':'application/sdp',
           'Accept':'application/sdp'
         },
-        body:offer.sdp,
-        signal:AbortSignal.timeout(8000)
-      });
+        body:offer.sdp
+      },8000);
       if(!response.ok)throw new Error('realtime_session_unavailable');
       const answer=await response.text();
       if(!answer.startsWith('v=0'))throw new Error('invalid_realtime_sdp');
@@ -275,12 +281,11 @@
   const fetchVoiceHealth=async()=>{
     for(const timeoutMs of [6000,8000]){
       try{
-        const response=await fetch(healthEndpoint,{
+        const response=await fetchWithTimeout(healthEndpoint,{
           method:'GET',
           credentials:'omit',
-          cache:'no-store',
-          signal:AbortSignal.timeout(timeoutMs)
-        });
+          cache:'no-store'
+        },timeoutMs);
         if(response.ok)return response;
       }catch{}
     }
@@ -292,8 +297,8 @@
     try{
       const [voiceResult,qugeoResult,knowledgeResult]=await Promise.allSettled([
         fetchVoiceHealth(),
-        fetch(qugeoEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(4500)}),
-        fetch(knowledgeEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(8000)})
+        fetchWithTimeout(qugeoEndpoint,{method:'GET',credentials:'omit',cache:'no-store'},4500),
+        fetchWithTimeout(knowledgeEndpoint,{method:'GET',credentials:'omit',cache:'no-store'},8000)
       ]);
       if(voiceResult.status!=='fulfilled')throw new Error('voice_service_unavailable');
       const response=voiceResult.value;
