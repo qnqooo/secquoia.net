@@ -1,7 +1,7 @@
-const DEFAULT_REALTIME_MODEL='gpt-realtime-2.1';
+const DEFAULT_REALTIME_MODEL='gpt-realtime';
 const DEFAULT_REALTIME_VOICE='marin';
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.3',
+  version:'1.0.0-rc.4',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -101,8 +101,8 @@ export default {
       audio:{output:{voice}}
     });
     const form=new FormData();
-    form.set('sdp',sdp);
-    form.set('session',session);
+    form.set('sdp',new Blob([sdp],{type:'application/sdp'}),'offer.sdp');
+    form.set('session',new Blob([session],{type:'application/json'}),'session.json');
 
     let upstream;
     try{

@@ -30,7 +30,7 @@ test('Marketplace uses a compact four-column catalog and limits premium width',(
 
 test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   new Function(voice);
-  assert.match(voice,/const realtimeModel='gpt-realtime-2\.1'/);
+  assert.match(voice,/const realtimeModel='gpt-realtime'/);
   assert.match(voice,/const sessionEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/session'/);
   assert.match(voice,/const healthEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/health'/);
   assert.match(voice,/prewarmVoice\(\)/);
@@ -67,7 +67,7 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
 });
 
 test('Aggy backend keeps the current model and standard API key server-side',()=>{
-  assert.match(worker,/DEFAULT_REALTIME_MODEL='gpt-realtime-2\.1'/);
+  assert.match(worker,/DEFAULT_REALTIME_MODEL='gpt-realtime'/);
   assert.match(worker,/DEFAULT_REALTIME_VOICE='marin'/);
   assert.match(worker,/voice:DEFAULT_REALTIME_VOICE/);
   assert.match(worker,/voiceIdentity:'feminine'/);
@@ -75,7 +75,7 @@ test('Aggy backend keeps the current model and standard API key server-side',()=
   assert.doesNotMatch(worker,/OPENAI_REALTIME_VOICE/);
   assert.match(worker,/https:\/\/api\.openai\.com\/v1\/realtime\/calls/);
   assert.match(worker,/env\.OPENAI_API_KEY/);
-  assert.match(worker,/form\.set\('session',session\)/);
+  assert.match(worker,/form\.set\('session',new Blob\(\[session\],\{type:'application\/json'\}\),'session\.json'\)/);
   assert.match(worker,/model=env\.OPENAI_REALTIME_MODEL\|\|DEFAULT_REALTIME_MODEL/);
   assert.doesNotMatch(worker,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}/);
   assert.match(worker,/https:\/\/secquoia\.net/);
@@ -106,10 +106,14 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
     assert.equal(response.status,200);
     assert.equal(upstreamRequest.url,'https://api.openai.com/v1/realtime/calls');
     assert.equal(upstreamRequest.init.headers.Authorization,'Bearer test-only-key');
-    assert.equal(upstreamRequest.init.body.get('sdp'),'v=0\r\no=aggy 1 1 IN IP4 127.0.0.1\r\n');
-    assert.deepEqual(JSON.parse(upstreamRequest.init.body.get('session')),{
+    const sdpPart=upstreamRequest.init.body.get('sdp');
+    assert.equal(sdpPart.type,'application/sdp');
+    assert.equal(await sdpPart.text(),'v=0\r\no=aggy 1 1 IN IP4 127.0.0.1\r\n');
+    const sessionPart=upstreamRequest.init.body.get('session');
+    assert.equal(sessionPart.type,'application/json');
+    assert.deepEqual(JSON.parse(await sessionPart.text()),{
       type:'realtime',
-      model:'gpt-realtime-2.1',
+      model:'gpt-realtime',
       audio:{output:{voice:'marin'}}
     });
   }finally{
@@ -119,7 +123,7 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.3');
+  assert.equal(release.version,'1.0.0-rc.4');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);

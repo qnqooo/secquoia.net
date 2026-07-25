@@ -9,6 +9,6 @@
     }
   ],
   "vars": {
-    "OPENAI_REALTIME_MODEL": "gpt-realtime-2.1"
+    "OPENAI_REALTIME_MODEL": "gpt-realtime"
   }
 }

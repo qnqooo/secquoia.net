@@ -6,7 +6,7 @@ standard API key. No OpenAI credential is sent to or stored by the browser.
 
 ## Runtime configuration
 
-- Current reviewed model: `gpt-realtime-2.1`
+- Current reviewed model: `gpt-realtime`
 - Voice: `marin`
 - Turn detection: `semantic_vad` with automatic eagerness
 - Barge-in: enabled with `interrupt_response`
