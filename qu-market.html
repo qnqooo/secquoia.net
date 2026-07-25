@@ -468,7 +468,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   const params=new URLSearchParams(location.search);if(params.get('quidentify')==='verified')setVerified(params.get('session')||params.get('state')||'verified-callback');assistantLangTop.value=profile.langPref;voiceContext.value=profile.voiceContext;visitorName.value=profile.name;setLang(profile.langPref==='auto'?inferLanguage():profile.langPref);populateVoices();if('speechSynthesis'in window)speechSynthesis.onvoiceschanged=populateVoices;renderProducts();updateCart();renderDeployment();renderIdentityGate();setAssistantState(localStorage.getItem(assistantStateKey)||'minimized',{persist:false});addMsg(greeting(),'agent');agentState.textContent=lang()==='es'?'Agente disponible':'Agent ready';micBtn.textContent=lang()==='es'?'Hablar':'Talk';if(params.get('bundle')==='1')bundle();else if(params.get('product'))addProduct(params.get('product').toLowerCase());
 })();
 </script>
-<script src="aggy-marketplace.js"></script>
+<script src="aggy-marketplace.js?v=20260725-quhub-qvit"></script>
 <script src="aggy-realtime-voice.js"></script>
 <script src="qumarket-addons.js"></script>
 </body>
