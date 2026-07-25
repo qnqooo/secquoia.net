@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Aggy Voice | SECQUOIA</title>
+  <style>
+    :root{color-scheme:dark;--bg:#06110b;--text:#f3fff7;--muted:#a8b9ad;--green:#35ff8c;--line:rgba(255,255,255,.13);font-family:Inter,Segoe UI,Arial,sans-serif}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,rgba(53,255,140,.16),transparent 35%),var(--bg);color:var(--text)}
+    main{display:grid;gap:14px;padding:18px}.identity{display:flex;justify-content:space-between;gap:12px;align-items:center}.identity strong{font-size:20px}.identity small,.note{color:var(--muted);line-height:1.5}.version{border:1px solid rgba(53,255,140,.3);border-radius:999px;padding:6px 9px;color:var(--green);font-size:11px;font-weight:900}
+    .aggy-voice-stage{display:grid;place-items:center;gap:12px;min-height:260px;padding:22px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(15,40,25,.9),rgba(6,17,11,.96));text-align:center}
+    .aggy-orb{width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d7ffe6,var(--green) 34%,#00a958 72%);box-shadow:0 0 52px rgba(53,255,140,.38)}
+    .aggy-state{border-radius:999px;padding:6px 9px;font-size:10px;font-weight:950;letter-spacing:.08em}.aggy-state.checking{background:rgba(255,255,255,.08)}.aggy-state.ready{background:var(--green);color:#031008}.aggy-state.blocked{background:#ff796e;color:#220300}
+    h1{font-size:21px;margin:0}#aggyVoiceCaption{margin:0;color:var(--muted);line-height:1.5;max-width:30ch}
+    .controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}.controls button,.language{border:1px solid var(--line);border-radius:14px;background:#0b2115;color:#fff;padding:11px;font-weight:850}.controls .primary{grid-column:1/-1;background:linear-gradient(135deg,var(--green),#00c76a);color:#031008;border:0}.controls button:disabled{opacity:.48}
+    .language{width:100%}.market{display:block;text-align:center;color:var(--green);font-size:12px;font-weight:850}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="identity"><div><strong>Aggy</strong><br><small>Voz femenina · acento colombiano</small></div><span class="version">v0.1.0-beta.1</span></div>
+    <section class="aggy-voice-stage" id="aggyVoiceStage" data-state="connecting">
+      <span class="aggy-state checking" id="aggyVoiceBadge">ACTIVANDO</span>
+      <div class="aggy-orb" aria-hidden="true"></div>
+      <h1 id="aggyVoiceHeadline">Preparando Aggy Voice</h1>
+      <p id="aggyVoiceCaption">Comprobando el servicio seguro sin abrir el micrófono.</p>
+    </section>
+    <label class="note" for="aggyLanguage">Idioma
+      <select class="language" id="aggyLanguage"><option value="AUTO">Automático por QuGEO</option><option value="ES">Español</option><option value="EN">English</option><option value="FR">Français</option><option value="DE">Deutsch</option><option value="IT">Italiano</option><option value="PT">Português</option></select>
+    </label>
+    <div class="controls">
+      <button class="primary" id="aggyLiveVoice" type="button">Iniciar voz en vivo</button>
+      <button id="aggyVoiceMute" type="button" disabled>Silenciar</button>
+      <button id="aggyVoiceEnd" type="button" disabled>Finalizar</button>
+    </div>
+    <p class="note">El micrófono solo se abre con tu permiso. Puedes interrumpir a Aggy en cualquier momento.</p>
+    <a class="market" href="https://secquoia.net/qu-market.html?aggy=voice" target="_top" rel="noopener">Abrir experiencia completa</a>
+  </main>
+  <script src="/aggy-realtime-voice.js" defer></script>
+</body>
+</html>

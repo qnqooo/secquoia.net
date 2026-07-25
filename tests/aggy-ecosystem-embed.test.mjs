@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+
+const [embed,widget,index,notFound]=await Promise.all([
+  '../aggy-embed.js',
+  '../aggy-widget.html',
+  '../index.html',
+  '../404.html'
+].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
+
+test('Aggy ecosystem embed has valid JavaScript and one-instance protection',()=>{
+  new Function(embed);
+  assert.match(embed,/window\.__SECQUOIA_AGGY_EMBED__/);
+  assert.match(embed,/attachShadow\(\{mode:'open'\}\)/);
+  assert.match(embed,/data\.aggySite|dataset\.aggySite/);
+});
+
+test('Aggy embed is accessible, responsive and grants only required frame capabilities',()=>{
+  assert.match(embed,/aria-expanded/);
+  assert.match(embed,/role="dialog"/);
+  assert.match(embed,/prefers-reduced-motion/);
+  assert.match(embed,/allow="microphone; autoplay"/);
+  assert.match(embed,/sandbox="allow-scripts allow-forms allow-same-origin"/);
+  assert.doesNotMatch(embed,/camera|geolocation|clipboard-write|payment/);
+});
+
+test('Aggy compact widget uses the governed Realtime voice client only',()=>{
+  for(const id of ['aggyVoiceStage','aggyVoiceBadge','aggyVoiceHeadline','aggyVoiceCaption','aggyLanguage','aggyLiveVoice','aggyVoiceMute','aggyVoiceEnd']){
+    assert.match(widget,new RegExp(`id="${id}"`));
+  }
+  assert.match(widget,/src="\/aggy-realtime-voice\.js"/);
+  assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
+});
+
+test('SECQUOIA public pages load the local Aggy distribution',()=>{
+  assert.match(index,/src="\/aggy-embed\.js"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js"[^>]*data-aggy-site="secquoia\.net"/);
+});
