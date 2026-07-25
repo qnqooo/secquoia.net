@@ -21,7 +21,8 @@ test('Aggy embed is accessible, responsive and grants only required frame capabi
   assert.match(embed,/role="dialog"/);
   assert.match(embed,/prefers-reduced-motion/);
   assert.match(embed,/allow="microphone; autoplay"/);
-  assert.match(embed,/sandbox="allow-scripts allow-forms allow-same-origin"/);
+  assert.match(embed,/sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"/);
+  assert.doesNotMatch(embed,/allow-top-navigation(?:\s|")/);
   assert.doesNotMatch(embed,/camera|geolocation|clipboard-write|payment/);
 });
 
@@ -29,11 +30,11 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
   for(const id of ['aggyVoiceStage','aggyVoiceBadge','aggyVoiceHeadline','aggyVoiceCaption','aggyLanguage','aggyLiveVoice','aggyVoiceMute','aggyVoiceEnd']){
     assert.match(widget,new RegExp(`id="${id}"`));
   }
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.6"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.7"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.6"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.6"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.7"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.7"[^>]*data-aggy-site="secquoia\.net"/);
 });

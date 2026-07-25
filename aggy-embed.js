@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.6';
+  const version='1.0.0-rc.7';
   const frameUrl=`https://secquoia.net/aggy-widget.html?site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -33,7 +33,7 @@
     </button>
     <section class="panel" id="aggy-panel" role="dialog" aria-label="Aggy, asistente de SECQUOIA">
       <div class="bar"><span>Aggy <small>${version}</small></span><button class="close" type="button" aria-label="Cerrar Aggy">×</button></div>
-      <iframe title="Aggy Voice" src="${frameUrl}" allow="microphone; autoplay" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+      <iframe title="Aggy Voice" src="${frameUrl}" allow="microphone; autoplay" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"></iframe>
     </section>
   `;
 

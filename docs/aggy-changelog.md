@@ -2,6 +2,13 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.7 - 2026-07-25
+
+### Fixed
+
+- The compact Aggy widget can now open the full Marketplace experience after a user taps the link.
+- The iframe retains its isolation and grants only user-activated top-level navigation.
+
 ## 1.0.0-rc.6 - 2026-07-25
 
 ### Changed
