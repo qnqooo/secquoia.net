@@ -174,4 +174,6 @@ test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
   assert.match(html,/micrófono requiere permiso explícito/);
   assert.match(css,/\.aggy-voice-stage/);
   assert.match(css,/\.aggy-orb/);
+  assert.match(voice,/for\(const timeoutMs of \[6000,8000\]\)/);
+  assert.match(voice,/fetchVoiceHealth\(\)/);
 });

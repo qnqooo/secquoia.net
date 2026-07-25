@@ -272,11 +272,26 @@
     setState('idle','Habla con Aggy','GPT‑Realtime‑2.1 por WebRTC cuando el backend seguro esté disponible; modo local visible como respaldo.','LISTA');
   };
 
+  const fetchVoiceHealth=async()=>{
+    for(const timeoutMs of [6000,8000]){
+      try{
+        const response=await fetch(healthEndpoint,{
+          method:'GET',
+          credentials:'omit',
+          cache:'no-store',
+          signal:AbortSignal.timeout(timeoutMs)
+        });
+        if(response.ok)return response;
+      }catch{}
+    }
+    throw new Error('voice_service_unavailable');
+  };
+
   const prewarmVoice=async()=>{
     setState('connecting','Aggy Voice se está preparando','Verificando el servicio seguro sin abrir el micrófono ni consumir una sesión del proveedor.','ACTIVANDO');
     try{
       const [voiceResult,qugeoResult,knowledgeResult]=await Promise.allSettled([
-        fetch(healthEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(4000)}),
+        fetchVoiceHealth(),
         fetch(qugeoEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(4500)}),
         fetch(knowledgeEndpoint,{method:'GET',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(8000)})
       ]);
