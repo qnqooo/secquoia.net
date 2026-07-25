@@ -1,7 +1,7 @@
 {
   "schema": "secquoia.aggy.rollout.v1",
-  "release": "1.0.0-rc.2",
-  "generatedAt": "2026-07-25T19:57:44Z",
+  "release": "1.0.0-rc.3",
+  "generatedAt": "2026-07-25T20:00:00Z",
   "webSurfaces": [
     {
       "name": "SECQUOIA Marketplace and corporate site",

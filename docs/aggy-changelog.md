@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.3 - 2026-07-25
+
+Immediate mobile cache refresh.
+
+### Fixed
+
+- Versioned the Marketplace voice client, compact widget, iframe and ecosystem loader URLs.
+- Mobile browsers now request the Safari-compatible Voice client without requiring users to clear their browser cache.
+
 ## 1.0.0-rc.2 - 2026-07-25
 
 Mobile voice compatibility correction.

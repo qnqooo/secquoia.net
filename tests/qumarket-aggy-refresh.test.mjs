@@ -119,7 +119,7 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.2');
+  assert.equal(release.version,'1.0.0-rc.3');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
