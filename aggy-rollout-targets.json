@@ -1,6 +1,6 @@
 {
   "schema": "secquoia.aggy.rollout.v1",
-  "release": "1.0.0-rc.8",
+  "release": "1.0.0-rc.9",
   "generatedAt": "2026-07-25T21:05:36Z",
   "webSurfaces": [
     {

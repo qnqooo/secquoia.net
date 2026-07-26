@@ -1,7 +1,7 @@
 const DEFAULT_REALTIME_MODEL='gpt-realtime-2.1';
 const DEFAULT_REALTIME_VOICE='marin';
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.8',
+  version:'1.0.0-rc.9',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -55,6 +55,32 @@ const json=(body,status=400,request)=>new Response(JSON.stringify(body),{
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
+    if(url.pathname==='/api/aggy/calls/preflight'){
+      if(request.method==='OPTIONS'){
+        if(!ALLOWED_ORIGINS.has(request.headers.get('Origin')))return json({error:'origin_not_allowed'},403,request);
+        return new Response(null,{status:204,headers:corsHeaders(request)});
+      }
+      if(request.method!=='GET')return json({error:'method_not_allowed'},405,request);
+      return json({
+        schema:'secquoia.aggy.calls.preflight.v1',
+        service:'Aggy Calls',
+        release:AGGY_RELEASE,
+        status:'not_configured',
+        error:'e2ee_call_infrastructure_not_configured',
+        e2eeVerified:false,
+        microphoneRequested:false,
+        cameraRequested:false,
+        gates:{
+          identityBinding:false,
+          signaling:false,
+          keyExchange:false,
+          mediaE2EE:false,
+          qufense:false,
+          quvault:false
+        },
+        requiredServices:['QuIdentify identity binding','WebRTC signaling','ephemeral group key exchange','encoded media E2EE','QuFense receipt','QuVault receipt']
+      },503,request);
+    }
     if(url.pathname==='/api/aggy/version'&&request.method==='GET'){
       return json({
         schema:'secquoia.aggy.release.v1',

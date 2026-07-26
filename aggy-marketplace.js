@@ -9,24 +9,102 @@
     $$('[data-market-aggy-tab]').forEach(button=>button.classList.toggle('active',button.dataset.marketAggyTab===name));
   };
   $$('[data-market-aggy-tab]').forEach(button=>button.addEventListener('click',()=>setPanel(button.dataset.marketAggyTab)));
+  $$('[data-open-aggy-panel]').forEach(button=>button.addEventListener('click',()=>setPanel(button.dataset.openAggyPanel)));
   full.addEventListener('click',event=>{event.stopPropagation();assistant.classList.toggle('aggy-full');full.textContent=assistant.classList.contains('aggy-full')?'↙':'↗';full.setAttribute('aria-label',assistant.classList.contains('aggy-full')?'Reducir Aggy':'Expandir Aggy')});
 
   const markLocalMessages=()=>$$('#conversation .msg:not([data-proof])').forEach(message=>{message.dataset.proof='local';const proof=document.createElement('span');proof.className='aggy-proof';proof.textContent='LOCAL · SIN PRUEBA E2EE/PQC';message.append(proof)});
   markLocalMessages();new MutationObserver(markLocalMessages).observe(conversation,{childList:true});
 
-  const contacts=[],groups=[],emailPattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/,quickSheet=$('#aggyQuickSheet');let pendingPeerEmail='';
+  const contacts=[],groups=[],emailPattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/,quickSheet=$('#aggyQuickSheet');let pendingPeerEmail='',callKind='individual',callMedia='audio',callReceipt=null;
   const identityVerified=()=>localStorage.getItem('secquoia.qumarket.quidentifyVerified')==='true';
-  const renderMemoryList=(root,items,label)=>{root.replaceChildren();for(const item of items){const chip=document.createElement('span');chip.textContent=label(item);root.append(chip)}};
+  const initials=name=>name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase()||'A';
+  const renderMemoryList=(root,items,label)=>{if(!root)return;root.replaceChildren();for(const item of items){const chip=document.createElement('span');chip.textContent=label(item);root.append(chip)}};
+  const personRow=(title,detail,action)=>{
+    const row=document.createElement('article'),avatar=document.createElement('span'),copy=document.createElement('p'),strong=document.createElement('strong'),small=document.createElement('small'),button=document.createElement('button');
+    row.className='aggy-person';avatar.className='aggy-person-avatar';avatar.textContent=initials(title);strong.textContent=title;small.textContent=detail;copy.append(strong,small);button.type='button';button.textContent=action;row.append(avatar,copy,button);return {row,button};
+  };
+  const renderCommunicationData=()=>{
+    const contactQuery=$('#aggyContactSearch')?.value.trim().toLowerCase()||'',groupQuery=$('#aggyGroupSearch')?.value.trim().toLowerCase()||'',contactRoot=$('#aggyContactsDirectory'),groupRoot=$('#aggyGroupsDirectory');
+    if(contactRoot){
+      contactRoot.replaceChildren();
+      const visible=contacts.filter(contact=>`${contact.name} ${contact.email}`.toLowerCase().includes(contactQuery));
+      if(!visible.length){const empty=document.createElement('p');empty.className='aggy-empty';empty.textContent=contacts.length?'No hay coincidencias.':'Aún no hay contactos en esta sesión. Crea uno para preparar una conversación.';contactRoot.append(empty)}
+      for(const contact of visible){const {row,button}=personRow(contact.name,contact.email,'Llamar');button.addEventListener('click',()=>{setPanel('calls');callKind='individual';syncCallControls();$('#aggyCallPeer').value=contact.email;resetCallReadiness('Destino actualizado. Verifica nuevamente la ruta E2E.')});contactRoot.append(row)}
+    }
+    if(groupRoot){
+      groupRoot.replaceChildren();
+      const visible=groups.filter(group=>`${group.name} ${group.members.join(' ')}`.toLowerCase().includes(groupQuery));
+      if(!visible.length){const empty=document.createElement('p');empty.className='aggy-empty';empty.textContent=groups.length?'No hay coincidencias.':'Aún no hay grupos en esta sesión. Agrega al menos dos miembros verificados.';groupRoot.append(empty)}
+      for(const group of visible){const {row,button}=personRow(group.name,`${group.members.length} miembros`,'Llamar');button.addEventListener('click',()=>{setPanel('calls');callKind='group';syncCallControls();$('#aggyCallGroup').value=group.name;resetCallReadiness('Grupo actualizado. Verifica nuevamente la ruta E2E.')});groupRoot.append(row)}
+    }
+    const peer=$('#aggyCallPeer'),groupSelect=$('#aggyCallGroup');
+    if(peer){const selected=peer.value;peer.replaceChildren(new Option('Selecciona un contacto',''),...contacts.map(contact=>new Option(`${contact.name} · ${contact.email}`,contact.email)));peer.value=selected}
+    if(groupSelect){const selected=groupSelect.value;groupSelect.replaceChildren(new Option('Selecciona un grupo',''),...groups.map(group=>new Option(`${group.name} · ${group.members.length} miembros`,group.name)));groupSelect.value=selected}
+  };
   const openQuick=action=>{
     if(action==='file'){setPanel('files');setTimeout(()=>$('#aggyFile')?.click(),0);return}
     if(action==='voice'){setPanel('voice');setTimeout(()=>$('#aggyVoiceRecord')?.click(),0);return}
+    setPanel('chat');
     const titles={chat:'Iniciar chat con un colega',contact:'Crear contacto',group:'Crear grupo'};quickSheet.classList.remove('hidden');$('#aggyQuickTitle').textContent=titles[action]||'Aggy';$$('[data-aggy-quick-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.aggyQuickPanel===action));assistant.classList.add('aggy-full');full.textContent='↙';
   };
   $$('[data-aggy-quick]').forEach(button=>button.addEventListener('click',()=>openQuick(button.dataset.aggyQuick)));
   $('#aggyQuickClose')?.addEventListener('click',()=>quickSheet.classList.add('hidden'));
   $('#aggyStartChat')?.addEventListener('click',()=>{const email=$('#aggyChatEmail').value.trim().toLowerCase(),state=$('#aggyChatState');if(!emailPattern.test(email)){state.textContent='× Introduce un correo válido.';state.className='aggy-note blocked';return}if(!identityVerified()){state.textContent='× Debes verificar tu identidad con QuIdentify/Okta antes de iniciar el chat.';state.className='aggy-note blocked';return}pendingPeerEmail=email;state.textContent=`Validación solicitada para ${email}. El motor seguro confirmará si pertenece al ecosistema.`;state.className='aggy-note ready';setTimeout(openSecure,250)});
-  $('#aggySaveContact')?.addEventListener('click',()=>{const name=$('#aggyContactName').value.trim(),email=$('#aggyContactEmail').value.trim().toLowerCase(),state=$('#aggyContactState');if(!identityVerified()){state.textContent='× QuIdentify/Okta debe estar verificado.';state.className='aggy-note blocked';return}if(!name||!emailPattern.test(email)){state.textContent='× Nombre o correo inválido.';state.className='aggy-note blocked';return}if(!contacts.some(contact=>contact.email===email))contacts.push({name,email});renderMemoryList($('#aggyContactList'),contacts,contact=>`${contact.name} · ${contact.email}`);state.textContent='✓ Contacto creado en memoria. La habilitación de chat exige validación del backend.';state.className='aggy-note ready'});
-  $('#aggyCreateGroup')?.addEventListener('click',()=>{const name=$('#aggyGroupName').value.trim(),members=$('#aggyGroupMembers').value.split(/[;,\n]+/).map(value=>value.trim().toLowerCase()).filter(Boolean),state=$('#aggyGroupState'),unique=[...new Set(members)];if(!identityVerified()){state.textContent='× QuIdentify/Okta debe estar verificado.';state.className='aggy-note blocked';return}if(!name||unique.length<2||unique.some(email=>!emailPattern.test(email))){state.textContent='× Indica un nombre y al menos dos correos válidos.';state.className='aggy-note blocked';return}groups.push({name,members:unique});renderMemoryList($('#aggyGroupList'),groups,group=>`${group.name} · ${group.members.length} miembros`);state.textContent='✓ Grupo creado en memoria. Cada miembro será validado por el backend antes del chat real.';state.className='aggy-note ready'});
+  $('#aggySaveContact')?.addEventListener('click',()=>{const name=$('#aggyContactName').value.trim(),email=$('#aggyContactEmail').value.trim().toLowerCase(),state=$('#aggyContactState');if(!identityVerified()){state.textContent='× QuIdentify/Okta debe estar verificado.';state.className='aggy-note blocked';return}if(!name||!emailPattern.test(email)){state.textContent='× Nombre o correo inválido.';state.className='aggy-note blocked';return}if(!contacts.some(contact=>contact.email===email))contacts.push({name,email});renderMemoryList($('#aggyContactList'),contacts,contact=>`${contact.name} · ${contact.email}`);renderCommunicationData();state.textContent='✓ Contacto creado en memoria. La habilitación de chat exige validación del backend.';state.className='aggy-note ready'});
+  $('#aggyCreateGroup')?.addEventListener('click',()=>{const name=$('#aggyGroupName').value.trim(),members=$('#aggyGroupMembers').value.split(/[;,\n]+/).map(value=>value.trim().toLowerCase()).filter(Boolean),state=$('#aggyGroupState'),unique=[...new Set(members)];if(!identityVerified()){state.textContent='× QuIdentify/Okta debe estar verificado.';state.className='aggy-note blocked';return}if(!name||unique.length<2||unique.some(email=>!emailPattern.test(email))){state.textContent='× Indica un nombre y al menos dos correos válidos.';state.className='aggy-note blocked';return}groups.push({name,members:unique});renderMemoryList($('#aggyGroupList'),groups,group=>`${group.name} · ${group.members.length} miembros`);renderCommunicationData();state.textContent='✓ Grupo creado en memoria. Cada miembro será validado por el backend antes de una conversación real.';state.className='aggy-note ready'});
+
+  const callHistory=[];
+  const callEndpoint='https://aggy.secquoia.group/api/aggy/calls/preflight';
+  const setCallGate=(name,ready)=>{const gate=$(`[data-call-gate="${name}"]`);if(gate)gate.className=ready?'ready':'blocked'};
+  const callTarget=()=>callKind==='group'?$('#aggyCallGroup')?.value:$('#aggyCallPeer')?.value;
+  const resetCallReadiness=message=>{
+    callReceipt=null;$('#aggyCallStart').disabled=true;const badge=$('#aggyCallBadge');badge.className='aggy-state blocked';badge.textContent='E2E NO VERIFICADO';
+    ['identity','webrtc','media','signaling','keys'].forEach(name=>setCallGate(name,false));
+    if(message)$('#aggyCallState').textContent=message;
+  };
+  const syncCallControls=()=>{
+    $$('[data-call-kind]').forEach(button=>button.classList.toggle('active',button.dataset.callKind===callKind));
+    $('#aggyCallPeerLabel').classList.toggle('hidden',callKind!=='individual');$('#aggyCallGroupLabel').classList.toggle('hidden',callKind!=='group');
+    resetCallReadiness();
+  };
+  const renderCallHistory=()=>{
+    const root=$('#aggyCallHistory');root.replaceChildren();
+    if(!callHistory.length){const empty=document.createElement('p');empty.className='aggy-empty';empty.textContent='No hay intentos de llamada en esta sesión.';root.append(empty);return}
+    for(const entry of callHistory){
+      const row=document.createElement('article'),icon=document.createElement('span'),copy=document.createElement('p'),strong=document.createElement('strong'),small=document.createElement('small'),time=document.createElement('time');
+      row.className=`aggy-call-entry ${entry.ready?'ready':'blocked'}`;icon.textContent=entry.ready?'☎':'↗';strong.textContent=entry.target;small.textContent=`${entry.kind==='group'?'Grupal':'Individual'} · ${entry.media==='video'?'video':'audio'} · ${entry.ready?'E2E verificado':'bloqueada'}`;time.textContent=entry.time;copy.append(strong,small);row.append(icon,copy,time);root.append(row);
+    }
+  };
+  const recordCall=(ready,target)=>{callHistory.unshift({ready,target,kind:callKind,media:callMedia,time:new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'}).format(new Date())});renderCallHistory()};
+  const supportsEncodedMedia=()=>Boolean(window.RTCRtpScriptTransform||window.RTCRtpSender?.prototype?.createEncodedStreams);
+  const preflightCall=async()=>{
+    const state=$('#aggyCallState'),badge=$('#aggyCallBadge'),target=callTarget(),webRtc=typeof RTCPeerConnection==='function',encoded=supportsEncodedMedia(),identity=identityVerified();
+    resetCallReadiness();setCallGate('identity',identity);setCallGate('webrtc',webRtc);setCallGate('media',encoded);
+    if(!target){state.textContent=`Selecciona ${callKind==='group'?'un grupo':'un contacto'} antes de verificar.`;recordCall(false,'Destino no seleccionado');return}
+    if(!identity){state.textContent='BLOQUEADO · QuIdentify/Okta no está verificado. No se abrió el micrófono ni la cámara.';recordCall(false,target);return}
+    if(!webRtc||!encoded){state.textContent='BLOQUEADO · este navegador no demuestra soporte para medios WebRTC cifrados de extremo a extremo.';recordCall(false,target);return}
+    badge.className='aggy-state checking';badge.textContent='VERIFICANDO';state.textContent='Consultando señalización, llaves efímeras y recibos de cifrado…';
+    try{
+      const response=await fetch(callEndpoint,{method:'GET',cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(5000)}),body=await response.json();
+      const gates=body.gates||{};setCallGate('signaling',response.ok&&gates.signaling===true);setCallGate('keys',response.ok&&gates.keyExchange===true&&gates.qufense===true&&gates.quvault===true);setCallGate('media',encoded&&response.ok&&gates.mediaE2EE===true);
+      const ready=response.ok&&body.status==='ready'&&body.e2eeVerified===true&&gates.identityBinding===true&&gates.signaling===true&&gates.keyExchange===true&&gates.mediaE2EE===true&&gates.qufense===true&&gates.quvault===true&&typeof body.joinUrl==='string';
+      if(!ready)throw new Error(body.error||body.status||'e2ee_not_verified');
+      const join=new URL(body.joinUrl);
+      if(join.protocol!=='https:'||!/(^|\.)secquoia\.(net|group)$/.test(join.hostname))throw new Error('untrusted_join_url');
+      callReceipt={joinUrl:join.href,receiptId:String(body.receiptId||'')};$('#aggyCallStart').disabled=false;badge.className='aggy-state ready';badge.textContent='E2E VERIFICADO';state.textContent=`Ruta lista · recibo ${callReceipt.receiptId||'verificado'}. El permiso de ${callMedia==='video'?'cámara y micrófono':'micrófono'} se solicitará al iniciar.`;recordCall(true,target);
+    }catch{
+      badge.className='aggy-state blocked';badge.textContent='E2E NO DISPONIBLE';state.textContent='BLOQUEADO · la infraestructura no entregó evidencia completa de identidad, señalización, llaves y cifrado de medios. No se abrió el micrófono ni la cámara.';recordCall(false,target);
+    }
+  };
+  $$('[data-call-kind]').forEach(button=>button.addEventListener('click',()=>{callKind=button.dataset.callKind;syncCallControls()}));
+  $$('[data-call-media]').forEach(button=>button.addEventListener('click',()=>{callMedia=button.dataset.callMedia;$$('[data-call-media]').forEach(item=>item.classList.toggle('active',item===button));resetCallReadiness('Medio actualizado. Verifica nuevamente la ruta E2E.')}));
+  $('#aggyCallPeer')?.addEventListener('change',()=>resetCallReadiness('Destino actualizado. Verifica nuevamente la ruta E2E.'));
+  $('#aggyCallGroup')?.addEventListener('change',()=>resetCallReadiness('Grupo actualizado. Verifica nuevamente la ruta E2E.'));
+  $('#aggyCallPreflight')?.addEventListener('click',()=>preflightCall());
+  $('#aggyCallStart')?.addEventListener('click',()=>{if(!callReceipt)return resetCallReadiness('La evidencia E2E expiró o no existe. Verifica nuevamente.');location.assign(callReceipt.joinUrl)});
+  $('#aggyClearCallHistory')?.addEventListener('click',()=>{callHistory.length=0;renderCallHistory()});
+  $('#aggyContactSearch')?.addEventListener('input',renderCommunicationData);$('#aggyGroupSearch')?.addEventListener('input',renderCommunicationData);
+  $$('[data-contact-filter]').forEach(button=>button.addEventListener('click',()=>{const filter=button.dataset.contactFilter;$$('[data-contact-filter]').forEach(item=>item.classList.toggle('active',item===button));if(filter==='groups')setPanel('groups');else renderCommunicationData()}));
 
   const startAggyVoice=()=>{setPanel('voice');const state=$('#aggyVoiceState');if(!window.AggyVoice){state.textContent='Aggy Voice todavía se está preparando. Intenta nuevamente en un momento.';return}state.textContent='Iniciando conversación bidireccional con Aggy Voice…';window.AggyVoice.start()};
   $('#aggyVoiceTalk')?.addEventListener('click',startAggyVoice);
@@ -73,5 +151,7 @@
   $('#aggyCloseSecure')?.addEventListener('click',()=>$('#aggySecureFrameWrap').classList.add('hidden'));
   const savedProvider=sessionStorage.getItem('secquoia.aggy.provider')||'sqaile';
   $$('[data-aggy-provider]').forEach(button=>button.classList.toggle('selected',button.dataset.aggyProvider===savedProvider));
-  contextualUpdate();refreshModelCatalog();
+  const nameMirror=$('[data-aggy-name-mirror]'),visitorName=$('#visitorName');
+  if(nameMirror&&visitorName){nameMirror.value=visitorName.value;nameMirror.addEventListener('input',()=>{visitorName.value=nameMirror.value;visitorName.dispatchEvent(new Event('input',{bubbles:true}))});visitorName.addEventListener('input',()=>{nameMirror.value=visitorName.value})}
+  renderCommunicationData();syncCallControls();renderCallHistory();contextualUpdate();refreshModelCatalog();
 })();

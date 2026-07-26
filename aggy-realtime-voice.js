@@ -18,7 +18,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.8';
+  const aggyVersion='1.0.0-rc.9';
 
   let peer=null;
   let channel=null;
