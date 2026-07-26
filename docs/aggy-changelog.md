@@ -2,6 +2,23 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.10 - 2026-07-26
+
+### Added
+
+- Added a Cellcrypt-inspired chat layout with a conversation list, explicit secure room and responsive mobile navigation.
+- Added client-side hybrid ML-KEM-768 + X25519 key encapsulation, ML-DSA-65 signatures, HKDF-SHA-512, AES-256-GCM and XChaCha20-Poly1305 message envelopes.
+- Added per-room Durable Objects SQLite storage for public device bundles and ciphertext-only message envelopes.
+- Added a transient QuSOC text sanitation and reconstruction policy before encryption.
+- Added manual out-of-band device fingerprint comparison while QuIdentify/Okta organization binding remains pending.
+- Added a Glasswall adapter status contract. Attachments remain fail closed and no Glasswall API call or external cost is executed in this release.
+
+### Security
+
+- Private device keys remain in browser IndexedDB; room invitations carry a random capability in the URL fragment so it is not sent in ordinary HTTP requests.
+- Incoming messages fail closed when the signature, recipient, admission receipt or ciphertext authentication cannot be verified.
+- This release candidate does not claim external PQC certification, production approval, organizational identity assurance or scanned attachments.
+
 ## 1.0.0-rc.9 - 2026-07-25
 
 ### Changed

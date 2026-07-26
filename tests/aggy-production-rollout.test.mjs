@@ -6,7 +6,7 @@ const release=JSON.parse(await readFile(new URL('../aggy-release.json',import.me
 const rollout=JSON.parse(await readFile(new URL('../aggy-rollout-targets.json',import.meta.url),'utf8'));
 
 test('Aggy release candidate and rollout inventory stay synchronized',()=>{
-  assert.equal(release.version,'1.0.0-rc.9');
+  assert.equal(release.version,'1.0.0-rc.10');
   assert.equal(release.channel,'rc');
   assert.equal(release.lifecycle,'production-validation');
   assert.equal(rollout.release,release.version);

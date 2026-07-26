@@ -1,0 +1,16 @@
+{
+	"type": "module",
+	"scripts": {
+		"build:aggy-crypto": "esbuild src/aggy-secure-chat-crypto.js --bundle --format=iife --global-name=AggySecureChatCrypto --outfile=aggy-secure-chat-crypto.bundle.js --minify",
+		"test": "node --test tests/*.test.mjs"
+	},
+	"dependencies": {
+		"@noble/ciphers": "2.2.0",
+		"@noble/curves": "2.2.0",
+		"@noble/hashes": "2.2.0",
+		"@noble/post-quantum": "0.6.1"
+	},
+	"devDependencies": {
+		"esbuild": "0.25.10"
+	}
+}

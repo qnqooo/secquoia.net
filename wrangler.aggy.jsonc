@@ -2,6 +2,9 @@
   "name": "secquoia-aggy-realtime",
   "main": "workers/aggy-realtime-session.js",
   "compatibility_date": "2026-07-25",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "routes": [
     {
       "pattern": "aggy.secquoia.group",
@@ -9,6 +12,26 @@
     }
   ],
   "vars": {
-    "OPENAI_REALTIME_MODEL": "gpt-realtime-2.1"
+    "OPENAI_REALTIME_MODEL": "gpt-realtime-2.1",
+    "AGGY_GLASSWALL_MODE": "STRUCTURE_READY_NOT_CONNECTED"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "AGGY_CHAT_ROOMS",
+        "class_name": "AggyChatRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1-aggy-secure-chat",
+      "new_sqlite_classes": [
+        "AggyChatRoom"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": true
   }
 }

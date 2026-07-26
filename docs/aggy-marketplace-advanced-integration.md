@@ -2,7 +2,7 @@
 
 Requirement: restore the approved advanced Aggy interface in the persistent floating QuMarket widget.
 
-Current release: `1.0.0-rc.9` (`rc`, ecosystem hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This release candidate is deployed for production validation; it is not yet a stable-production or third-party-sale claim.
+Current release: `1.0.0-rc.10` (`rc`, ecosystem hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This release candidate is deployed for production validation; it is not yet a stable-production or third-party-sale claim.
 
 ## Restored areas
 
