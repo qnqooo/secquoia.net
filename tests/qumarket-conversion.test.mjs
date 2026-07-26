@@ -29,6 +29,44 @@ test('QuCFA estimator is explicit about catalog scope and variable costs',()=>{
   assert.match(html,/QuCFA valida el alcance y tarifario final/);
 });
 
+test('Estimator starts from a fixed base bundle and explains optional modules',()=>{
+  assert.match(html,/Bundle base · siempre incluido/);
+  assert.match(html,/value="quidentify" checked disabled/);
+  assert.match(html,/value="qufense" checked disabled/);
+  for(const moduleId of ['qusoc','aggy','quhub','qucfa','quoptio']){
+    assert.match(html,new RegExp(`value="${moduleId}"`));
+  }
+  assert.match(html,/Conviene a equipos distribuidos o regulados/);
+  assert.match(html,/Útil para adopción, soporte e interacción ejecutiva/);
+});
+
+test('Estimator governs dependencies and updates the recommendation in place',()=>{
+  assert.match(html,/const estimateDependencies=Object\.freeze\(\{qusoc:\['qufense'\],aggy:\['quhub'\],quoptio:\['qucfa'\]\}\)/);
+  assert.match(html,/function resolveEstimateDependencies/);
+  assert.match(html,/function handleEstimateOptionChange/);
+  assert.match(html,/Restablecer recomendación/);
+  assert.match(html,/Seleccionar todo/);
+  assert.match(html,/Usar en el estimador/);
+});
+
+test('Estimate can be saved, restored and exported without personal data',()=>{
+  assert.match(html,/id="saveEstimate"/);
+  assert.match(html,/id="exportEstimate"/);
+  assert.match(html,/function saveEstimate/);
+  assert.match(html,/function restoreSavedEstimate/);
+  assert.match(html,/function exportEstimate/);
+  assert.match(html,/secquoia\.qumarket\.estimate\.v1/);
+  assert.match(html,/Estimate exported without personal data/);
+});
+
+test('Final review exposes the governed QuIdentify, QuPay and QuDeploy route',()=>{
+  assert.match(html,/Ruta gobernada final/);
+  assert.match(html,/<b>1 · QuIdentify<\/b>/);
+  assert.match(html,/<b>2 · QuPay<\/b>/);
+  assert.match(html,/<b>3 · QuDeploy<\/b>/);
+  assert.match(html,/Revisar y agregar a la canasta/);
+});
+
 test('Guided onboarding is accessible and does not open automatically',()=>{
   assert.match(html,/<dialog class="market-tour" id="marketTour" aria-labelledby="marketTourTitle">/);
   assert.match(html,/data-open-market-tour/);
