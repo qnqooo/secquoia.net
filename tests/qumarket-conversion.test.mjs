@@ -81,3 +81,16 @@ test('Every rendered module exposes its inclusions',()=>{
   assert.match(html,/p\.features\.map\(f=>'<li>'\+esc\(f\)/);
   assert.match(html,/p\.license\[l\]/);
 });
+
+test('Available products expose honest status and application requirements',()=>{
+  assert.match(html,/>Productos disponibles<\/h2>/);
+  assert.match(html,/const productAvailability=Object\.freeze/);
+  assert.match(html,/label:\{en:'Available',es:'Disponible'\}/);
+  assert.match(html,/label:\{en:'Starter',es:'Starter'\}/);
+  assert.match(html,/label:\{en:'Private beta',es:'Beta privada'\}/);
+  assert.match(html,/class="availability-state /);
+  assert.match(html,/class="product-requirements"/);
+  assert.match(html,/Requisitos para solicitar/);
+  assert.match(html,/availability\.requirements\[l\]\.map/);
+  assert.match(html,/\?\s*'Solicitar':'Request'/);
+});
