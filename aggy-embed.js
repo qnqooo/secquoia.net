@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.23';
+  const version='1.0.0-rc.24';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';

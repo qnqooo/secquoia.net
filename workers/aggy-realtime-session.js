@@ -53,7 +53,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.23',
+  version:'1.0.0-rc.24',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -902,16 +902,23 @@ export default {
       model,
       audio:{output:{voice}}
     });
-    const form=new FormData();
-    form.set('sdp',new Blob([sdp],{type:'application/sdp'}),'offer.sdp');
-    form.set('session',new Blob([session],{type:'application/json'}),'session.json');
+    const boundary=`----aggy-${crypto.randomUUID()}`;
+    const multipartBody=[
+      `--${boundary}\r\nContent-Disposition: form-data; name="sdp"\r\n\r\n${sdp}\r\n`,
+      `--${boundary}\r\nContent-Disposition: form-data; name="session"\r\n\r\n${session}\r\n`,
+      `--${boundary}--\r\n`
+    ].join('');
 
     let upstream;
     try{
       upstream=await fetch('https://api.openai.com/v1/realtime/calls',{
         method:'POST',
-        headers:{Authorization:`Bearer ${env.OPENAI_API_KEY}`},
-        body:form,
+        headers:{
+          Authorization:`Bearer ${env.OPENAI_API_KEY}`,
+          'Content-Type':`multipart/form-data; boundary=${boundary}`,
+          'OpenAI-Safety-Identifier':meter.reference
+        },
+        body:multipartBody,
         signal:AbortSignal.timeout(12000)
       });
     }catch(error){

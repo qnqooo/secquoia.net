@@ -2,6 +2,14 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.24 - 2026-07-27
+
+### Fixed
+
+- Replaces runtime-dependent `FormData` serialization with an explicit standards-compliant multipart body for the OpenAI Realtime unified WebRTC interface.
+- Sends exactly two text fields, `sdp` and `session`, matching the current OpenAI server example.
+- Adds a pseudonymous OpenAI safety identifier derived from the existing edge usage subject; no IP address or browser fingerprint is forwarded.
+
 ## 1.0.0-rc.23 - 2026-07-27
 
 ### Fixed
