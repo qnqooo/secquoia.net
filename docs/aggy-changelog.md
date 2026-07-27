@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.17 - 2026-07-27
+
+### Changed
+
+- Published explicit QuPay readiness in the Voice health and usage APIs.
+- Kept the complete 300-second free allowance continuous while billing paid continuation in 60-second `Aggy Minute` units.
+- Replaced the misleading automatic top-up action with an assisted activation route while the signed QuPay LIVE webhook is not configured.
+- Changed an unconfigured QuPay credit receiver to fail closed with `503 qupay_credit_not_configured`.
+
 ## 1.0.0-rc.16 - 2026-07-26
 
 ### Added

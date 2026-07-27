@@ -19,7 +19,7 @@ const fakeUsageMeters=()=>({
       if(path==='/activate')return new Response(JSON.stringify({authorized:true,expiresAt:'2026-07-27T05:00:00.000Z'}),{headers:{'Content-Type':'application/json'}});
       if(path==='/bind')return new Response(JSON.stringify({bound:true,expiresAt:'2026-07-27T05:00:00.000Z'}),{headers:{'Content-Type':'application/json'}});
       if(path==='/cancel')return new Response(JSON.stringify({cancelled:true}),{headers:{'Content-Type':'application/json'}});
-      if(path==='/status')return new Response(JSON.stringify({free:{remainingSeconds:300},wallet:{balance:0},continuation:{customerQVit:240000}}),{headers:{'Content-Type':'application/json'}});
+      if(path==='/status')return new Response(JSON.stringify({free:{remainingSeconds:300},wallet:{balance:0,topUpAvailable:false},continuation:{customerQVit:240000}}),{headers:{'Content-Type':'application/json'}});
       return new Response(JSON.stringify({error:'unexpected_meter_path'}),{status:404,headers:{'Content-Type':'application/json'}});
     }
   })
@@ -157,7 +157,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.16');
+  assert.equal(release.version,'1.0.0-rc.17');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -288,6 +288,9 @@ test('Voice client exposes QVit status, heartbeats, usage settlement and hard st
   assert.match(voice,/reportUsage\(message\)/);
   assert.match(voice,/usagePost\('heartbeat'\)/);
   assert.match(voice,/endVoice\('CLIENT_HARD_STOP'\)/);
+  assert.match(voice,/Solicitar activación QuPay/);
+  assert.match(worker,/qupay_credit_not_configured/);
+  assert.match(worker,/ASSISTED_ACTIVATION_REQUIRED/);
   assert.match(worker,/AGGY_MAX_PAID_BLOCKS_DAY=15/);
   assert.match(worker,/AGGY_MAX_PAID_BLOCKS_MONTH=150/);
   assert.match(worker,/let duration=freeRemaining/);

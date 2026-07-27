@@ -49,7 +49,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.16',
+  version:'1.0.0-rc.17',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -755,6 +755,9 @@ export default {
       if(!rateCardIsCurrent())return json({error:'aggy_rate_card_stale',failClosed:true,rateCardVersion:AGGY_RATE_CARD.version},503,request);
       if(url.pathname==='/api/aggy/usage/qupay-credit'){
         if(request.method!=='POST')return json({error:'method_not_allowed'},405,request);
+        if(!env.AGGY_QUPAY_WEBHOOK_SECRET){
+          return json({error:'qupay_credit_not_configured',failClosed:true},503,request);
+        }
         const raw=await request.text();
         if(!await verifyQuPaySignature(request,env.AGGY_QUPAY_WEBHOOK_SECRET,raw)){
           return json({error:'invalid_qupay_signature'},401,request);
@@ -774,7 +777,11 @@ export default {
         const response=await meterRequest(meter.stub,'/status');
         const body=await response.json();
         body.wallet.reference=meter.reference;
-        body.wallet.topUpUrl=`https://secquoia.net/qu-market.html?addon=qvit-ai-credit-25&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`;
+        body.wallet.topUpAvailable=Boolean(env.AGGY_QUPAY_WEBHOOK_SECRET);
+        body.wallet.topUpStatus=body.wallet.topUpAvailable?'QUPAY_SIGNED_WEBHOOK_READY':'ASSISTED_ACTIVATION_REQUIRED';
+        body.wallet.topUpUrl=body.wallet.topUpAvailable
+          ? `https://secquoia.net/qu-market.html?addon=qvit-ai-credit-25&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`
+          : 'mailto:sqaile@secquoia.group?subject=Activacion%20QuPay%20para%20Aggy';
         body.identity={engine:'QuIdentify',binding:'EDGE_PSEUDONYMOUS_V1',verified:false,paidContinuationRequiresVerifiedQuPayWebhook:true};
         return json(body,response.status,request);
       }
@@ -828,6 +835,11 @@ export default {
         freeSeconds:AGGY_FREE_MS/1000,
         continuation:aggyBlockQuote(),
         rateCardCurrent,
+        paidContinuation:{
+          status:env.AGGY_QUPAY_WEBHOOK_SECRET?'ready':'blocked',
+          quPayWebhook:env.AGGY_QUPAY_WEBHOOK_SECRET?'configured':'not_configured',
+          failClosed:true
+        },
         limits:{paidMinutesDay:AGGY_MAX_PAID_BLOCKS_DAY,paidMinutesMonth:AGGY_MAX_PAID_BLOCKS_MONTH},
         quOptio:AGGY_QUOPTIO_POLICY,
         providerCallExecuted:false

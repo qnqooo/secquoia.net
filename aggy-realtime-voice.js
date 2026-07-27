@@ -19,7 +19,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.16';
+  const aggyVersion='1.0.0-rc.17';
 
   let peer=null;
   let channel=null;
@@ -67,12 +67,24 @@
     const free=Number(status?.free?.remainingSeconds||0);
     const balance=Number(status?.wallet?.balance||0);
     const price=Number(status?.continuation?.customerQVit||0);
+    const topUpAvailable=status?.wallet?.topUpAvailable===true;
     const topUp=$('#aggyUsageTopUp');
-    if(topUp&&status?.wallet?.topUpUrl)topUp.href=status.wallet.topUpUrl;
+    if(topUp){
+      if(status?.wallet?.topUpUrl)topUp.href=status.wallet.topUpUrl;
+      topUp.textContent=topUpAvailable?'Recargar QVit':'Solicitar activación QuPay';
+    }
     if(status?.activeLease){
       usageUi('Sesión medida en curso',`${status.activeLease.kind==='FREE'?'Prueba sin costo':'Aggy Minute'} · corte automático activo`,'ready');
     }else if(free>0){
-      usageUi(`${Math.ceil(free/60)} min incluidos`,`Después, cada Aggy Minute de 60 s cuesta ${price.toLocaleString('es-CO')} QVit.`,'ready');
+      usageUi(
+        `${Math.ceil(free/60)} min incluidos`,
+        topUpAvailable
+          ? `Después, cada Aggy Minute de 60 s cuesta ${price.toLocaleString('es-CO')} QVit.`
+          : `Después, cada minuto cuesta ${price.toLocaleString('es-CO')} QVit; la recarga automática permanece bloqueada hasta activar QuPay LIVE.`,
+        'ready'
+      );
+    }else if(!topUpAvailable){
+      usageUi('Continuidad pagada no disponible','QuPay LIVE todavía no está enlazado. Aggy no realizará cargos ni permitirá sobregiros.','blocked');
     }else if(balance>=price&&price>0){
       usageUi(`${balance.toLocaleString('es-CO')} QVit disponibles`,`Saldo para ${Math.floor(balance/price)} Aggy Minute(s) adicional(es).`,'ready');
     }else{
