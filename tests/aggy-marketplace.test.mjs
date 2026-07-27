@@ -82,14 +82,15 @@ test('Aggy markup contains no duplicate element IDs',()=>{
 test('Aggy Realtime replaces browser legacy speech and recording',()=>{
   assert.doesNotMatch(html,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder|id="voiceSelect"/);
   assert.doesNotMatch(bridge,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
-  assert.match(html,/Aggy v1\.0\.0-rc\.28 [^<]* Voz de SQAILE - Acento neutro/);
+  assert.match(html,/Aggy v1\.0\.0-rc\.29 [^<]* Voz de SQAILE - Acento neutro/);
   assert.match(html,/Voz de SQAILE - Acento neutro/);
   assert.match(html,/Leer con Aggy/);
   assert.match(bridge,/window\.AggyVoice\.start/);
 });
 
-test('Aggy chat exposes one-click collaboration actions',()=>{
-  for(const action of ['chat','file','voice','contact','group'])assert.match(html,new RegExp(`data-aggy-quick="${action}"`));
+test('Aggy chat exposes one-tap essentials and moves collaboration setup to the menu',()=>{
+  assert.doesNotMatch(html,/class="aggy-primary-actions"|class="aggy-chat-actions"|class="assistant-profile"/);
+  for(const control of ['data-chat-call="audio"','data-chat-call="video"','data-chat-attach','data-chat-camera','id="mic"','id="send"'])assert.match(html,new RegExp(control));
   for(const id of ['aggyStartChat','aggySaveContact','aggyCreateGroup','aggyChatEmail','aggyGroupMembers'])assert.match(html,new RegExp(`id="${id}"`));
   assert.match(bridge,/openQuick/);
   assert.match(bridge,/contacts\.push/);

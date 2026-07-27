@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.29 - 2026-07-27
+
+### One-tap communications UX
+
+- Removes the duplicated four-card launcher, quick-action row and profile controls from the live conversation.
+- Keeps audio/video calls in the conversation header and attachment, camera, Voice LIVE and send in the composer.
+- Shows microphone or send contextually, so the composer exposes only the action that is useful at that moment.
+- Moves identity, need selection, contacts, groups, call history, models and security controls into the menu.
+
 ## 1.0.0-rc.28 - 2026-07-27
 
 ### Contract access and essential communications

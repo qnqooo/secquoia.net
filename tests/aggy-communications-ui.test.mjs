@@ -31,10 +31,28 @@ test('chat keeps messages files and encrypted calls within immediate reach',asyn
   assert.match(css,/\.assistant\.open:not\(\.aggy-full\)\{width:min\(720px,calc\(100% - 28px\)\)/);
   assert.match(css,/\.aggy-chat-shell\{display:grid;grid-template-columns:210px minmax\(0,1fr\);width:100%;min-width:0/);
   assert.match(client,/preflightChatAttachment/);
+  assert.match(client,/syncComposerAction/);
+  assert.match(client,/composerSend\.hidden=!hasMessage/);
+  assert.match(client,/composerMic\.hidden=hasMessage/);
   assert.match(client,/PENDIENTE: Glasswall \+ QuSOC \+ QuFense \+ E2EE\/PQC \+ QuVault/);
   assert.match(client,/Aggy verificará E2EE\/PQC antes de solicitar permisos/);
   assert.match(css,/@media\(max-width:780px\)/);
   assert.match(css,/\.assistant-profile,\.aggy-chat-actions\{display:none\}/);
+});
+
+test('daily communication controls stay one tap away and duplicate launchers stay out of the chat',async()=>{
+  const html=await read('qu-market.html');
+  assert.doesNotMatch(html,/class="aggy-primary-actions"/);
+  assert.doesNotMatch(html,/class="aggy-chat-actions"/);
+  assert.doesNotMatch(html,/class="assistant-profile"/);
+  assert.match(html,/id="aggyGridToggle"/);
+  assert.match(html,/data-chat-call="audio"/);
+  assert.match(html,/data-chat-call="video"/);
+  assert.match(html,/data-chat-attach aria-label="Adjuntar foto o archivo"/);
+  assert.match(html,/data-chat-camera aria-label="Tomar foto"/);
+  assert.match(html,/id="mic" aria-label="Hablar con Aggy Voice LIVE"/);
+  assert.match(html,/id="send"/);
+  assert.match(html,/data-market-aggy-panel="more"/);
 });
 
 test('individual and group calls are fail closed before E2EE/PQC evidence',async()=>{
@@ -66,10 +84,10 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.28');
-  assert.match(html,/v1\.0\.0-rc\.28/);
+  assert.equal(release.version,'1.0.0-rc.29');
+  assert.match(html,/v1\.0\.0-rc\.29/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.28'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.29'/);
 });
 
 test('contracted customers bypass the visitor trial without bypassing governance',async()=>{
@@ -91,7 +109,7 @@ test('essential communications remain primary and every file operation is receip
     read('qu-market.html'),
     read('workers/aggy-realtime-session.js')
   ]);
-  for(const label of ['Voz LIVE','Chat seguro','Enviar','Llamar'])assert.match(html,new RegExp(label));
+  for(const control of ['id="mic"','id="send"','data-chat-attach','data-chat-camera','data-chat-call="audio"','data-chat-call="video"'])assert.match(html,new RegExp(control));
   for(const receipt of ['CDR_PROVIDER_CLEAN','QUFENSE_ALLOW','E2EE_PQC_ENVELOPE_VERIFIED','QUVAULT_STORED'])assert.match(worker,new RegExp(receipt));
   assert.match(worker,/operationsBlocked:\['send','receive_release','download','store'\]/);
   assert.match(worker,/niapCertified:false/);

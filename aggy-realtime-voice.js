@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.28';
+  const aggyVersion='1.0.0-rc.29';
   const entitlementToken=(()=>{
     try{
       return String(window.SECQUOIA_AGGY_ENTITLEMENT_TOKEN||document.querySelector('meta[name="secquoia-aggy-entitlement"]')?.content||sessionStorage.getItem('secquoia.aggy.entitlement')||'').trim();

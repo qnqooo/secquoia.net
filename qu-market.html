@@ -53,7 +53,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
 @media(max-width:1100px){.package-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.onboarding-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.value-strip,.package-grid,.estimator,.onboarding-steps{grid-template-columns:1fr}.section-intro{align-items:flex-start;flex-direction:column}.conversion-section{padding-top:28px}.package-card{min-height:0}.estimator{gap:14px}.estimator-options,.governed-route ol{grid-template-columns:1fr}.market-tour-inner{padding:22px}}
 </style>
-<link rel="stylesheet" href="aggy-marketplace.css?v=rc28-layout2">
+<link rel="stylesheet" href="aggy-marketplace.css?v=1.0.0-rc.29">
 <link rel="stylesheet" href="qumarket-addons.css">
 </head>
 <body class="en">
@@ -69,7 +69,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <div class="runtime-settings" aria-hidden="true">
         <select class="nav-select" id="assistantLangTop" title="Aggy language"><option value="auto">Auto language</option><option value="en">English</option><option value="es">Español</option></select>
         <select class="nav-select" id="voiceContext" title="Aggy voice context"><option value="advisor">Advisor voice</option><option value="executive">Executive brief</option><option value="technical">Technical deep dive</option><option value="friendly">Friendly guide</option></select>
-        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.28 · Voz de SQAILE - Acento neutro</span>
+        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.29 · Voz de SQAILE - Acento neutro</span>
         <div class="language-toggle"><button class="btn active" id="enBtn" type="button">EN</button><button class="btn" id="esBtn" type="button">ES</button></div>
       </div>
     </div>
@@ -331,17 +331,12 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <div class="aggy-top-trust" aria-label="Protección de comunicaciones"><strong>E2EE/PQC</strong><small>QuVault · QuFense</small></div>
       <button class="aggy-grid-toggle" type="button" id="aggyGridToggle" aria-controls="aggyAppGrid" aria-expanded="false"><span aria-hidden="true">▦</span><small>Menú</small></button>
     </nav>
-    <nav class="aggy-primary-actions" aria-label="Funciones esenciales de Aggy">
-      <button type="button" data-open-aggy-panel="voice"><span aria-hidden="true">●</span><strong>Voz LIVE</strong><small>Hablar ahora</small></button>
-      <button class="active" type="button" data-open-aggy-panel="chat"><span aria-hidden="true">◌</span><strong>Chat seguro</strong><small>1:1 y grupos</small></button>
-      <button type="button" data-chat-attach><span aria-hidden="true">＋</span><strong>Enviar</strong><small>Fotos y archivos</small></button>
-      <button type="button" data-open-aggy-panel="calls"><span aria-hidden="true">☎</span><strong>Llamar</strong><small>Audio y video</small></button>
-    </nav>
     <section class="aggy-app-grid hidden" id="aggyAppGrid" aria-label="Todas las funciones de Aggy">
       <header><div><strong>Funciones de Aggy</strong><small>Comunicaciones primero; herramientas y controles en un solo lugar.</small></div><button type="button" id="aggyGridClose" aria-label="Cerrar menú">×</button></header>
       <div>
         <button type="button" data-open-aggy-panel="contacts"><span>♙</span><strong>Contactos</strong><small>Personas verificadas</small></button>
         <button type="button" data-open-aggy-panel="groups"><span>◎</span><strong>Grupos</strong><small>Equipos gobernados</small></button>
+        <button type="button" data-open-aggy-panel="calls"><span>☎</span><strong>Llamadas</strong><small>Historial y grupos</small></button>
         <button type="button" data-open-aggy-panel="models"><span>✦</span><strong>IA Models</strong><small>SQAILE · QuHub</small></button>
         <button type="button" data-open-aggy-panel="security"><span>◇</span><strong>Seguridad</strong><small>E2EE/PQC y evidencias</small></button>
         <button type="button" data-open-aggy-panel="more"><span>☰</span><strong>Ajustes</strong><small>Perfil y preferencias</small></button>
@@ -373,29 +368,18 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
         </aside>
         <main class="aggy-chat-main">
           <section class="aggy-thread-view active" data-aggy-thread-view="assistant">
-            <div class="aggy-conversation-head"><div class="aggy-person-avatar">A</div><p><strong>Aggy</strong><small>En línea · Voz de SQAILE</small></p><div class="aggy-thread-security"><b>Asistente</b><small>Contexto protegido</small></div><div class="aggy-thread-tools"><button type="button" data-chat-call="audio" data-chat-target="assistant" aria-label="Llamada de audio">☎</button><button type="button" data-chat-call="video" data-chat-target="assistant" aria-label="Videollamada">▣</button><button type="button" data-chat-attach aria-label="Adjuntar archivo">＋</button><button type="button" data-chat-menu aria-label="Abrir menú">▦</button></div></div>
-            <div class="assistant-profile">
-              <input id="visitorName" placeholder="Your name / Nombre">
-              <select id="assistantNeed"><option value="auto">Need context</option><option value="protect">Protect endpoints</option><option value="soc">SOC / monitoring</option><option value="payments">Payments / fintech</option><option value="finance">Cost / pricing</option><option value="ai">AI agent / voice</option></select>
-            </div>
-            <div class="aggy-chat-actions" aria-label="Acciones rápidas de Aggy">
-              <button type="button" data-aggy-quick="chat"><span>＋</span><small>Nuevo chat</small></button>
-              <button type="button" data-aggy-quick="file"><span>▱</span><small>Archivo</small></button>
-              <button type="button" data-aggy-quick="voice"><span>●</span><small>Voz</small></button>
-              <button type="button" data-aggy-quick="contact"><span>♙</span><small>Contacto</small></button>
-              <button type="button" data-aggy-quick="group"><span>◎</span><small>Grupo</small></button>
-            </div>
+            <div class="aggy-conversation-head"><div class="aggy-person-avatar">A</div><p><strong>Aggy</strong><small>En línea · Voz de SQAILE</small></p><div class="aggy-thread-security"><b>E2EE/PQC</b><small>Contexto protegido</small></div><div class="aggy-thread-tools"><button type="button" data-chat-call="audio" data-chat-target="assistant" aria-label="Llamada de audio">☎</button><button type="button" data-chat-call="video" data-chat-target="assistant" aria-label="Videollamada">▣</button><button type="button" data-chat-menu aria-label="Abrir menú">▦</button></div></div>
             <div class="conversation" id="conversation"></div>
             <div class="assistant-input aggy-composer">
               <button class="btn aggy-attach" type="button" data-chat-attach aria-label="Adjuntar foto o archivo">＋</button>
               <button class="btn aggy-camera" type="button" data-chat-camera aria-label="Tomar foto">◉</button>
               <input id="agentInput" placeholder="Escribe a Aggy…">
-              <button class="btn mic" type="button" id="mic">Voz</button>
+              <button class="btn mic" type="button" id="mic" aria-label="Hablar con Aggy Voice LIVE">Voz</button>
               <button class="btn primary" type="button" id="send">Enviar</button>
             </div>
           </section>
           <section class="aggy-thread-view" data-aggy-thread-view="secure">
-            <div class="aggy-conversation-head"><div class="aggy-person-avatar secure">◇</div><p><strong>Sala segura</strong><small id="aggySecureStatus">Sin conexión</small></p><div class="aggy-thread-security"><b id="aggySecureBadge">E2EE/PQC</b><small>Huella manual</small></div><div class="aggy-thread-tools"><button type="button" data-chat-call="audio" data-chat-target="secure" aria-label="Llamada cifrada de audio">☎</button><button type="button" data-chat-call="video" data-chat-target="secure" aria-label="Videollamada cifrada">▣</button><button type="button" data-chat-attach aria-label="Adjuntar archivo protegido">＋</button><button type="button" data-chat-menu aria-label="Abrir menú">▦</button></div></div>
+            <div class="aggy-conversation-head"><div class="aggy-person-avatar secure">◇</div><p><strong>Sala segura</strong><small id="aggySecureStatus">Sin conexión</small></p><div class="aggy-thread-security"><b id="aggySecureBadge">E2EE/PQC</b><small>Huella manual</small></div><div class="aggy-thread-tools"><button type="button" data-chat-call="audio" data-chat-target="secure" aria-label="Llamada cifrada de audio">☎</button><button type="button" data-chat-call="video" data-chat-target="secure" aria-label="Videollamada cifrada">▣</button><button type="button" data-chat-menu aria-label="Abrir menú">▦</button></div></div>
             <div class="aggy-secure-setup" id="aggySecureSetup">
               <strong>Conversación cifrada</strong>
               <p>Crea una sala y comparte la invitación, o pega la invitación recibida. La huella debe compararse por otro canal.</p>
@@ -453,7 +437,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <aside class="aggy-privacy-note"><strong>Grupos gobernados</strong><span>Cada integrante debe aprobarse antes de una conversación o llamada real.</span></aside>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="more">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.28</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.29</span></div>
       <div class="aggy-profile-card"><div class="avatar">A</div><div><strong>Asistente inteligente</strong><small>Conversación, archivos, modelos y seguridad en un solo lugar.</small></div></div>
       <div class="aggy-more-list">
         <button type="button" data-open-aggy-panel="voice"><span>●</span><p><strong>Aggy Voice Live</strong><small>Conversación Realtime bidireccional</small></p><i>›</i></button>
@@ -461,10 +445,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
         <button type="button" data-open-aggy-panel="models"><span>✦</span><p><strong>IA Models</strong><small>SQAILE Core y proveedores en QuHub</small></p><i>›</i></button>
         <button type="button" data-open-aggy-panel="security"><span>◇</span><p><strong>Seguridad</strong><small>Estado E2EE/PQC y motor seguro</small></p><i>›</i></button>
       </div>
-      <details class="aggy-drawer"><summary>Preferencias e identidad</summary><div class="aggy-form-grid two"><label class="aggy-label">Nombre<input data-aggy-name-mirror placeholder="Nombre"></label><label class="aggy-label">Estado<input value="QuIdentify requerido" readonly></label></div></details>
+      <details class="aggy-drawer"><summary>Preferencias e identidad</summary><div class="aggy-form-grid two"><label class="aggy-label">Nombre<input id="visitorName" placeholder="Nombre"></label><label class="aggy-label">Necesidad<select id="assistantNeed"><option value="auto">Need context</option><option value="protect">Protect endpoints</option><option value="soc">SOC / monitoring</option><option value="payments">Payments / fintech</option><option value="finance">Cost / pricing</option><option value="ai">AI agent / voice</option></select></label></div><p class="aggy-note">QuIdentify es requerido para comunicaciones con terceros.</p></details>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="voice">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.28 · incluida durante contratos activos; visitantes: 5 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.29 · incluida durante contratos activos; visitantes: 5 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
       <div class="aggy-voice-stage" id="aggyVoiceStage" data-state="idle">
         <div class="aggy-orb" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <strong id="aggyVoiceHeadline">Activando Aggy Voice</strong>
@@ -704,10 +688,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   const params=new URLSearchParams(location.search);if(params.get('quidentify')==='verified')setVerified(params.get('session')||params.get('state')||'verified-callback');assistantLangTop.value=profile.langPref;voiceContext.value=profile.voiceContext;visitorName.value=profile.name;setLang(profile.langPref==='auto'?inferLanguage():profile.langPref);restoreSavedEstimate();renderProducts();renderPackages();renderEstimate();updateCart();renderDeployment();renderIdentityGate();setAssistantState('expanded',{persist:false,focus:false});if(params.get('embed')==='1'){document.body.classList.add('aggy-embed-mode');assistant.classList.add('aggy-full','open')}addMsg(greeting(),'agent');agentState.textContent=lang()==='es'?'Aggy disponible':'Aggy ready';micBtn.textContent='Aggy Voice';window.addEventListener('load',()=>openAggyVoice({focus:false}),{once:true});if(params.get('aggy')==='voice')openAggyVoice({focus:false});if(params.get('bundle')==='1')bundle();else if(params.get('product'))addProduct(params.get('product').toLowerCase());
 })();
 </script>
-<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.28"></script>
-<script src="aggy-secure-chat.js?v=1.0.0-rc.28"></script>
-<script src="aggy-marketplace.js?v=1.0.0-rc.28"></script>
-<script src="aggy-realtime-voice.js?v=1.0.0-rc.28"></script>
+<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.29"></script>
+<script src="aggy-secure-chat.js?v=1.0.0-rc.29"></script>
+<script src="aggy-marketplace.js?v=1.0.0-rc.29"></script>
+<script src="aggy-realtime-voice.js?v=1.0.0-rc.29"></script>
 <script src="qumarket-addons.js"></script>
 </body>
 </html>

@@ -20,6 +20,14 @@
   gridToggle?.addEventListener('click',()=>setGrid(appGrid?.classList.contains('hidden')??false));
   $('#aggyGridClose')?.addEventListener('click',()=>setGrid(false));
   $$('[data-chat-menu]').forEach(button=>button.addEventListener('click',()=>setGrid(true)));
+  const composerInput=$('#agentInput'),composerSend=$('#send'),composerMic=$('#mic');
+  const syncComposerAction=()=>{
+    const hasMessage=Boolean(composerInput?.value.trim());
+    if(composerSend)composerSend.hidden=!hasMessage;
+    if(composerMic)composerMic.hidden=hasMessage;
+  };
+  composerInput?.addEventListener('input',syncComposerAction);
+  syncComposerAction();
   const setAttachmentSheet=open=>{
     attachmentSheet?.classList.toggle('hidden',!open);
     if(open)setGrid(false);
