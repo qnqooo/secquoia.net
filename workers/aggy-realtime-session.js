@@ -1058,6 +1058,11 @@ export default {
         freeSeconds:AGGY_FREE_MS/1000,
         continuation:aggyBlockQuote(),
         rateCardCurrent,
+        entitlements:{
+          verifier:env.AGGY_ENTITLEMENT_SIGNING_SECRET?'ready':'not_configured',
+          issuer:env.AGGY_ENTITLEMENT_SIGNING_SECRET&&env.AGGY_ENTITLEMENT_ISSUER_SECRET?'ready':'not_configured',
+          activationBinding:'QUIIDENTIFY_BACKEND_REQUIRED'
+        },
         paidContinuation:{
           status:env.AGGY_QUPAY_WEBHOOK_SECRET?'ready':'blocked',
           quPayWebhook:env.AGGY_QUPAY_WEBHOOK_SECRET?'configured':'not_configured',
