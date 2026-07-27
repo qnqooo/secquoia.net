@@ -38,18 +38,27 @@ test('Aggy opens without stealing focus and starts Voice LIVE automatically',()=
   assert.match(embed,/secquoia:aggy:voice-state/);
 });
 
+test('Aggy compact launcher exposes a ten-link server-synchronized digital timer',()=>{
+  assert.match(embed,/class="minute-chain" role="meter"/);
+  assert.match(embed,/repeat\(10\)/);
+  assert.match(embed,/secquoia:aggy:usage-state/);
+  assert.match(embed,/elapsed=Math\.min\(10,Math\.floor\(\(total-remaining\)\/60\)\)/);
+  assert.match(embed,/minute-chain\.exhausted/);
+  assert.match(embed,/ECOSYSTEM_PREVIEW/);
+});
+
 test('Aggy compact widget uses the governed Realtime voice client only',()=>{
   for(const id of ['aggyVoiceStage','aggyVoiceBadge','aggyVoiceHeadline','aggyVoiceCaption','aggyLanguage','aggyLiveVoice','aggyVoiceMute','aggyVoiceEnd']){
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.30"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.31"/);
   assert.match(embed,/qu-market\.html\?embed=1&aggy=1/);
   assert.match(embed,/title="Aggy Communications"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.30"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.30"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.31"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.31"[^>]*data-aggy-site="secquoia\.net"/);
 });

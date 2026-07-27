@@ -13,7 +13,8 @@
   ],
   "vars": {
     "OPENAI_REALTIME_MODEL": "gpt-realtime-2.1",
-    "AGGY_GLASSWALL_MODE": "STRUCTURE_READY_NOT_CONNECTED"
+    "AGGY_GLASSWALL_MODE": "STRUCTURE_READY_NOT_CONNECTED",
+    "AGGY_PREVIEW_POLICY_EPOCH": "2026-07-27.1"
   },
   "durable_objects": {
     "bindings": [

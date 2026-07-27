@@ -163,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.30');
+  assert.equal(release.version,'1.0.0-rc.31');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -236,6 +236,10 @@ test('Marketplace opens Aggy automatically and routes Voice LIVE without stealin
   assert.doesNotMatch(html,/data-market-aggy-tab="voice"/);
   assert.match(html,/EN VIVO · 10 min gratis/);
   assert.match(html,/aggy-market-live-halo/);
+  assert.match(html,/class="assistant-minute-chain" role="meter"/);
+  assert.equal((html.match(/<i class="assistant-minute-link"><\/i>/g)||[]).length,10);
+  assert.match(html,/secquoia:aggy:usage-state/);
+  assert.match(html,/updateAggyMinuteChain/);
 });
 
 test('QuCFA prices one prepaid Aggy Minute without overdraft',()=>{
@@ -392,4 +396,70 @@ test('QuIdentify contract entitlements are signed, expiry-bound and tamper-evide
     }),secret),
     /invalid_entitlement_signature/
   );
+});
+
+test('QuIdentify Ecosystem Preview is SuperAdmin-only, expiring and epoch-revocable',async()=>{
+  const secret='test-only-entitlement-secret-with-32-bytes';
+  const request={
+    accessProfile:'ECOSYSTEM_PREVIEW',
+    subject:'quidentify:eddie',
+    grantId:'preview-internal-2026-07',
+    projectId:'secquoia-ecosystem-validation',
+    reason:'Owner browser testing',
+    issuedByRole:'SUPERADMIN',
+    validUntil:new Date(Date.now()+7*86_400_000).toISOString()
+  };
+  const issued=await workerModule.issueAggyEntitlement(request,secret,'epoch-test-1');
+  const entitlementRequest=new Request('https://aggy.secquoia.group/api/aggy/usage/status',{
+    headers:{Authorization:`Bearer ${issued.token}`}
+  });
+  const entitlement=await workerModule.verifyAggyEntitlement(entitlementRequest,secret,'epoch-test-1');
+  assert.equal(entitlement.accessMode,'ECOSYSTEM_PREVIEW');
+  assert.equal(entitlement.grantId,request.grantId);
+  assert.equal(entitlement.projectId,request.projectId);
+  await assert.rejects(
+    workerModule.verifyAggyEntitlement(entitlementRequest,secret,'epoch-revoked'),
+    /preview_entitlement_revoked_or_invalid/
+  );
+  await assert.rejects(
+    workerModule.issueAggyEntitlement({...request,issuedByRole:'USER'},secret,'epoch-test-1'),
+    /invalid_entitlement_request/
+  );
+  assert.match(worker,/superadmin_required_for_preview/);
+  assert.match(worker,/AGGY_PREVIEW_MAX_MS=90\*24\*60\*60\*1000/);
+});
+
+test('Ecosystem Preview issuance endpoint fails closed and requires QuIdentify SuperAdmin',async()=>{
+  const env={
+    AGGY_ENTITLEMENT_SIGNING_SECRET:'test-only-entitlement-signing-secret-with-32-bytes',
+    AGGY_ENTITLEMENT_ISSUER_SECRET:'test-only-entitlement-issuer-secret-with-32-bytes',
+    AGGY_PREVIEW_POLICY_EPOCH:'epoch-http-test'
+  };
+  const body={
+    accessProfile:'ECOSYSTEM_PREVIEW',
+    subject:'quidentify:eddie',
+    grantId:'preview-http-2026-07',
+    projectId:'secquoia-ecosystem-validation',
+    reason:'Owner browser testing',
+    validUntil:new Date(Date.now()+7*86_400_000).toISOString()
+  };
+  const issue=role=>workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/entitlements/issue',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'X-Aggy-Issuer-Secret':env.AGGY_ENTITLEMENT_ISSUER_SECRET,
+      ...(role?{'X-QuIdentify-Role':role}:{})
+    },
+    body:JSON.stringify(body)
+  }),env);
+  const denied=await issue('USER');
+  assert.equal(denied.status,403);
+  assert.equal((await denied.json()).error,'superadmin_required_for_preview');
+  const issued=await issue('SUPERADMIN');
+  assert.equal(issued.status,201);
+  const payload=await issued.json();
+  assert.equal(payload.accessMode,'ECOSYSTEM_PREVIEW');
+  assert.equal(payload.qvitDebit,false);
+  assert.equal(payload.trialApplied,false);
+  assert.match(payload.token,/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
 });

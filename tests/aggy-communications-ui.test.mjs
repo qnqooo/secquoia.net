@@ -85,10 +85,10 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.30');
-  assert.match(html,/v1\.0\.0-rc\.30/);
+  assert.equal(release.version,'1.0.0-rc.31');
+  assert.match(html,/v1\.0\.0-rc\.31/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.30'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.31'/);
 });
 
 test('contracted customers bypass the visitor trial without bypassing governance',async()=>{
@@ -101,7 +101,8 @@ test('contracted customers bypass the visitor trial without bypassing governance
   assert.match(worker,/contractedServiceTrialMinutesApplied:false/);
   assert.match(worker,/contractedServiceQVitDebit:false/);
   assert.match(worker,/AGGY_ENTITLEMENT_SIGNING_SECRET/);
-  assert.match(voice,/status\?\.access\?\.mode==='CONTRACT_INCLUDED'/);
+  assert.match(voice,/const contractIncluded=isUnmeteredAccess\(accessMode\)/);
+  assert.match(worker,/ECOSYSTEM_PREVIEW/);
   assert.match(html,/incluida durante contratos activos; visitantes: 10 minutos gratis/);
 });
 

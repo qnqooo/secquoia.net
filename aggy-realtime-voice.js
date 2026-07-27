@@ -20,7 +20,8 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.30';
+  const aggyVersion='1.0.0-rc.31';
+  const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
       thresholdSeconds:300,
@@ -47,6 +48,7 @@
     }catch{return ''}
   })();
   const authorizedHeaders=headers=>entitlementToken?{...headers,Authorization:`Bearer ${entitlementToken}`}:{...headers};
+  const isUnmeteredAccess=mode=>['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(mode);
 
   let peer=null;
   let channel=null;
@@ -83,6 +85,21 @@
     if(window.parent!==window&&parentOrigin)window.parent.postMessage(detail,parentOrigin);
   };
 
+  const publishUsageState=(remainingSeconds,accessMode='VISITOR_TRIAL')=>{
+    const contractIncluded=isUnmeteredAccess(accessMode);
+    const remaining=contractIncluded?null:Math.max(0,Math.min(freeVoiceSeconds,Number(remainingSeconds||0)));
+    const detail=Object.freeze({
+      type:'secquoia:aggy:usage-state',
+      accessMode,
+      totalSeconds:freeVoiceSeconds,
+      remainingSeconds:remaining,
+      elapsedMinutes:contractIncluded?null:Math.min(10,Math.floor((freeVoiceSeconds-remaining)/60)),
+      version:aggyVersion
+    });
+    window.dispatchEvent(new CustomEvent('secquoia:aggy:usage-state',{detail}));
+    if(window.parent!==window&&parentOrigin)window.parent.postMessage(detail,parentOrigin);
+  };
+
   const fetchWithTimeout=(url,options={},timeoutMs=8000)=>{
     const controller=new AbortController();
     const timeoutId=setTimeout(()=>controller.abort(),timeoutMs);
@@ -112,12 +129,15 @@
 
   const renderUsageStatus=status=>{
     lastUsageStatus=status;
-    const contractIncluded=status?.access?.mode==='CONTRACT_INCLUDED';
+    const accessMode=status?.access?.mode||'VISITOR_TRIAL';
+    const contractIncluded=isUnmeteredAccess(accessMode);
+    const previewAccess=accessMode==='ECOSYSTEM_PREVIEW';
     const free=Number(status?.free?.remainingSeconds||0);
     const balance=Number(status?.wallet?.balance||0);
     const price=Number(status?.continuation?.customerQVit||0);
     const topUpAvailable=status?.wallet?.topUpAvailable===true;
     const topUp=$('#aggyUsageTopUp');
+    publishUsageState(free,accessMode);
     if(continuePaidButton)continuePaidButton.hidden=true;
     if(topUp){
       if(status?.wallet?.topUpUrl)topUp.href=status.wallet.topUpUrl;
@@ -126,12 +146,12 @@
     }
     if(status?.activeLease){
       usageUi(
-        contractIncluded?'Aggy incluida en tu servicio':'Sesión medida en curso',
-        contractIncluded?`Acceso vigente hasta ${new Date(status.access.validUntil).toLocaleDateString('es-CO')} · revalidación automática`:`${status.activeLease.kind==='FREE'?'Prueba sin costo':'Aggy Minute'} · corte automático activo`,
+        previewAccess?'Ecosystem Preview activo':contractIncluded?'Aggy incluida en tu servicio':'Sesión medida en curso',
+        contractIncluded?`Acceso sin consumo vigente hasta ${new Date(status.access.validUntil).toLocaleDateString('es-CO')} · revalidación automática`:`${status.activeLease.kind==='FREE'?'Prueba sin costo':'Aggy Minute'} · corte automático activo`,
         'ready'
       );
     }else if(contractIncluded){
-      usageUi('Aggy incluida durante tu contrato',`Sin límite de cortesía ni débito QVit · acceso hasta ${new Date(status.access.validUntil).toLocaleDateString('es-CO')}`,'ready');
+      usageUi(previewAccess?'Ecosystem Preview autorizado':'Aggy incluida durante tu contrato',`Sin límite de cortesía ni débito QVit · acceso hasta ${new Date(status.access.validUntil).toLocaleDateString('es-CO')}`,'ready');
     }else if(free>0){
       usageUi(
         `${Math.ceil(free/60)} min gratis de Aggy Voice LIVE`,
@@ -221,6 +241,7 @@
       reservedQVit:body.reservedQVit,
       expiresAt:null
     };
+    if(body.kind==='FREE')publishUsageState(body.durationSeconds);
     usageUi(
       body.kind==='CONTRACT'?'Acceso contractual validado':body.kind==='FREE'?'Prueba incluida reservada':'QVit reservado',
       body.kind==='CONTRACT'?`Incluido en tu servicio · sesión operativa renovable de ${Math.ceil(body.durationSeconds/60)} min.`:body.kind==='FREE'?`${Math.ceil(body.durationSeconds/60)} min disponibles.`:`${Number(body.reservedQVit).toLocaleString('es-CO')} QVit · Aggy Minute de ${body.durationSeconds} s.`,
@@ -295,11 +316,13 @@
     usageHeartbeat=setInterval(()=>{
       usagePost('heartbeat').then(async response=>{
         if(!response?.ok){
+          publishUsageState(0);
           usageUi('Voz LIVE finalizada','Puedes seguir por chat o activar un paquete de Tiempo IA para continuar por voz.','blocked');
           endVoice('LEASE_EXPIRED');
           return;
         }
         const result=await response.json();
+        publishUsageState(result.remainingSeconds);
         if(notifyFreeTimeRemaining(result.remainingSeconds))return;
         usageUi(
           usageLease.kind==='FREE'?'Tiempo incluido activo':'Aggy Minute activo',
@@ -312,6 +335,7 @@
       });
     },10_000);
     usageHardStop=setTimeout(()=>{
+      if(usageLease?.kind==='FREE')publishUsageState(0);
       usageUi('Voz LIVE finalizada','Puedes seguir por chat o activar un paquete de Tiempo IA para continuar por voz.','blocked');
       endVoice('CLIENT_HARD_STOP');
     },Math.max(0,endAt-Date.now())+250);
@@ -514,7 +538,7 @@
       let usageStatus=lastUsageStatus;
       if(!usageStatus||!userInitiated)usageStatus=await fetchUsageStatus();
       const freeRemaining=Number(usageStatus?.free?.remainingSeconds||0);
-      const contractIncluded=usageStatus?.access?.mode==='CONTRACT_INCLUDED';
+      const contractIncluded=isUnmeteredAccess(usageStatus?.access?.mode);
       if(!contractIncluded&&freeRemaining<=0&&!paidContinuationConfirmed){
         connecting=false;
         startButton.disabled=false;
@@ -530,7 +554,7 @@
       );
       microphone=await requestMicrophone();
       usageStatus=await fetchUsageStatus();
-      if(usageStatus?.access?.mode!=='CONTRACT_INCLUDED'&&Number(usageStatus?.free?.remainingSeconds||0)<=0&&!paidContinuationConfirmed){
+      if(!isUnmeteredAccess(usageStatus?.access?.mode)&&Number(usageStatus?.free?.remainingSeconds||0)<=0&&!paidContinuationConfirmed){
         stopTracks(microphone);
         microphone=null;
         connecting=false;

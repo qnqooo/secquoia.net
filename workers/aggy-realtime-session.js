@@ -4,6 +4,8 @@ const QVIT_PER_USD=1_000_000;
 const TARGET_MARGIN_BPS=3500;
 const AGGY_FREE_MS=10*60*1000;
 const AGGY_CONTRACT_SESSION_MS=60*60*1000;
+const AGGY_PREVIEW_MAX_MS=90*24*60*60*1000;
+const UNMETERED_ACCESS_MODES=new Set(['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW']);
 const AGGY_CONTRACT_PROVIDER_BUDGET_USD=2.5;
 const AGGY_PAID_BLOCK_MS=60*1000;
 const AGGY_MAX_PAID_BLOCKS_DAY=15;
@@ -42,6 +44,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   freeScope:'SECQUOIA_ECOSYSTEM_USER',
   freeClockStarts:'FIRST_LIVE_VOICE_SESSION',
   contractedServiceAccess:'INCLUDED_UNTIL_ENTITLEMENT_EXPIRY',
+  specialAccess:'QUIDENTIFY_SIGNED_ECOSYSTEM_PREVIEW',
   contractedServiceTrialMinutesApplied:false,
   contractedServiceQVitDebit:false,
   contractedSessionRevalidationSeconds:AGGY_CONTRACT_SESSION_MS/1000,
@@ -59,7 +62,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.30',
+  version:'1.0.0-rc.31',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -231,18 +234,23 @@ const secureSecretMatch=async(actual,expected)=>{
   for(let index=0;index<Math.min(left.length,right.length);index++)mismatch|=left.charCodeAt(index)^right.charCodeAt(index);
   return mismatch===0;
 };
-const issueAggyEntitlement=async(body,secret)=>{
+const issueAggyEntitlement=async(body,secret,previewPolicyEpoch='v1')=>{
   const now=Math.floor(Date.now()/1000);
-  const expiresAtMs=Date.parse(String(body.contractEndsAt||''));
+  const accessProfile=body.accessProfile==='ECOSYSTEM_PREVIEW'?'ECOSYSTEM_PREVIEW':'CONTRACT_INCLUDED';
+  const preview=accessProfile==='ECOSYSTEM_PREVIEW';
+  const expiresAtMs=Date.parse(String(preview?body.validUntil:body.contractEndsAt||''));
   const exp=Math.floor(expiresAtMs/1000);
   if(
     !secret||
     !String(body.subject||'').trim()||
-    !String(body.contractId||'').trim()||
-    !String(body.serviceId||'').trim()||
+    (!preview&&!String(body.contractId||'').trim())||
+    (!preview&&!String(body.serviceId||'').trim())||
+    (preview&&!String(body.grantId||'').trim())||
+    (preview&&!String(body.projectId||'').trim())||
+    (preview&&body.issuedByRole!=='SUPERADMIN')||
     !Number.isFinite(exp)||
     exp<=now||
-    exp>now+5*366*24*60*60
+    exp>now+(preview?AGGY_PREVIEW_MAX_MS/1000:5*366*24*60*60)
   )throw new Error('invalid_entitlement_request');
   const header=encodeBase64Url(JSON.stringify({alg:'HS256',typ:'JWT'}));
   const payload=encodeBase64Url(JSON.stringify({
@@ -250,8 +258,13 @@ const issueAggyEntitlement=async(body,secret)=>{
     iss:'QuIdentify',
     aud:'Aggy',
     sub:String(body.subject).slice(0,180),
-    contractId:String(body.contractId).slice(0,180),
-    serviceId:String(body.serviceId).slice(0,180),
+    accessProfile,
+    contractId:String(body.contractId||'').slice(0,180),
+    serviceId:String(body.serviceId||'').slice(0,180),
+    grantId:preview?String(body.grantId).slice(0,180):null,
+    projectId:preview?String(body.projectId).slice(0,180):null,
+    previewPolicyEpoch:preview?String(previewPolicyEpoch).slice(0,80):null,
+    reason:preview?String(body.reason||'ecosystem-preview').slice(0,240):null,
     status:'ACTIVE',
     aggyIncluded:true,
     iat:now,
@@ -262,7 +275,7 @@ const issueAggyEntitlement=async(body,secret)=>{
   const signature=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(`${header}.${payload}`)));
   return {token:`${header}.${payload}.${encodeBase64Url(signature)}`,expiresAt:new Date(exp*1000).toISOString()};
 };
-const verifyAggyEntitlement=async(request,secret)=>{
+const verifyAggyEntitlement=async(request,secret,previewPolicyEpoch='v1')=>{
   const authorization=String(request.headers.get('Authorization')||'');
   if(!authorization)return null;
   if(!secret)throw new Error('entitlement_verifier_not_configured');
@@ -297,11 +310,21 @@ const verifyAggyEntitlement=async(request,secret)=>{
     Number(payload.exp)<=now||
     (payload.nbf&&Number(payload.nbf)>now+30)
   )throw new Error('inactive_or_expired_entitlement');
+  const accessMode=payload.accessProfile==='ECOSYSTEM_PREVIEW'?'ECOSYSTEM_PREVIEW':'CONTRACT_INCLUDED';
+  if(
+    accessMode==='ECOSYSTEM_PREVIEW'&&(
+      !String(payload.grantId||'').trim()||
+      !String(payload.projectId||'').trim()||
+      payload.previewPolicyEpoch!==String(previewPolicyEpoch)
+    )
+  )throw new Error('preview_entitlement_revoked_or_invalid');
   return Object.freeze({
-    accessMode:'CONTRACT_INCLUDED',
+    accessMode,
     subject:String(payload.sub).slice(0,180),
     contractId:String(payload.contractId||'').slice(0,180),
     serviceId:String(payload.serviceId||'').slice(0,180),
+    grantId:String(payload.grantId||'').slice(0,180)||null,
+    projectId:String(payload.projectId||'').slice(0,180)||null,
     expiresAt:new Date(Number(payload.exp)*1000).toISOString(),
     expiresAtMs:Number(payload.exp)*1000
   });
@@ -550,7 +573,7 @@ class AggyUsageMeter {
         this.sql.exec("UPDATE leases SET status='EXPIRED',ended_at_ms=?,end_reason='PENDING_TIMEOUT' WHERE lease_id=?",now,lease.lease_id);
         continue;
       }
-      if(lease.kind==='FREE'&&lease.access_mode!=='CONTRACT_INCLUDED'){
+      if(lease.kind==='FREE'&&!UNMETERED_ACCESS_MODES.has(lease.access_mode)){
         this.sql.exec('UPDATE account SET free_used_ms = MIN(?, free_used_ms + ?) WHERE id = 1',AGGY_FREE_MS,lease.duration_ms);
       }
       this.sql.exec("UPDATE leases SET status='EXPIRED',ended_at_ms=?,end_reason='TIME_LIMIT' WHERE lease_id=?",now,lease.lease_id);
@@ -563,18 +586,20 @@ class AggyUsageMeter {
     const account=this.account();
     const lease=this.activeLease();
     const freeRemainingMs=Math.max(0,AGGY_FREE_MS-Number(account.free_used_ms));
-    const contractActive=entitlement?.accessMode==='CONTRACT_INCLUDED'&&Number(entitlement.expiresAtMs)>now;
-    const publicLeaseKind=lease?.access_mode==='CONTRACT_INCLUDED'?'CONTRACT':lease?.kind;
+    const includedActive=UNMETERED_ACCESS_MODES.has(entitlement?.accessMode)&&Number(entitlement.expiresAtMs)>now;
+    const publicLeaseKind=UNMETERED_ACCESS_MODES.has(lease?.access_mode)?'CONTRACT':lease?.kind;
     return {
       schema:'secquoia.aggy.usage-status.v1',
-      status:lease?'LEASE_ACTIVE':contractActive?'CONTRACT_INCLUDED':freeRemainingMs?'FREE_AVAILABLE':Number(account.qvit_balance)>=AGGY_PAID_BLOCK_QVIT?'PAID_AVAILABLE':'TOP_UP_REQUIRED',
-      access:contractActive?{
-        mode:'CONTRACT_INCLUDED',
-        billing:'INCLUDED_IN_ACTIVE_SERVICE',
+      status:lease?'LEASE_ACTIVE':includedActive?entitlement.accessMode:freeRemainingMs?'FREE_AVAILABLE':Number(account.qvit_balance)>=AGGY_PAID_BLOCK_QVIT?'PAID_AVAILABLE':'TOP_UP_REQUIRED',
+      access:includedActive?{
+        mode:entitlement.accessMode,
+        billing:entitlement.accessMode==='ECOSYSTEM_PREVIEW'?'SUPERADMIN_APPROVED_PREVIEW_NO_METER':'INCLUDED_IN_ACTIVE_SERVICE',
         trialApplied:false,
         qvitDebit:false,
         contractId:entitlement.contractId||null,
         serviceId:entitlement.serviceId||null,
+        grantId:entitlement.grantId||null,
+        projectId:entitlement.projectId||null,
         validUntil:entitlement.expiresAt,
         operationalSessionSeconds:Math.min(AGGY_CONTRACT_SESSION_MS,Number(entitlement.expiresAtMs)-now)/1000,
         automaticRevalidation:true
@@ -602,11 +627,11 @@ class AggyUsageMeter {
     let kind='FREE';
     let duration=freeRemaining;
     let reserved=0;
-    const contractActive=body.entitlement?.accessMode==='CONTRACT_INCLUDED'&&Number(body.entitlement.expiresAtMs)>now;
+    const contractActive=UNMETERED_ACCESS_MODES.has(body.entitlement?.accessMode)&&Number(body.entitlement.expiresAtMs)>now;
     let accessMode='VISITOR_TRIAL';
     let entitlementExpiresAtMs=null;
     if(contractActive){
-      accessMode='CONTRACT_INCLUDED';
+      accessMode=body.entitlement.accessMode;
       entitlementExpiresAtMs=Number(body.entitlement.expiresAtMs);
       duration=Math.min(AGGY_CONTRACT_SESSION_MS,entitlementExpiresAtMs-now);
     }else if(duration<=0){
@@ -696,7 +721,7 @@ class AggyUsageMeter {
     if(!this.validCapability(row,String(body.capabilityHash||'')))return this.reply({error:'invalid_lease_capability'},401);
     if(row.status!=='ACTIVE')return this.reply({error:'lease_expired',hardStop:true,status:row.status},402);
     const remaining=Math.max(0,Number(row.expires_at_ms)-now);
-    return this.reply({ok:true,leaseId:row.lease_id,kind:row.access_mode==='CONTRACT_INCLUDED'?'CONTRACT':row.kind,remainingSeconds:Math.ceil(remaining/1000),hardStop:remaining<=0});
+    return this.reply({ok:true,leaseId:row.lease_id,kind:UNMETERED_ACCESS_MODES.has(row.access_mode)?'CONTRACT':row.kind,remainingSeconds:Math.ceil(remaining/1000),hardStop:remaining<=0});
   }
   usage(body,now){
     this.closeExpired(now);
@@ -716,7 +741,7 @@ class AggyUsageMeter {
     }
     const total=this.sql.exec('SELECT COALESCE(SUM(provider_cost_qcu),0) AS total FROM usage_receipts WHERE lease_id = ?',row.lease_id).one();
     const providerCostQcu=Number(total.total);
-    const providerReserveQcu=Math.round((row.access_mode==='CONTRACT_INCLUDED'?AGGY_CONTRACT_PROVIDER_BUDGET_USD:AGGY_PROVIDER_RESERVE_USD)*1e6);
+    const providerReserveQcu=Math.round((UNMETERED_ACCESS_MODES.has(row.access_mode)?AGGY_CONTRACT_PROVIDER_BUDGET_USD:AGGY_PROVIDER_RESERVE_USD)*1e6);
     const hardStop=providerCostQcu>=Math.round(providerReserveQcu*AGGY_QUOPTIO_STOP_RATIO);
     return this.reply({accepted:true,duplicate:false,quote,providerCostQcu,providerReserveQcu,hardStop});
   }
@@ -726,7 +751,7 @@ class AggyUsageMeter {
     if(!this.validCapability(row,String(body.capabilityHash||'')))return this.reply({error:'invalid_lease_capability'},401);
     if(row.status!=='ACTIVE')return this.reply({settled:true,status:row.status});
     const elapsed=Math.max(0,Math.min(Number(row.duration_ms),now-Number(row.started_at_ms)));
-    if(row.kind==='FREE'&&row.access_mode!=='CONTRACT_INCLUDED')this.sql.exec('UPDATE account SET free_used_ms = MIN(?,free_used_ms + ?) WHERE id = 1',AGGY_FREE_MS,elapsed);
+    if(row.kind==='FREE'&&!UNMETERED_ACCESS_MODES.has(row.access_mode))this.sql.exec('UPDATE account SET free_used_ms = MIN(?,free_used_ms + ?) WHERE id = 1',AGGY_FREE_MS,elapsed);
     this.sql.exec("UPDATE leases SET status='ENDED',ended_at_ms=?,end_reason=? WHERE lease_id=?",now,String(body.reason||'CLIENT_END').slice(0,80),row.lease_id);
     const usage=this.sql.exec('SELECT COALESCE(SUM(provider_cost_qcu),0) AS provider_cost_qcu,COUNT(*) AS responses FROM usage_receipts WHERE lease_id = ?',row.lease_id).one();
     this.ledger(`settle:${row.lease_id}`,'QUCFA_QVIT_LEASE_SETTLED',0,{kind:row.kind,elapsedMs:elapsed,chargedQVit:row.reserved_qvit,providerCostQcu:Number(usage.provider_cost_qcu),responses:Number(usage.responses)},now);
@@ -795,7 +820,7 @@ export default {
     let entitlement=null;
     if(request.headers.has('Authorization')){
       try{
-        entitlement=await verifyAggyEntitlement(request,env.AGGY_ENTITLEMENT_SIGNING_SECRET);
+        entitlement=await verifyAggyEntitlement(request,env.AGGY_ENTITLEMENT_SIGNING_SECRET,env.AGGY_PREVIEW_POLICY_EPOCH||'v1');
       }catch(error){
         return json({error:error.message,accessMode:'FAIL_CLOSED'},401,request);
       }
@@ -811,10 +836,26 @@ export default {
       let body;
       try{body=await safeJson(request)}catch(error){return json({error:error.message},400,request)}
       try{
-        const issued=await issueAggyEntitlement(body,env.AGGY_ENTITLEMENT_SIGNING_SECRET);
+        const issuedByRole=String(request.headers.get('X-QuIdentify-Role')||'').toUpperCase();
+        if(body.accessProfile==='ECOSYSTEM_PREVIEW'&&issuedByRole!=='SUPERADMIN'){
+          return json({error:'superadmin_required_for_preview'},403,request);
+        }
+        const issued=await issueAggyEntitlement(
+          {...body,issuedByRole},
+          env.AGGY_ENTITLEMENT_SIGNING_SECRET,
+          env.AGGY_PREVIEW_POLICY_EPOCH||'v1'
+        );
+        console.info(JSON.stringify({
+          event:'aggy_preview_entitlement_issued',
+          accessProfile:body.accessProfile==='ECOSYSTEM_PREVIEW'?'ECOSYSTEM_PREVIEW':'CONTRACT_INCLUDED',
+          grantId:String(body.grantId||body.contractId||'').slice(0,180),
+          projectId:String(body.projectId||body.serviceId||'').slice(0,180),
+          issuedByRole,
+          expiresAt:issued.expiresAt
+        }));
         return json({
           schema:'secquoia.quidentify.aggy-entitlement-issued.v1',
-          accessMode:'CONTRACT_INCLUDED',
+          accessMode:body.accessProfile==='ECOSYSTEM_PREVIEW'?'ECOSYSTEM_PREVIEW':'CONTRACT_INCLUDED',
           trialApplied:false,
           qvitDebit:false,
           ...issued

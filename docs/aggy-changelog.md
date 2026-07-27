@@ -2,6 +2,16 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.31 - 2026-07-27
+
+### Digital Voice LIVE timer and governed preview access
+
+- Adds a ten-link compact digital meter synchronized with the server-side Voice LIVE allowance.
+- Illuminates one link per consumed minute through a green-to-red progression and leaves the completed bar red when the allowance ends.
+- Hides the visitor meter for contracted access and for SuperAdmin-approved `ECOSYSTEM_PREVIEW` passes.
+- Adds signed, expiring, QuIdentify-bound preview grants for internal testing and special projects without relying on IP-only allowlists.
+- Restricts preview issuance to SuperAdmin, limits grants to 90 days and supports emergency global revocation through a policy epoch rotation.
+
 ## 1.0.0-rc.30 - 2026-07-27
 
 ### Ten-minute guided introduction

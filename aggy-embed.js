@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.30';
+  const version='1.0.0-rc.31';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -25,6 +25,13 @@
       .launcher[data-voice="blocked"]{background:linear-gradient(135deg,#ffe39a,#ffb84f)}
       .launcher-copy{display:grid;gap:2px;text-align:left}
       .launcher-copy small{font:750 9px/1.1 Inter,Segoe UI,Arial,sans-serif;opacity:.72}
+      .minute-chain{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;width:118px;margin-top:3px}
+      .minute-link{height:4px;border-radius:999px;background:rgba(3,16,8,.15);box-shadow:inset 0 0 0 1px rgba(3,16,8,.12);transition:background .22s ease,box-shadow .22s ease,transform .22s ease}
+      .minute-link:nth-child(1){--link-color:#12c96b}.minute-link:nth-child(2){--link-color:#55d85a}.minute-link:nth-child(3){--link-color:#8ddd48}.minute-link:nth-child(4){--link-color:#bfdb3b}.minute-link:nth-child(5){--link-color:#e4cd32}.minute-link:nth-child(6){--link-color:#f5aa2d}.minute-link:nth-child(7){--link-color:#f5842e}.minute-link:nth-child(8){--link-color:#ef5e39}.minute-link:nth-child(9){--link-color:#e63f42}.minute-link:nth-child(10){--link-color:#d91e32}
+      .minute-link.lit{background:var(--link-color);box-shadow:0 0 7px color-mix(in srgb,var(--link-color) 72%,transparent);transform:scaleY(1.35)}
+      .minute-chain.exhausted .minute-link{background:#d91e32;box-shadow:0 0 7px rgba(217,30,50,.66)}
+      .minute-chain.exhausted .minute-link:last-child{animation:aggy-final-minute .8s ease-in-out infinite alternate}
+      .minute-chain.contract{display:none}
       .panel{position:fixed;right:18px;bottom:76px;z-index:2147483647;width:min(390px,calc(100vw - 28px));height:min(650px,calc(100vh - 100px));border:1px solid rgba(255,255,255,.24);border-radius:24px;background:#06110b;box-shadow:0 24px 80px rgba(0,0,0,.58);overflow:hidden;opacity:0;transform:translateY(18px) scale(.98);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
       .panel.open{opacity:1;transform:none;pointer-events:auto}
       .bar{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 10px 0 15px;border-bottom:1px solid rgba(255,255,255,.12);background:#07180f;color:#effff5;font:850 12px/1 Inter,Segoe UI,Arial,sans-serif}
@@ -33,10 +40,11 @@
       iframe{display:block;width:100%;height:calc(100% - 46px);border:0;background:#f4f7f6}
       @media(max-width:560px){.launcher{right:12px;bottom:12px}.panel{inset:8px;width:auto;height:auto;border-radius:20px}}
       @keyframes aggy-live-halo{0%{opacity:.72;transform:scale(.65)}75%,100%{opacity:0;transform:scale(1.75)}}
-      @media(prefers-reduced-motion:reduce){.panel{transition:none}.dot::after{animation:none!important}}
+      @keyframes aggy-final-minute{to{transform:scaleY(1.8);filter:brightness(1.28)}}
+      @media(prefers-reduced-motion:reduce){.panel{transition:none}.dot::after,.minute-link{animation:none!important}}
     </style>
     <button class="launcher" type="button" data-voice="connecting" aria-expanded="false" aria-controls="aggy-panel" title="Aggy ${version}">
-      <span class="dot" aria-hidden="true"></span><span class="launcher-copy"><strong>Aggy</strong><small>Conectando Voice LIVE…</small></span>
+      <span class="dot" aria-hidden="true"></span><span class="launcher-copy"><strong>Aggy</strong><small>Conectando Voice LIVE…</small><span class="minute-chain" role="meter" aria-label="10 minutos de Voz LIVE disponibles" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">${'<i class="minute-link"></i>'.repeat(10)}</span></span>
     </button>
     <section class="panel" id="aggy-panel" role="dialog" aria-label="Aggy, asistente de SECQUOIA">
       <div class="bar"><span>Aggy <small>${version}</small></span><button class="close" type="button" aria-label="Cerrar Aggy">×</button></div>
@@ -49,6 +57,27 @@
   const close=root.querySelector('.close');
   const frame=root.querySelector('iframe');
   const launcherStatus=launcher.querySelector('small');
+  const minuteChain=launcher.querySelector('.minute-chain');
+  const minuteLinks=[...launcher.querySelectorAll('.minute-link')];
+  const updateMinuteChain=detail=>{
+    const contractIncluded=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode);
+    launcher.dataset.accessMode=String(detail.accessMode||'VISITOR_TRIAL');
+    minuteChain.classList.toggle('contract',contractIncluded);
+    if(contractIncluded){
+      const preview=detail.accessMode==='ECOSYSTEM_PREVIEW';
+      minuteChain.setAttribute('aria-label',preview?'Acceso Ecosystem Preview sin consumo':'Voz LIVE incluida durante el contrato');
+      launcherStatus.textContent=preview?'Preview · sin consumo':'Voz LIVE · incluida';
+      return;
+    }
+    const total=Math.max(1,Number(detail.totalSeconds||600));
+    const remaining=Math.max(0,Math.min(total,Number(detail.remainingSeconds??total)));
+    const elapsed=Math.min(10,Math.floor((total-remaining)/60));
+    minuteLinks.forEach((link,index)=>link.classList.toggle('lit',index<elapsed));
+    minuteChain.classList.toggle('exhausted',remaining===0);
+    minuteChain.setAttribute('aria-valuenow',String(elapsed));
+    minuteChain.setAttribute('aria-label',remaining===0?'Tiempo gratuito de Voz LIVE finalizado':`${Math.ceil(remaining/60)} minutos de Voz LIVE disponibles`);
+    launcher.dataset.remainingMinutes=String(Math.ceil(remaining/60));
+  };
   const requestVoiceStart=()=>frame.contentWindow?.postMessage({
     type:'secquoia:aggy:start-voice',
     version
@@ -70,13 +99,24 @@
   close.addEventListener('click',()=>setOpen(false));
   root.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false)});
   window.addEventListener('message',event=>{
-    if(event.source!==frame.contentWindow||event.origin!=='https://secquoia.net'||event.data?.type!=='secquoia:aggy:voice-state')return;
+    if(event.source!==frame.contentWindow||event.origin!=='https://secquoia.net')return;
+    if(event.data?.type==='secquoia:aggy:usage-state'){
+      updateMinuteChain(event.data);
+      return;
+    }
+    if(event.data?.type!=='secquoia:aggy:voice-state')return;
     const state=['connecting','live','ready','blocked'].includes(event.data.state)?event.data.state:'ready';
     launcher.dataset.voice=state;
-    launcherStatus.textContent=state==='live'
+    const preview=launcher.dataset.accessMode==='ECOSYSTEM_PREVIEW';
+    const included=launcher.dataset.accessMode==='CONTRACT_INCLUDED';
+    launcherStatus.textContent=state==='connecting'
+      ?'Conectando Voice LIVE…'
+      :preview
+        ?'Preview · sin consumo'
+        :included
+          ?'Voz LIVE · incluida'
+          :state==='live'
       ?'EN VIVO · 10 min gratis'
-      :state==='connecting'
-        ?'Conectando Voice LIVE…'
         :state==='blocked'
           ?'Toca para activar · 10 min gratis'
           :'Voice LIVE · 10 min gratis';
