@@ -3,6 +3,15 @@
   "name": "secquoia-qupay-aggy",
   "main": "workers/qupay-aggy-checkout.js",
   "compatibility_date": "2026-07-26",
+  "services": [
+    {
+      "binding": "QUFENSE",
+      "service": "qufense-edge"
+    }
+  ],
+  "vars": {
+    "QUFENSE_AUTHORITY_FINGERPRINT": "e17334292df7d6f72b3395109e401b11"
+  },
   "routes": [
     {
       "pattern": "pay.secquoia.group",
