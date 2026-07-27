@@ -2,6 +2,21 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.14 - 2026-07-26
+
+### Changed
+
+- Rebuilt the compact and mobile chat layout at widths up to 780 px to eliminate the split-view overflow reported in production.
+- Removed profile fields and secondary quick actions from the mobile conversation surface.
+- Added a WhatsApp/Cellcrypt-style composer with direct attachment, camera, voice and send controls.
+- Added an attachment tray for documents, photos, videos and direct camera capture.
+
+### Security
+
+- Every selected document, gallery item or camera photo enters local QuSOC preflight and quarantine.
+- No attachment is transmitted while Glasswall, QuSOC, QuFense, E2EE/PQC and QuVault admission evidence is incomplete.
+- Existing call preflight still blocks microphone and camera access until the encrypted-media route is verified.
+
 ## 1.0.0-rc.13 - 2026-07-26
 
 ### Changed

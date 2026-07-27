@@ -18,14 +18,21 @@ test('communication-first navigation preserves existing Aggy capabilities',async
 });
 
 test('chat keeps messages files and encrypted calls within immediate reach',async()=>{
-  const [html,client]=await Promise.all([read('qu-market.html'),read('aggy-marketplace.js')]);
+  const [html,client,css]=await Promise.all([read('qu-market.html'),read('aggy-marketplace.js'),read('aggy-marketplace.css')]);
   assert.match(html,/class="assistant-input aggy-composer"/);
   assert.match(html,/data-chat-attach/);
+  assert.match(html,/data-chat-camera/);
+  assert.match(html,/id="aggyAttachmentSheet"/);
+  assert.match(html,/id="aggyCameraInput"[^>]*accept="image\/\*"[^>]*capture="environment"/);
+  assert.match(html,/id="aggyGalleryInput"[^>]*accept="image\/\*,video\/\*"[^>]*multiple/);
   assert.match(html,/data-chat-call="audio"/);
   assert.match(html,/data-chat-call="video"/);
   assert.match(html,/E2EE\/PQC/);
-  assert.match(client,/CUARENTENA PREPARADA/);
+  assert.match(client,/preflightChatAttachment/);
+  assert.match(client,/PENDIENTE: Glasswall \+ QuSOC \+ QuFense \+ E2EE\/PQC \+ QuVault/);
   assert.match(client,/Aggy verificará E2EE\/PQC antes de solicitar permisos/);
+  assert.match(css,/@media\(max-width:780px\)/);
+  assert.match(css,/\.assistant-profile,\.aggy-chat-actions\{display:none\}/);
 });
 
 test('individual and group calls are fail closed before E2E evidence',async()=>{
@@ -57,8 +64,8 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.13');
-  assert.match(html,/v1\.0\.0-rc\.13/);
+  assert.equal(release.version,'1.0.0-rc.14');
+  assert.match(html,/v1\.0\.0-rc\.14/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.13'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.14'/);
 });
