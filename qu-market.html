@@ -69,7 +69,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <div class="runtime-settings" aria-hidden="true">
         <select class="nav-select" id="assistantLangTop" title="Aggy language"><option value="auto">Auto language</option><option value="en">English</option><option value="es">Español</option></select>
         <select class="nav-select" id="voiceContext" title="Aggy voice context"><option value="advisor">Advisor voice</option><option value="executive">Executive brief</option><option value="technical">Technical deep dive</option><option value="friendly">Friendly guide</option></select>
-        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.14 · Voz de SQAILE - Acento neutro</span>
+        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.15 · Voz de SQAILE - Acento neutro</span>
         <div class="language-toggle"><button class="btn active" id="enBtn" type="button">EN</button><button class="btn" id="esBtn" type="button">ES</button></div>
       </div>
     </div>
@@ -419,21 +419,21 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <aside class="aggy-privacy-note"><strong>Identidad primero</strong><span>QuIdentify/Okta debe validar a cada persona antes de habilitar chat o llamada.</span></aside>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="calls">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Llamadas seguras</strong><small>Individuales y grupales · audio o video</small></div><span class="aggy-state blocked" id="aggyCallBadge">E2E NO VERIFICADO</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Llamadas seguras</strong><small>Individuales y grupales · audio o video</small></div><span class="aggy-state blocked" id="aggyCallBadge">E2EE/PQC NO VERIFICADO</span></div>
       <div class="aggy-call-hero">
         <div class="aggy-segments" role="group" aria-label="Tipo de llamada"><button class="active" type="button" data-call-kind="individual">Individual</button><button type="button" data-call-kind="group">Grupal</button></div>
         <label class="aggy-label" id="aggyCallPeerLabel">Persona<select id="aggyCallPeer"><option value="">Selecciona un contacto</option></select></label>
         <label class="aggy-label hidden" id="aggyCallGroupLabel">Grupo<select id="aggyCallGroup"><option value="">Selecciona un grupo</option></select></label>
         <div class="aggy-call-mode" role="group" aria-label="Medio de llamada"><button class="active" type="button" data-call-media="audio"><span aria-hidden="true">☎</span><small>Audio</small></button><button type="button" data-call-media="video"><span aria-hidden="true">▣</span><small>Video</small></button></div>
         <div class="aggy-call-gates" id="aggyCallGates">
-          <span data-call-gate="identity">QuIdentify</span><span data-call-gate="webrtc">WebRTC</span><span data-call-gate="media">Media E2E</span><span data-call-gate="signaling">Señalización</span><span data-call-gate="keys">QuVault/QuFense</span>
+          <span data-call-gate="identity">QuIdentify</span><span data-call-gate="webrtc">WebRTC</span><span data-call-gate="media">Media E2EE/PQC</span><span data-call-gate="signaling">Señalización</span><span data-call-gate="keys">QuVault/QuFense</span>
         </div>
-        <p class="aggy-note" id="aggyCallState">Selecciona un destino y verifica la ruta. Aggy no abrirá micrófono ni cámara hasta recibir evidencia E2E del backend.</p>
-        <div class="aggy-call-actions"><button class="btn primary" id="aggyCallPreflight" type="button">Verificar y preparar</button><button class="btn" id="aggyCallStart" type="button" disabled>Iniciar llamada E2E</button></div>
+        <p class="aggy-note" id="aggyCallState">Selecciona un destino y verifica la ruta. Aggy no abrirá micrófono ni cámara hasta recibir evidencia E2EE/PQC del backend.</p>
+        <div class="aggy-call-actions"><button class="btn primary" id="aggyCallPreflight" type="button">Verificar y preparar</button><button class="btn" id="aggyCallStart" type="button" disabled>Iniciar llamada E2EE/PQC</button></div>
       </div>
       <div class="aggy-list-heading"><strong>Actividad reciente</strong><button type="button" id="aggyClearCallHistory">Limpiar</button></div>
       <div class="aggy-call-history" id="aggyCallHistory"><p class="aggy-empty">No hay intentos de llamada en esta sesión.</p></div>
-      <aside class="aggy-privacy-note warning"><strong>Fail closed</strong><span>“E2E” solo se mostrará como listo si identidad, señalización, intercambio de llaves y cifrado de medios entregan recibos verificables.</span></aside>
+      <aside class="aggy-privacy-note warning"><strong>Fail closed</strong><span>“E2EE/PQC” solo se mostrará como listo si identidad, señalización, intercambio de llaves y cifrado de medios entregan recibos verificables.</span></aside>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="groups">
       <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Grupos</strong><small>Equipos para chat y llamadas grupales</small></div><button class="aggy-round-action" type="button" data-aggy-quick="group" aria-label="Crear grupo">＋</button></div>
@@ -442,7 +442,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <aside class="aggy-privacy-note"><strong>Grupos gobernados</strong><span>Cada integrante debe aprobarse antes de una conversación o llamada real.</span></aside>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="more">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.14</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.15</span></div>
       <div class="aggy-profile-card"><div class="avatar">A</div><div><strong>Asistente inteligente</strong><small>Conversación, archivos, modelos y seguridad en un solo lugar.</small></div></div>
       <div class="aggy-more-list">
         <button type="button" data-open-aggy-panel="voice"><span>●</span><p><strong>Aggy Voice Live</strong><small>Conversación Realtime bidireccional</small></p><i>›</i></button>
@@ -453,7 +453,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <details class="aggy-drawer"><summary>Preferencias e identidad</summary><div class="aggy-form-grid two"><label class="aggy-label">Nombre<input data-aggy-name-mirror placeholder="Nombre"></label><label class="aggy-label">Estado<input value="QuIdentify requerido" readonly></label></div></details>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="voice">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.14 · inicio automático · conversación natural e interrumpible</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.15 · inicio automático · conversación natural e interrumpible</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
       <div class="aggy-voice-stage" id="aggyVoiceStage" data-state="idle">
         <div class="aggy-orb" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <strong id="aggyVoiceHeadline">Activando Aggy Voice</strong>
@@ -680,10 +680,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   const params=new URLSearchParams(location.search);if(params.get('quidentify')==='verified')setVerified(params.get('session')||params.get('state')||'verified-callback');assistantLangTop.value=profile.langPref;voiceContext.value=profile.voiceContext;visitorName.value=profile.name;setLang(profile.langPref==='auto'?inferLanguage():profile.langPref);restoreSavedEstimate();renderProducts();renderPackages();renderEstimate();updateCart();renderDeployment();renderIdentityGate();setAssistantState(params.get('aggy')? 'expanded':(localStorage.getItem(assistantStateKey)||'minimized'),{persist:false});if(params.get('embed')==='1'){document.body.classList.add('aggy-embed-mode');assistant.classList.add('aggy-full','open')}addMsg(greeting(),'agent');agentState.textContent=lang()==='es'?'Aggy disponible':'Aggy ready';micBtn.textContent='Aggy Voice';if(params.get('aggy')==='voice')document.querySelector('[data-market-aggy-tab="voice"]')?.click();if(params.get('bundle')==='1')bundle();else if(params.get('product'))addProduct(params.get('product').toLowerCase());
 })();
 </script>
-<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.14"></script>
-<script src="aggy-secure-chat.js?v=1.0.0-rc.14"></script>
-<script src="aggy-marketplace.js?v=1.0.0-rc.14"></script>
-<script src="aggy-realtime-voice.js?v=1.0.0-rc.14"></script>
+<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.15"></script>
+<script src="aggy-secure-chat.js?v=1.0.0-rc.15"></script>
+<script src="aggy-marketplace.js?v=1.0.0-rc.15"></script>
+<script src="aggy-realtime-voice.js?v=1.0.0-rc.15"></script>
 <script src="qumarket-addons.js"></script>
 </body>
 </html>

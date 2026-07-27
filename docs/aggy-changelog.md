@@ -2,6 +2,14 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.15 - 2026-07-26
+
+### Changed
+
+- Replaced every remaining legacy call state, instruction and evidence label with the canonical `E2EE/PQC` profile name.
+- Added a regression check that rejects noncanonical cryptography wording across public SECQUOIA and Aggy assets.
+- Preserved compatibility-bound API field names while keeping their displayed values and descriptions canonical.
+
 ## 1.0.0-rc.14 - 2026-07-26
 
 ### Changed
@@ -76,8 +84,8 @@ All notable Aggy releases are recorded here. Versions follow [Semantic Versionin
 
 - Reorganized the Marketplace assistant around Chats, Contacts, Calls, Groups and More while preserving Voice, Files, AI Models and Security.
 - Added responsive contact and group directories, search, direct call preparation and session-only activity history.
-- Added individual/group audio/video call controls with an evidence-based E2E preflight.
-- Calls fail closed: no microphone or camera capture occurs unless QuIdentify, signaling, key exchange, media E2EE, QuFense and QuVault return complete backend evidence.
+- Added individual/group audio/video call controls with an evidence-based E2EE/PQC preflight.
+- Calls fail closed: no microphone or camera capture occurs unless QuIdentify, signaling, key exchange, media E2EE/PQC, QuFense and QuVault return complete backend evidence.
 - Added a governed preflight endpoint contract that reports the current call infrastructure as unavailable until the required services are configured.
 
 ## 1.0.0-rc.8 - 2026-07-25

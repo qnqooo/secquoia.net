@@ -35,7 +35,7 @@ test('chat keeps messages files and encrypted calls within immediate reach',asyn
   assert.match(css,/\.assistant-profile,\.aggy-chat-actions\{display:none\}/);
 });
 
-test('individual and group calls are fail closed before E2E evidence',async()=>{
+test('individual and group calls are fail closed before E2EE/PQC evidence',async()=>{
   const [html,client,worker]=await Promise.all([
     read('qu-market.html'),
     read('aggy-marketplace.js'),
@@ -64,8 +64,8 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.14');
-  assert.match(html,/v1\.0\.0-rc\.14/);
+  assert.equal(release.version,'1.0.0-rc.15');
+  assert.match(html,/v1\.0\.0-rc\.15/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.14'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.15'/);
 });

@@ -47,13 +47,13 @@
       contactRoot.replaceChildren();
       const visible=contacts.filter(contact=>`${contact.name} ${contact.email}`.toLowerCase().includes(contactQuery));
       if(!visible.length){const empty=document.createElement('p');empty.className='aggy-empty';empty.textContent=contacts.length?'No hay coincidencias.':'Aún no hay contactos en esta sesión. Crea uno para preparar una conversación.';contactRoot.append(empty)}
-      for(const contact of visible){const {row,button}=personRow(contact.name,contact.email,'Llamar');button.addEventListener('click',()=>{setPanel('calls');callKind='individual';syncCallControls();$('#aggyCallPeer').value=contact.email;resetCallReadiness('Destino actualizado. Verifica nuevamente la ruta E2E.')});contactRoot.append(row)}
+      for(const contact of visible){const {row,button}=personRow(contact.name,contact.email,'Llamar');button.addEventListener('click',()=>{setPanel('calls');callKind='individual';syncCallControls();$('#aggyCallPeer').value=contact.email;resetCallReadiness('Destino actualizado. Verifica nuevamente la ruta E2EE/PQC.')});contactRoot.append(row)}
     }
     if(groupRoot){
       groupRoot.replaceChildren();
       const visible=groups.filter(group=>`${group.name} ${group.members.join(' ')}`.toLowerCase().includes(groupQuery));
       if(!visible.length){const empty=document.createElement('p');empty.className='aggy-empty';empty.textContent=groups.length?'No hay coincidencias.':'Aún no hay grupos en esta sesión. Agrega al menos dos miembros verificados.';groupRoot.append(empty)}
-      for(const group of visible){const {row,button}=personRow(group.name,`${group.members.length} miembros`,'Llamar');button.addEventListener('click',()=>{setPanel('calls');callKind='group';syncCallControls();$('#aggyCallGroup').value=group.name;resetCallReadiness('Grupo actualizado. Verifica nuevamente la ruta E2E.')});groupRoot.append(row)}
+      for(const group of visible){const {row,button}=personRow(group.name,`${group.members.length} miembros`,'Llamar');button.addEventListener('click',()=>{setPanel('calls');callKind='group';syncCallControls();$('#aggyCallGroup').value=group.name;resetCallReadiness('Grupo actualizado. Verifica nuevamente la ruta E2EE/PQC.')});groupRoot.append(row)}
     }
     const peer=$('#aggyCallPeer'),groupSelect=$('#aggyCallGroup');
     if(peer){const selected=peer.value;peer.replaceChildren(new Option('Selecciona un contacto',''),...contacts.map(contact=>new Option(`${contact.name} · ${contact.email}`,contact.email)));peer.value=selected}
@@ -94,7 +94,7 @@
   const setCallGate=(name,ready)=>{const gate=$(`[data-call-gate="${name}"]`);if(gate)gate.className=ready?'ready':'blocked'};
   const callTarget=()=>callKind==='group'?$('#aggyCallGroup')?.value:$('#aggyCallPeer')?.value;
   const resetCallReadiness=message=>{
-    callReceipt=null;$('#aggyCallStart').disabled=true;const badge=$('#aggyCallBadge');badge.className='aggy-state blocked';badge.textContent='E2E NO VERIFICADO';
+    callReceipt=null;$('#aggyCallStart').disabled=true;const badge=$('#aggyCallBadge');badge.className='aggy-state blocked';badge.textContent='E2EE/PQC NO VERIFICADO';
     ['identity','webrtc','media','signaling','keys'].forEach(name=>setCallGate(name,false));
     if(message)$('#aggyCallState').textContent=message;
   };
@@ -108,7 +108,7 @@
     if(!callHistory.length){const empty=document.createElement('p');empty.className='aggy-empty';empty.textContent='No hay intentos de llamada en esta sesión.';root.append(empty);return}
     for(const entry of callHistory){
       const row=document.createElement('article'),icon=document.createElement('span'),copy=document.createElement('p'),strong=document.createElement('strong'),small=document.createElement('small'),time=document.createElement('time');
-      row.className=`aggy-call-entry ${entry.ready?'ready':'blocked'}`;icon.textContent=entry.ready?'☎':'↗';strong.textContent=entry.target;small.textContent=`${entry.kind==='group'?'Grupal':'Individual'} · ${entry.media==='video'?'video':'audio'} · ${entry.ready?'E2E verificado':'bloqueada'}`;time.textContent=entry.time;copy.append(strong,small);row.append(icon,copy,time);root.append(row);
+      row.className=`aggy-call-entry ${entry.ready?'ready':'blocked'}`;icon.textContent=entry.ready?'☎':'↗';strong.textContent=entry.target;small.textContent=`${entry.kind==='group'?'Grupal':'Individual'} · ${entry.media==='video'?'video':'audio'} · ${entry.ready?'E2EE/PQC verificado':'bloqueada'}`;time.textContent=entry.time;copy.append(strong,small);row.append(icon,copy,time);root.append(row);
     }
   };
   const recordCall=(ready,target)=>{callHistory.unshift({ready,target,kind:callKind,media:callMedia,time:new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'}).format(new Date())});renderCallHistory()};
@@ -127,9 +127,9 @@
       if(!ready)throw new Error(body.error||body.status||'e2ee_not_verified');
       const join=new URL(body.joinUrl);
       if(join.protocol!=='https:'||!/(^|\.)secquoia\.(net|group)$/.test(join.hostname))throw new Error('untrusted_join_url');
-      callReceipt={joinUrl:join.href,receiptId:String(body.receiptId||'')};$('#aggyCallStart').disabled=false;badge.className='aggy-state ready';badge.textContent='E2E VERIFICADO';state.textContent=`Ruta lista · recibo ${callReceipt.receiptId||'verificado'}. El permiso de ${callMedia==='video'?'cámara y micrófono':'micrófono'} se solicitará al iniciar.`;recordCall(true,target);
+      callReceipt={joinUrl:join.href,receiptId:String(body.receiptId||'')};$('#aggyCallStart').disabled=false;badge.className='aggy-state ready';badge.textContent='E2EE/PQC VERIFICADO';state.textContent=`Ruta lista · recibo ${callReceipt.receiptId||'verificado'}. El permiso de ${callMedia==='video'?'cámara y micrófono':'micrófono'} se solicitará al iniciar.`;recordCall(true,target);
     }catch{
-      badge.className='aggy-state blocked';badge.textContent='E2E NO DISPONIBLE';state.textContent='BLOQUEADO · la infraestructura no entregó evidencia completa de identidad, señalización, llaves y cifrado de medios. No se abrió el micrófono ni la cámara.';recordCall(false,target);
+      badge.className='aggy-state blocked';badge.textContent='E2EE/PQC NO DISPONIBLE';state.textContent='BLOQUEADO · la infraestructura no entregó evidencia completa de identidad, señalización, llaves y cifrado de medios. No se abrió el micrófono ni la cámara.';recordCall(false,target);
     }
   };
   $$('[data-chat-call]').forEach(button=>button.addEventListener('click',()=>{
@@ -141,11 +141,11 @@
     $('#aggyCallState').textContent=`Llamada ${callMedia==='video'?'de video':'de audio'} iniciada desde el chat. Selecciona una persona o cambia a grupal; Aggy verificará E2EE/PQC antes de solicitar permisos.`;
   }));
   $$('[data-call-kind]').forEach(button=>button.addEventListener('click',()=>{callKind=button.dataset.callKind;syncCallControls()}));
-  $$('[data-call-media]').forEach(button=>button.addEventListener('click',()=>{callMedia=button.dataset.callMedia;$$('[data-call-media]').forEach(item=>item.classList.toggle('active',item===button));resetCallReadiness('Medio actualizado. Verifica nuevamente la ruta E2E.')}));
-  $('#aggyCallPeer')?.addEventListener('change',()=>resetCallReadiness('Destino actualizado. Verifica nuevamente la ruta E2E.'));
-  $('#aggyCallGroup')?.addEventListener('change',()=>resetCallReadiness('Grupo actualizado. Verifica nuevamente la ruta E2E.'));
+  $$('[data-call-media]').forEach(button=>button.addEventListener('click',()=>{callMedia=button.dataset.callMedia;$$('[data-call-media]').forEach(item=>item.classList.toggle('active',item===button));resetCallReadiness('Medio actualizado. Verifica nuevamente la ruta E2EE/PQC.')}));
+  $('#aggyCallPeer')?.addEventListener('change',()=>resetCallReadiness('Destino actualizado. Verifica nuevamente la ruta E2EE/PQC.'));
+  $('#aggyCallGroup')?.addEventListener('change',()=>resetCallReadiness('Grupo actualizado. Verifica nuevamente la ruta E2EE/PQC.'));
   $('#aggyCallPreflight')?.addEventListener('click',()=>preflightCall());
-  $('#aggyCallStart')?.addEventListener('click',()=>{if(!callReceipt)return resetCallReadiness('La evidencia E2E expiró o no existe. Verifica nuevamente.');location.assign(callReceipt.joinUrl)});
+  $('#aggyCallStart')?.addEventListener('click',()=>{if(!callReceipt)return resetCallReadiness('La evidencia E2EE/PQC expiró o no existe. Verifica nuevamente.');location.assign(callReceipt.joinUrl)});
   $('#aggyClearCallHistory')?.addEventListener('click',()=>{callHistory.length=0;renderCallHistory()});
   $('#aggyContactSearch')?.addEventListener('input',renderCommunicationData);$('#aggyGroupSearch')?.addEventListener('input',renderCommunicationData);
   $$('[data-contact-filter]').forEach(button=>button.addEventListener('click',()=>{const filter=button.dataset.contactFilter;$$('[data-contact-filter]').forEach(item=>item.classList.toggle('active',item===button));if(filter==='groups')setPanel('groups');else renderCommunicationData()}));

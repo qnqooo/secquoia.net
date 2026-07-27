@@ -14,6 +14,7 @@ test('public SECQUOIA and Aggy surfaces use the canonical E2EE/PQC profile',asyn
     read('qumarket-addons.js')
   ]);
   for(const source of [market,index,bridge,secure,worker,addons])assert.match(source,/E2EE\/PQC/);
+  for(const source of [market,index,bridge,secure,worker,addons])assert.doesNotMatch(source,/\bE2E(?!E\/PQC)\b/i);
   assert.match(market,/cifrado de extremo a extremo[^<]+\(E2EE\/PQC\)/i);
   assert.match(market,/end-to-end encryption[^<]+\(E2EE\/PQC\)/i);
   assert.match(worker,/cryptoProfile:'E2EE\/PQC'/);
