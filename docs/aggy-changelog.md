@@ -2,6 +2,21 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.13 - 2026-07-26
+
+### Changed
+
+- Made the Cellcrypt-inspired conversation center the primary Aggy experience.
+- Moved Contacts, Groups, Calls, Files, Voice, AI Models, Security and Settings into one compact application grid.
+- Added audio, video, attachment and menu actions directly to conversation headers, plus an attachment action in each composer.
+- Added direct return-to-chat navigation from every secondary area and simplified the mobile layout.
+
+### Security
+
+- Secure text continues through QuSOC sanitation before E2EE/PQC encryption and ciphertext-only room delivery.
+- Attachment selection now starts from the chat, but transfer remains fail closed until Glasswall, QuSOC, QuFense and QuVault return valid admission evidence.
+- Audio and video actions now start from the chat, but microphone and camera access remains blocked until the backend proves identity, signaling, key exchange and encrypted media readiness.
+
 ## 1.0.0-rc.12 - 2026-07-26
 
 ### Changed

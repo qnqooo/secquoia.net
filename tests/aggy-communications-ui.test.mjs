@@ -9,12 +9,23 @@ test('communication-first navigation preserves existing Aggy capabilities',async
   for(const panel of ['chat','contacts','calls','groups','more','voice','files','models','security']){
     assert.match(html,new RegExp(`data-market-aggy-panel="${panel}"`));
   }
-  for(const tab of ['chat','contacts','calls','groups','more']){
-    assert.match(html,new RegExp(`data-market-aggy-tab="${tab}"`));
-  }
-  for(const secondary of ['voice','files','models','security']){
+  assert.match(html,/data-market-aggy-tab="chat"/);
+  assert.match(html,/id="aggyGridToggle"/);
+  assert.match(html,/id="aggyAppGrid"/);
+  for(const secondary of ['contacts','groups','calls','voice','files','models','security','more']){
     assert.match(html,new RegExp(`data-open-aggy-panel="${secondary}"`));
   }
+});
+
+test('chat keeps messages files and encrypted calls within immediate reach',async()=>{
+  const [html,client]=await Promise.all([read('qu-market.html'),read('aggy-marketplace.js')]);
+  assert.match(html,/class="assistant-input aggy-composer"/);
+  assert.match(html,/data-chat-attach/);
+  assert.match(html,/data-chat-call="audio"/);
+  assert.match(html,/data-chat-call="video"/);
+  assert.match(html,/E2EE\/PQC/);
+  assert.match(client,/CUARENTENA PREPARADA/);
+  assert.match(client,/Aggy verificará E2EE\/PQC antes de solicitar permisos/);
 });
 
 test('individual and group calls are fail closed before E2E evidence',async()=>{
@@ -46,8 +57,8 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.12');
-  assert.match(html,/v1\.0\.0-rc\.12/);
+  assert.equal(release.version,'1.0.0-rc.13');
+  assert.match(html,/v1\.0\.0-rc\.13/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.12'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.13'/);
 });

@@ -1,7 +1,7 @@
 const DEFAULT_REALTIME_MODEL='gpt-realtime-2.1';
 const DEFAULT_REALTIME_VOICE='marin';
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.12',
+  version:'1.0.0-rc.13',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',

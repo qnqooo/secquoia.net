@@ -22,13 +22,13 @@ test('Aggy advanced marketplace assets have valid JavaScript syntax',()=>{
 });
 
 test('Aggy exposes communication-first navigation and preserves advanced areas',()=>{
-  for(const name of ['chat','contacts','calls','groups','more']){
-    assert.match(html,new RegExp(`data-market-aggy-tab="${name}"`));
-  }
+  assert.match(html,/data-market-aggy-tab="chat"/);
+  assert.match(html,/id="aggyGridToggle"/);
+  assert.match(html,/id="aggyAppGrid"/);
   for(const name of ['chat','contacts','calls','groups','more','voice','files','models','security']){
     assert.match(html,new RegExp(`data-market-aggy-panel="${name}"`));
   }
-  for(const name of ['voice','files','models','security'])assert.match(html,new RegExp(`data-open-aggy-panel="${name}"`));
+  for(const name of ['contacts','groups','calls','voice','files','models','security','more'])assert.match(html,new RegExp(`data-open-aggy-panel="${name}"`));
   assert.match(html,/id="assistantFull"/);
   assert.match(html,/data-open-secure-aggy/);
   assert.match(html,/http:\/\/127\.0\.0\.1:8793\//);
@@ -82,7 +82,7 @@ test('Aggy markup contains no duplicate element IDs',()=>{
 test('Aggy Realtime replaces browser legacy speech and recording',()=>{
   assert.doesNotMatch(html,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder|id="voiceSelect"/);
   assert.doesNotMatch(bridge,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
-  assert.match(html,/Aggy v1\.0\.0-rc\.12 [^<]* Voz de SQAILE - Acento neutro/);
+  assert.match(html,/Aggy v1\.0\.0-rc\.13 [^<]* Voz de SQAILE - Acento neutro/);
   assert.match(html,/Voz de SQAILE - Acento neutro/);
   assert.match(html,/Leer con Aggy/);
   assert.match(bridge,/window\.AggyVoice\.start/);
