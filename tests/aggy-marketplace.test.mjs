@@ -121,8 +121,8 @@ test('QuMarket cart keeps recurring and one-time service totals separate',()=>{
 
 test('QuCFA separates endpoint pricing from service pricing',()=>{
   assert.equal((html.match(/endpoint:true/g)||[]).length,2);
-  assert.equal((html.match(/endpoint:false/g)||[]).length,6);
-  for(const metric of ['ENDPOINT_TIER_MONTH','TENANT_MONTH','GATEWAY_MONTH','IDENTITY_SERVICE_MONTH','AGGY_SERVICE_MONTH','WORKSPACE_MONTH','STACK_MONTH'])assert.ok(html.includes(metric));
+  assert.equal((html.match(/endpoint:false/g)||[]).length,7);
+  for(const metric of ['ENDPOINT_TIER_MONTH','TENANT_MONTH','GATEWAY_MONTH','IDENTITY_SERVICE_MONTH','AGGY_SERVICE_MONTH','WORKSPACE_MONTH','STACK_MONTH','PKI_TENANT_MONTH'])assert.ok(html.includes(metric));
   assert.match(html,/billingModel\(p\)\.endpoint\?endpointMultipliers\[tier\(\)\]:1/);
   assert.match(html,/serviceMultiplier:1/);
   assert.doesNotMatch(html,/flatMultiplier/);

@@ -34,3 +34,13 @@ test('Marketplace typography uses compact responsive bounds',()=>{
   assert.match(html,/@media\(max-width:600px\)[\s\S]*h1\{max-width:none;font-size:clamp\(32px,10\.5vw,44px\)/);
   assert.doesNotMatch(html,/h1\{max-width:12ch;font-size:clamp\(44px,5\.2vw,76px\)/);
 });
+
+test('QuPKIaaS is a governed Marketplace product without unsupported certification claims',()=>{
+  assert.match(html,/qupkiaas:\{code:'PKI_TENANT_MONTH'/);
+  assert.match(html,/id:'qupkiaas',name:'QuPKIaaS PQC Trust Pilot',base:149/);
+  assert.match(html,/ML-DSA private PKI/);
+  assert.match(html,/CSR-only/);
+  assert.match(html,/live issuance starts only after provider activation, rate-card approval and tenant acceptance/);
+  assert.match(html,/External CA, certificate, API and enterprise-provider charges require an approved quote/);
+  assert.doesNotMatch(html,/QuPKIaaS[^.\n]*(?:NIST|FIPS|CMVP|CAVP|Common Criteria)[^.\n]*certified/i);
+});
