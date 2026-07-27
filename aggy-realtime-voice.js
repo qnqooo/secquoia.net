@@ -13,12 +13,13 @@
   const endButton=$('#aggyVoiceEnd');
   const sessionEndpoint='https://aggy.secquoia.group/api/aggy/realtime/session';
   const healthEndpoint='https://aggy.secquoia.group/api/aggy/realtime/health';
+  const usageEndpoint='https://aggy.secquoia.group/api/aggy/usage';
   const qugeoEndpoint='https://qugeo.secquoia.group/v1/context';
   const knowledgeEndpoint='https://quhub.secquoia.group/v1/knowledge/context?q=SECQUOIA%20products%20services%20cybersecurity%20marketplace';
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.15';
+  const aggyVersion='1.0.0-rc.16';
 
   let peer=null;
   let channel=null;
@@ -32,6 +33,9 @@
   let webKnowledgeContext=null;
   let greetingSent=false;
   let pendingReadAloud='';
+  let usageLease=null;
+  let usageHeartbeat=null;
+  let usageHardStop=null;
 
   const fetchWithTimeout=(url,options={},timeoutMs=8000)=>{
     const controller=new AbortController();
@@ -50,7 +54,145 @@
 
   const stopTracks=stream=>stream?.getTracks().forEach(track=>track.stop());
 
-  const cleanupRealtime=()=>{
+  const usageUi=(title,detail,tone='checking')=>{
+    const root=$('#aggyUsageMeter');
+    const label=$('#aggyUsageLabel');
+    const copy=$('#aggyUsageDetail');
+    if(root)root.dataset.tone=tone;
+    if(label)label.textContent=title;
+    if(copy)copy.textContent=detail;
+  };
+
+  const renderUsageStatus=status=>{
+    const free=Number(status?.free?.remainingSeconds||0);
+    const balance=Number(status?.wallet?.balance||0);
+    const price=Number(status?.continuation?.customerQVit||0);
+    const topUp=$('#aggyUsageTopUp');
+    if(topUp&&status?.wallet?.topUpUrl)topUp.href=status.wallet.topUpUrl;
+    if(status?.activeLease){
+      usageUi('Sesión medida en curso',`${status.activeLease.kind==='FREE'?'Prueba sin costo':'Aggy Minute'} · corte automático activo`,'ready');
+    }else if(free>0){
+      usageUi(`${Math.ceil(free/60)} min incluidos`,`Después, cada Aggy Minute de 60 s cuesta ${price.toLocaleString('es-CO')} QVit.`,'ready');
+    }else if(balance>=price&&price>0){
+      usageUi(`${balance.toLocaleString('es-CO')} QVit disponibles`,`Saldo para ${Math.floor(balance/price)} Aggy Minute(s) adicional(es).`,'ready');
+    }else{
+      usageUi('Recarga requerida',`Un Aggy Minute cuesta ${price.toLocaleString('es-CO')} QVit. No hay sobregiro automático.`,'blocked');
+    }
+  };
+
+  const fetchUsageStatus=async()=>{
+    const response=await fetchWithTimeout(`${usageEndpoint}/status`,{method:'GET',credentials:'omit',cache:'no-store'},6000);
+    if(!response.ok)throw new Error('usage_status_unavailable');
+    const status=await response.json();
+    renderUsageStatus(status);
+    return status;
+  };
+
+  const acquireUsageLease=async()=>{
+    const response=await fetchWithTimeout(`${usageEndpoint}/lease`,{
+      method:'POST',
+      credentials:'omit',
+      headers:{'Content-Type':'application/json'},
+      body:'{}'
+    },6000);
+    const body=await response.json().catch(()=>({}));
+    if(!response.ok){
+      const error=new Error(body.error||'usage_lease_unavailable');
+      error.usage=body;
+      throw error;
+    }
+    usageLease={
+      leaseId:body.leaseId,
+      capability:body.capability,
+      kind:body.kind,
+      durationSeconds:body.durationSeconds,
+      reservedQVit:body.reservedQVit,
+      expiresAt:null
+    };
+    usageUi(
+      body.kind==='FREE'?'Prueba incluida reservada':'QVit reservado',
+      body.kind==='FREE'?`${Math.ceil(body.durationSeconds/60)} min disponibles.`:`${Number(body.reservedQVit).toLocaleString('es-CO')} QVit · Aggy Minute de ${body.durationSeconds} s.`,
+      'ready'
+    );
+    return usageLease;
+  };
+
+  const usagePost=(path,payload={})=>{
+    if(!usageLease)return Promise.resolve(null);
+    return fetch(`${usageEndpoint}/${path}`,{
+      method:'POST',
+      credentials:'omit',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({leaseId:usageLease.leaseId,capability:usageLease.capability,...payload})
+    });
+  };
+
+  const reportUsage=message=>{
+    if(!usageLease||!message?.response?.usage)return;
+    const responseId=message.response.id||crypto.randomUUID();
+    usagePost('response',{responseId,usage:message.response.usage})
+      .then(async response=>{
+        if(!response?.ok)return;
+        const result=await response.json();
+        if(result.hardStop){
+          usageUi('Límite preventivo alcanzado','QuFense detuvo la sesión antes de exceder la reserva de costo.','blocked');
+          endVoice('COST_RESERVE_LIMIT');
+        }
+      })
+      .catch(()=>{});
+  };
+
+  const stopUsageTimers=()=>{
+    if(usageHeartbeat)clearInterval(usageHeartbeat);
+    if(usageHardStop)clearTimeout(usageHardStop);
+    usageHeartbeat=null;
+    usageHardStop=null;
+  };
+
+  const startUsageEnforcement=expiresAt=>{
+    if(!usageLease)return;
+    usageLease.expiresAt=expiresAt;
+    stopUsageTimers();
+    const endAt=Date.parse(expiresAt);
+    usageHeartbeat=setInterval(()=>{
+      usagePost('heartbeat').then(async response=>{
+        if(!response?.ok){
+          usageUi('Tiempo finalizado','La sesión se cerró sin sobregiro. Recarga QVit para continuar.','blocked');
+          endVoice('LEASE_EXPIRED');
+          return;
+        }
+        const result=await response.json();
+        usageUi(
+          usageLease.kind==='FREE'?'Tiempo incluido activo':'Aggy Minute activo',
+          `${Math.max(0,result.remainingSeconds)} s restantes · corte automático del lado servidor`,
+          'ready'
+        );
+      }).catch(()=>{
+        usageUi('Medición no disponible','La sesión se cerró preventivamente al perder contacto con QuCFA/QVit.','blocked');
+        endVoice('METER_HEARTBEAT_FAILED');
+      });
+    },10_000);
+    usageHardStop=setTimeout(()=>{
+      usageUi('Tiempo finalizado','La sesión se cerró sin sobregiro. Recarga QVit para continuar.','blocked');
+      endVoice('CLIENT_HARD_STOP');
+    },Math.max(0,endAt-Date.now())+250);
+  };
+
+  const settleUsage=(reason='CLIENT_END')=>{
+    if(!usageLease)return;
+    const lease=usageLease;
+    usageLease=null;
+    fetch(`${usageEndpoint}/end`,{
+      method:'POST',
+      credentials:'omit',
+      keepalive:true,
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({leaseId:lease.leaseId,capability:lease.capability,reason})
+    }).then(()=>fetchUsageStatus()).catch(()=>{});
+  };
+
+  const cleanupRealtime=(reason='CLIENT_END',settle=true)=>{
+    stopUsageTimers();
     try{channel?.close()}catch{}
     try{peer?.close()}catch{}
     stopTracks(microphone);
@@ -61,6 +203,7 @@
     remoteAudio=null;
     connected=false;
     connecting=false;
+    if(settle)settleUsage(reason);
   };
 
   const selectedLanguage=()=>{
@@ -157,6 +300,11 @@
         audio:{
           input:{turn_detection:{type:'semantic_vad',eagerness:'high',create_response:true,interrupt_response:true}},
           output:{voice:naturalVoice,speed:speechSpeed}
+        },
+        truncation:{
+          type:'retention_ratio',
+          retention_ratio:.8,
+          token_limits:{post_instructions:8000}
         }
       }
     }));
@@ -179,6 +327,7 @@
       return;
     }
     if(message.type==='response.done'){
+      reportUsage(message);
       const completedTranscript=(caption.dataset.transcript||'').trim();
       caption.dataset.transcript='';
       setState('listening','Continúa cuando quieras',completedTranscript||'La sesión permanece abierta y lista para escucharte.','EN VIVO');
@@ -206,6 +355,7 @@
       microphone=await navigator.mediaDevices.getUserMedia({
         audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
       });
+      await acquireUsageLease();
       peer=new RTCPeerConnection();
       remoteAudio=document.createElement('audio');
       remoteAudio.autoplay=true;
@@ -220,7 +370,7 @@
       };
       peer.onconnectionstatechange=()=>{
         if(['failed','disconnected','closed'].includes(peer?.connectionState)&&connected){
-          cleanupRealtime();
+          cleanupRealtime('WEBRTC_CONNECTION_ENDED');
           setState('error','Conexión finalizada','La sesión WebRTC terminó. Puedes iniciar una nueva conversación.','DESCONECTADA');
           startButton.disabled=false;
           startButton.textContent='Iniciar voz en vivo';
@@ -253,23 +403,29 @@
         credentials:'omit',
         headers:{
           'Content-Type':'application/sdp',
-          'Accept':'application/sdp'
+          'Accept':'application/sdp',
+          'X-Aggy-Lease':usageLease.leaseId,
+          'X-Aggy-Lease-Capability':usageLease.capability
         },
         body:offer.sdp
       },8000);
       if(!response.ok)throw new Error('realtime_session_unavailable');
+      const leaseExpiresAt=response.headers.get('X-Aggy-Lease-Expires-At');
+      if(!leaseExpiresAt)throw new Error('usage_lease_expiry_missing');
       const answer=await response.text();
       if(!answer.startsWith('v=0'))throw new Error('invalid_realtime_sdp');
       await peer.setRemoteDescription({type:'answer',sdp:answer});
+      startUsageEnforcement(leaseExpiresAt);
     }catch(error){
       startButton.disabled=false;
-      cleanupRealtime();
+      cleanupRealtime('SESSION_START_FAILED',false);
+      if(error.usage)renderUsageStatus(error.usage);
       setState('error','Aggy Voice no está disponible','No fue posible iniciar la sesión Realtime segura. La voz legacy permanece desactivada.','SIN CONEXIÓN');
     }
   };
 
-  const endVoice=()=>{
-    cleanupRealtime();
+  const endVoice=(reason='CLIENT_END')=>{
+    cleanupRealtime(reason);
     startButton.disabled=false;
     startButton.textContent='Iniciar voz en vivo';
     muteButton.disabled=true;
@@ -295,12 +451,14 @@
   const prewarmVoice=async()=>{
     setState('connecting','Aggy Voice se está preparando','Verificando el servicio seguro sin abrir el micrófono ni consumir una sesión del proveedor.','ACTIVANDO');
     try{
-      const [voiceResult,qugeoResult,knowledgeResult]=await Promise.allSettled([
+      const [voiceResult,qugeoResult,knowledgeResult,usageResult]=await Promise.allSettled([
         fetchVoiceHealth(),
         fetchWithTimeout(qugeoEndpoint,{method:'GET',credentials:'omit',cache:'no-store'},4500),
-        fetchWithTimeout(knowledgeEndpoint,{method:'GET',credentials:'omit',cache:'no-store'},8000)
+        fetchWithTimeout(knowledgeEndpoint,{method:'GET',credentials:'omit',cache:'no-store'},8000),
+        fetchUsageStatus()
       ]);
       if(voiceResult.status!=='fulfilled')throw new Error('voice_service_unavailable');
+      if(usageResult.status!=='fulfilled')throw new Error('usage_meter_unavailable');
       const response=voiceResult.value;
       const status=await response.json();
       if(!response.ok||status.status!=='ready')throw new Error('voice_service_unavailable');
@@ -335,7 +493,7 @@
   };
 
   startButton.addEventListener('click',startRealtime);
-  endButton.addEventListener('click',endVoice);
+  endButton.addEventListener('click',()=>endVoice('CLIENT_END'));
   muteButton.addEventListener('click',()=>{
     const track=microphone?.getAudioTracks()[0];
     if(!track)return;
@@ -353,6 +511,6 @@
     },
     isLive:()=>connected
   });
-  window.addEventListener('beforeunload',cleanupRealtime,{once:true});
+  window.addEventListener('beforeunload',()=>cleanupRealtime('PAGE_UNLOAD'),{once:true});
   prewarmVoice();
 })();

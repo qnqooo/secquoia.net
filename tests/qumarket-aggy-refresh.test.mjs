@@ -9,6 +9,21 @@ const worker=await readFile(new URL('../workers/aggy-realtime-session.js',import
 const release=JSON.parse(await readFile(new URL('../aggy-release.json',import.meta.url),'utf8'));
 const workerModule=await import(`data:text/javascript;base64,${Buffer.from(worker).toString('base64')}`);
 const header=html.match(/<header class="top">([\s\S]*?)<\/header>/)?.[1]||'';
+const leaseId='11111111-1111-4111-8111-111111111111';
+const leaseCapability='a'.repeat(43);
+const fakeUsageMeters=()=>({
+  idFromName:name=>name,
+  get:()=>({
+    fetch:async request=>{
+      const path=new URL(request.url).pathname;
+      if(path==='/activate')return new Response(JSON.stringify({authorized:true,expiresAt:'2026-07-27T05:00:00.000Z'}),{headers:{'Content-Type':'application/json'}});
+      if(path==='/bind')return new Response(JSON.stringify({bound:true,expiresAt:'2026-07-27T05:00:00.000Z'}),{headers:{'Content-Type':'application/json'}});
+      if(path==='/cancel')return new Response(JSON.stringify({cancelled:true}),{headers:{'Content-Type':'application/json'}});
+      if(path==='/status')return new Response(JSON.stringify({free:{remainingSeconds:300},wallet:{balance:0},continuation:{customerQVit:240000}}),{headers:{'Content-Type':'application/json'}});
+      return new Response(JSON.stringify({error:'unexpected_meter_path'}),{status:404,headers:{'Content-Type':'application/json'}});
+    }
+  })
+});
 
 test('Marketplace header keeps only the requested direct controls',()=>{
   assert.match(header,/id="headerSupport"[^>]*>QuSupport · Aggy/);
@@ -102,9 +117,9 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
   try{
     const response=await workerModule.default.fetch(new Request(endpoint,{
       method:'POST',
-      headers:{'Content-Type':'application/sdp'},
+      headers:{'Content-Type':'application/sdp','X-Aggy-Lease':leaseId,'X-Aggy-Lease-Capability':leaseCapability},
       body:'v=0\r\no=aggy 1 1 IN IP4 127.0.0.1\r\n'
-    }),{OPENAI_API_KEY:'test-only-key',OPENAI_REALTIME_VOICE:'echo'});
+    }),{OPENAI_API_KEY:'test-only-key',OPENAI_REALTIME_VOICE:'echo',AGGY_USAGE_METERS:fakeUsageMeters()});
     assert.equal(response.status,200);
     assert.equal(upstreamRequest.url,'https://api.openai.com/v1/realtime/calls');
     assert.equal(upstreamRequest.init.headers.Authorization,'Bearer test-only-key');
@@ -127,9 +142,9 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
   try{
     const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/realtime/session',{
       method:'POST',
-      headers:{'Content-Type':'application/sdp'},
+      headers:{'Content-Type':'application/sdp','X-Aggy-Lease':leaseId,'X-Aggy-Lease-Capability':leaseCapability},
       body:'v=0\r\no=aggy 1 1 IN IP4 127.0.0.1\r\n'
-    }),{OPENAI_API_KEY:'test-only-key'});
+    }),{OPENAI_API_KEY:'test-only-key',AGGY_USAGE_METERS:fakeUsageMeters()});
     assert.equal(response.status,502);
     const body=await response.json();
     assert.equal(body.providerStatus,400);
@@ -142,7 +157,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.15');
+  assert.equal(release.version,'1.0.0-rc.16');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -166,7 +181,7 @@ test('Aggy Voice health probe activates without opening a paid provider session'
   try{
     const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/realtime/health',{
       headers:{Origin:'https://secquoia.net','Accept-Language':'es-CO,es;q=0.9,en;q=0.8'}
-    }),{OPENAI_API_KEY:'test-only-key',OPENAI_REALTIME_VOICE:'echo'});
+    }),{OPENAI_API_KEY:'test-only-key',OPENAI_REALTIME_VOICE:'echo',AGGY_USAGE_METERS:fakeUsageMeters()});
     assert.equal(response.status,200);
     const body=await response.json();
     assert.equal(body.status,'ready');
@@ -201,4 +216,83 @@ test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
   assert.match(voice,/fetchVoiceHealth\(\)/);
   assert.match(voice,/new AbortController\(\)/);
   assert.doesNotMatch(voice,/AbortSignal\.timeout/);
+});
+
+test('QuCFA prices one prepaid Aggy Minute without overdraft',()=>{
+  const quote=workerModule.aggyBlockQuote();
+  assert.equal(quote.durationSeconds,60);
+  assert.equal(quote.customerQVit,240_000);
+  assert.equal(quote.providerReserveUsd,.15);
+  assert.equal(quote.targetMarginBps,3500);
+  assert.equal(quote.overdraftAllowed,false);
+  assert.equal(quote.unit,'AGGY_MINUTE');
+  assert.equal(quote.optimizer.name,'QuOptio');
+  assert.equal(quote.rateCard.model,'gpt-realtime-2.1');
+  assert.equal(quote.rateCard.version,'2026-07-26');
+  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.silentModelDowngradeAllowed,false);
+  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.staleRateCardAction,'FAIL_CLOSED');
+  assert.equal(workerModule.rateCardIsCurrent(Date.parse('2026-08-24T00:00:00.000Z')),true);
+  assert.equal(workerModule.rateCardIsCurrent(Date.parse('2026-08-26T00:00:01.000Z')),false);
+});
+
+test('QuCFA reconciles multimodal response.done usage against the versioned rate card',()=>{
+  const quote=workerModule.quoteRealtimeUsage({
+    input_token_details:{
+      text_tokens:100,
+      audio_tokens:50,
+      cached_tokens:20,
+      cached_tokens_details:{text_tokens:20,audio_tokens:0,image_tokens:0}
+    },
+    output_token_details:{text_tokens:30,audio_tokens:40}
+  });
+  assert.equal(quote.status,'RECONCILED_USAGE');
+  assert.equal(quote.rateCard.sourceRef,'https://developers.openai.com/api/docs/models/gpt-realtime-2.1');
+  assert.ok(quote.providerCostQcu>0);
+  assert.ok(quote.customerQVit>quote.providerCostQcu);
+});
+
+test('Realtime provider access fails closed without an atomic usage lease',async()=>{
+  let called=false;
+  const originalFetch=globalThis.fetch;
+  globalThis.fetch=async()=>{called=true;return new Response('unexpected')};
+  try{
+    const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/realtime/session',{
+      method:'POST',
+      headers:{'Content-Type':'application/sdp'},
+      body:'v=0\r\n'
+    }),{OPENAI_API_KEY:'test-only-key',AGGY_USAGE_METERS:fakeUsageMeters()});
+    assert.equal(response.status,402);
+    assert.equal((await response.json()).error,'usage_lease_required');
+    assert.equal(called,false);
+  }finally{
+    globalThis.fetch=originalFetch;
+  }
+});
+
+test('Usage API and health fail closed when the Durable Object binding is absent',async()=>{
+  const status=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/usage/status'),{});
+  assert.equal(status.status,503);
+  assert.equal((await status.json()).failClosed,true);
+  const health=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/realtime/health'),{OPENAI_API_KEY:'test-only-key'});
+  assert.equal(health.status,503);
+  assert.equal((await health.json()).usageMeter,'not_configured');
+});
+
+test('Voice client exposes QVit status, heartbeats, usage settlement and hard stop',()=>{
+  for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageTopUp']){
+    assert.match(html,new RegExp(`id="${id}"`));
+  }
+  assert.match(voice,/\/api\/aggy\/usage/);
+  assert.match(voice,/acquireUsageLease/);
+  assert.match(voice,/X-Aggy-Lease-Capability/);
+  assert.match(voice,/reportUsage\(message\)/);
+  assert.match(voice,/usagePost\('heartbeat'\)/);
+  assert.match(voice,/endVoice\('CLIENT_HARD_STOP'\)/);
+  assert.match(worker,/AGGY_MAX_PAID_BLOCKS_DAY=15/);
+  assert.match(worker,/AGGY_MAX_PAID_BLOCKS_MONTH=150/);
+  assert.match(worker,/let duration=freeRemaining/);
+  assert.match(worker,/PREPAID_ONE_MINUTE_MICROLEASE/);
+  assert.match(voice,/retention_ratio:\.8/);
+  assert.match(worker,/AGGY_QUPAY_WEBHOOK_SECRET/);
+  assert.match(worker,/QUPAY_CONFIRMED_QVIT_CREDIT/);
 });

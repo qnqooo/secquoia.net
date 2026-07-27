@@ -20,6 +20,10 @@
       {
         "name": "AGGY_CHAT_ROOMS",
         "class_name": "AggyChatRoom"
+      },
+      {
+        "name": "AGGY_USAGE_METERS",
+        "class_name": "AggyUsageMeter"
       }
     ]
   },
@@ -28,6 +32,12 @@
       "tag": "v1-aggy-secure-chat",
       "new_sqlite_classes": [
         "AggyChatRoom"
+      ]
+    },
+    {
+      "tag": "v2-aggy-usage-meter",
+      "new_sqlite_classes": [
+        "AggyUsageMeter"
       ]
     }
   ],

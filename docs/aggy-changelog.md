@@ -2,6 +2,25 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.16 - 2026-07-26
+
+### Added
+
+- Added a server-side Aggy usage meter backed by a per-subject SQLite Durable Object.
+- Included one lifetime five-minute trial, followed by prepaid 60-second `Aggy Minute` microleases.
+- Connected QuCFA quoting, QVit reservation, signed QuPay credit events, QuFense hard limits and QuAudit ledger receipts.
+- Added visible free-time, QVit balance, block price and top-up status to the Voice interface.
+
+### Security and cost controls
+
+- Realtime SDP creation now fails closed unless an atomic usage lease was reserved first.
+- QVit overdrafts are prohibited; each paid minute is reserved before the OpenAI call.
+- Default limits are fifteen paid minutes per day and one hundred fifty per month for each pseudonymous edge subject.
+- Added QuOptio policy `2026-07-26.1`: no silent model downgrade, semantic VAD, context-retention control, and a preventive stop at 90% of the provider-cost reserve.
+- Every `response.done` usage record is normalized against the versioned `gpt-realtime-2.1` public rate card and deduplicated by response ID.
+- Lost heartbeats, elapsed leases and exhausted provider-cost reserves close the client session.
+- QuPay credits require a five-minute replay window, HMAC verification and an idempotent event ID.
+
 ## 1.0.0-rc.15 - 2026-07-26
 
 ### Changed
