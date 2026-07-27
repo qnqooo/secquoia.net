@@ -25,7 +25,7 @@ test('Aggy is the sole active product name across app and documentation',()=>{
 
 test('Aggy assets and UI identifiers use the current namespace',()=>{
   const [index,market,bridge,css]=sources;
-  assert.match(market,/href="aggy-marketplace\.css"/);
+  assert.match(market,/href="aggy-marketplace\.css(?:\?[^"]+)?"/);
   assert.match(market,/src="aggy-marketplace\.js(?:\?[^"]+)?"/);
   assert.match(market,/data-market-aggy-tab="chat"/);
   assert.match(bridge,/dataset\.marketAggyTab/);
