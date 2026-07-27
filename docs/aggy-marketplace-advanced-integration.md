@@ -4,11 +4,11 @@ Cryptographic terminology follows [`E2EE-PQC-NAMING-STANDARD.md`](E2EE-PQC-NAMIN
 
 Requirement: restore the approved advanced Aggy interface in the persistent floating QuMarket widget.
 
-Current release: `1.0.0-rc.29` (`rc`, ecosystem hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This release candidate is prepared for production validation; it is not yet a stable-production or third-party-sale claim.
+Current release: `1.0.0-rc.30` (`rc`, ecosystem hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This release candidate is prepared for production validation; it is not yet a stable-production or third-party-sale claim.
 
 ## Contract and membership access
 
-Public visitors receive five minutes of Aggy Voice LIVE and must explicitly approve any later QVit minute. Customers with a current contracted service, membership or subscription receive Aggy for the validity of that entitlement. Their sessions do not consume the visitor trial or QVit.
+Public visitors receive ten minutes of Aggy Voice LIVE and must explicitly approve any later QVit minute. Aggy gives one visible and spoken notice when five, three and one minute remain, then preserves chat continuity and offers optional Tiempo IA. Customers with a current contracted service, membership or subscription receive Aggy for the validity of that entitlement. Their sessions do not consume the visitor trial or QVit.
 
 QuIdentify (or the governed contract-activation backend) calls `POST https://aggy.secquoia.group/api/aggy/entitlements/issue` with `X-Aggy-Issuer-Secret` and:
 
@@ -23,12 +23,12 @@ QuIdentify (or the governed contract-activation backend) calls `POST https://agg
 
 The response is a short, signed access artifact whose validity never exceeds the contract end. The authenticated SECQUOIA surface injects it into `window.SECQUOIA_AGGY_ENTITLEMENT_TOKEN`, a `secquoia-aggy-entitlement` meta element, or session storage key `secquoia.aggy.entitlement`. It must not be stored in local storage, placed in URLs, logged, or embedded in static public HTML. Aggy verifies the signature, issuer, audience, status and expiry on every usage request. Invalid, expired or unverifiable artifacts fail closed.
 
-Long provider connections are bounded to one-hour operational sessions and revalidated against the contract. That technical boundary supports revocation and cost protection; it does not create a five-minute commercial cutoff for contracted customers.
+Long provider connections are bounded to one-hour operational sessions and revalidated against the contract. That technical boundary supports revocation and cost protection; it does not create a visitor-trial cutoff for contracted customers.
 
 ## Restored areas
 
 - Chat: existing commercial conversation, QuIdentify-gated invitation preparation, local-secret blocking and explicit proof status.
-- Voice: Aggy Realtime over secure WebRTC, using the governed `marin` voice under the public identity “Voz de SQAILE - Acento neutro”. Spanish uses a clear, warm, internationally neutral accent. QuGEO can select another conversation language while Aggy preserves the same vocal identity. Output speed is a moderate `1.08x`, turns use high-eagerness semantic VAD, and the prompt favors short pauses and compact responses without speaking over the user. Each pseudonymous ecosystem user receives 300 seconds of LIVE voice time; payment controls appear only after that allowance ends, and every paid minute requires a new explicit confirmation. Browser `SpeechRecognition`, `speechSynthesis`, `SpeechSynthesisUtterance` and `MediaRecorder` legacy paths are disabled.
+- Voice: Aggy Realtime over secure WebRTC, using the governed `marin` voice under the public identity “Voz de SQAILE - Acento neutro”. Spanish uses a clear, warm, internationally neutral accent. QuGEO can select another conversation language while Aggy preserves the same vocal identity. Output speed is a moderate `1.08x`, turns use high-eagerness semantic VAD, and the prompt favors short pauses and compact responses without speaking over the user. Each pseudonymous ecosystem user receives 600 seconds of LIVE voice time; payment controls appear only after that allowance ends, and every paid minute requires a new explicit confirmation. Browser `SpeechRecognition`, `speechSynthesis`, `SpeechSynthesisUtterance` and `MediaRecorder` legacy paths are disabled.
 - Reading: the last chat response is read by Aggy Realtime. It is treated as quoted data rather than instructions.
 - Web knowledge: QuHub retrieves bounded, cached excerpts only from `secquoia.group`, `secquoia.net` and `secquoia.net/qu-market.html`. Website text is reference data, not model instructions. Source URLs are never mandatory and cannot delay or block an answer; Aggy mentions a concise source or link only when the user requests it or it materially helps the next action.
 - Files: local size/type inspection and SHA-256 calculation. The mini widget never claims QuSOC `CLEAN`; transfer remains fail-closed until the secure motor is used.

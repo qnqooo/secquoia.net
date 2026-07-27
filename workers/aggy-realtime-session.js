@@ -2,7 +2,7 @@ const DEFAULT_REALTIME_MODEL='gpt-realtime-2.1';
 const DEFAULT_REALTIME_VOICE='marin';
 const QVIT_PER_USD=1_000_000;
 const TARGET_MARGIN_BPS=3500;
-const AGGY_FREE_MS=5*60*1000;
+const AGGY_FREE_MS=10*60*1000;
 const AGGY_CONTRACT_SESSION_MS=60*60*1000;
 const AGGY_CONTRACT_PROVIDER_BUDGET_USD=2.5;
 const AGGY_PAID_BLOCK_MS=60*1000;
@@ -59,7 +59,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.29',
+  version:'1.0.0-rc.30',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',

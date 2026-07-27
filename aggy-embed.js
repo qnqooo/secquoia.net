@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.29';
+  const version='1.0.0-rc.30';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -74,12 +74,12 @@
     const state=['connecting','live','ready','blocked'].includes(event.data.state)?event.data.state:'ready';
     launcher.dataset.voice=state;
     launcherStatus.textContent=state==='live'
-      ?'EN VIVO · 5 min gratis'
+      ?'EN VIVO · 10 min gratis'
       :state==='connecting'
         ?'Conectando Voice LIVE…'
         :state==='blocked'
-          ?'Toca para activar · 5 min gratis'
-          :'Voice LIVE · 5 min gratis';
+          ?'Toca para activar · 10 min gratis'
+          :'Voice LIVE · 10 min gratis';
   });
   frame.addEventListener('load',()=>{
     frame.dataset.ready='true';

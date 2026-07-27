@@ -19,7 +19,7 @@ const fakeUsageMeters=()=>({
       if(path==='/activate')return new Response(JSON.stringify({authorized:true,expiresAt:'2026-07-27T05:00:00.000Z'}),{headers:{'Content-Type':'application/json'}});
       if(path==='/bind')return new Response(JSON.stringify({bound:true,expiresAt:'2026-07-27T05:00:00.000Z'}),{headers:{'Content-Type':'application/json'}});
       if(path==='/cancel')return new Response(JSON.stringify({cancelled:true}),{headers:{'Content-Type':'application/json'}});
-      if(path==='/status')return new Response(JSON.stringify({free:{remainingSeconds:300},wallet:{balance:0,topUpAvailable:false},continuation:{customerQVit:240000}}),{headers:{'Content-Type':'application/json'}});
+      if(path==='/status')return new Response(JSON.stringify({free:{remainingSeconds:600},wallet:{balance:0,topUpAvailable:false},continuation:{customerQVit:240000}}),{headers:{'Content-Type':'application/json'}});
       return new Response(JSON.stringify({error:'unexpected_meter_path'}),{status:404,headers:{'Content-Type':'application/json'}});
     }
   })
@@ -163,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.29');
+  assert.equal(release.version,'1.0.0-rc.30');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -234,7 +234,7 @@ test('Marketplace opens Aggy automatically and routes Voice LIVE without stealin
   assert.match(html,/data-open-aggy-panel="voice"/);
   assert.match(html,/document\.getElementById\('aggyLiveVoice'\)\?\.click\(\)/);
   assert.doesNotMatch(html,/data-market-aggy-tab="voice"/);
-  assert.match(html,/EN VIVO · 5 min gratis/);
+  assert.match(html,/EN VIVO · 10 min gratis/);
   assert.match(html,/aggy-market-live-halo/);
 });
 
@@ -329,7 +329,7 @@ test('Usage API forwards paid continuation only after an explicit user confirmat
   assert.match(forwarded[0].capabilityHash,/^[a-f0-9]{64}$/);
 });
 
-test('Voice client exposes five free minutes and requires explicit paid continuation',()=>{
+test('Voice client exposes ten free minutes, warns at 5/3/1 and requires explicit paid continuation',()=>{
   for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageContinue','aggyUsageTopUp']){
     assert.match(html,new RegExp(`id="${id}"`));
   }
@@ -344,7 +344,7 @@ test('Voice client exposes five free minutes and requires explicit paid continua
   assert.match(voice,/cancelUsage\('SESSION_START_FAILED'\)/);
   assert.match(worker,/api\/aggy\/usage\/cancel/);
   assert.match(voice,/endVoice\('CLIENT_HARD_STOP'\)/);
-  assert.match(voice,/Solicitar activación QuPay/);
+  assert.match(voice,/Activar Tiempo IA/);
   assert.match(worker,/qupay_credit_not_configured/);
   assert.match(worker,/ASSISTED_ACTIVATION_REQUIRED/);
   assert.match(worker,/AGGY_MAX_PAID_BLOCKS_DAY=15/);
@@ -352,12 +352,17 @@ test('Voice client exposes five free minutes and requires explicit paid continua
   assert.match(worker,/let duration=freeRemaining/);
   assert.match(worker,/paid_continuation_confirmation_required/);
   assert.match(worker,/paidContinuationConfirmed===true/);
-  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeSeconds,300);
+  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeSeconds,600);
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeScope,'SECQUOIA_ECOSYSTEM_USER');
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeClockStarts,'FIRST_LIVE_VOICE_SESSION');
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.paidContinuationConsentRequired,true);
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.silentPaidContinuationAllowed,false);
-  assert.match(voice,/5 minutos gratis finalizados/);
+  for(const threshold of [300,180,60])assert.match(voice,new RegExp(`thresholdSeconds:${threshold}`));
+  assert.match(voice,/notifyFreeTimeRemaining\(result\.remainingSeconds\)/);
+  assert.match(voice,/usageLease\?\.kind!=='FREE'/);
+  assert.match(voice,/seguir por chat/);
+  assert.match(voice,/paquete de Tiempo IA/);
+  assert.match(voice,/Tu recorrido de Voz LIVE finalizó/);
   assert.match(voice,/startRealtime\(true,\{userInitiated:true\}\)/);
   assert.match(voice,/JSON\.stringify\(\{paidContinuationConfirmed\}\)/);
   assert.match(worker,/PREPAID_ONE_MINUTE_MICROLEASE/);

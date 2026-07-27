@@ -16,7 +16,9 @@ cannot choose or override the provider model.
 
 ## QuCFA, QVit and QuPay usage control
 
-- A subject receives at most 300 seconds of included active voice time.
+- A subject receives at most 600 seconds of included active voice time.
+- During a visitor lease, Aggy gives one visible and spoken notice when 300, 180 and 60 seconds remain.
+- When the visitor allowance ends, chat remains available and Tiempo IA is offered as an explicit opt-in continuation; no automatic charge is made.
 - Continuing requires one prepaid `Aggy Minute` microlease of 60 seconds.
 - The RC16 public-rate-card estimate reserves `240,000 QVit` per minute. The
   value includes a USD 0.15 provider-cost ceiling and the governed 35% target

@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.30 - 2026-07-27
+
+### Ten-minute guided introduction
+
+- Extends the ecosystem-wide visitor allowance from five to ten minutes of active Voice LIVE time.
+- Gives one warm, concise notice by voice and on screen when five, three and one minute remain.
+- Keeps chat available when Voice LIVE ends and presents Tiempo IA as an optional continuation without automatic charges.
+- Preserves unlimited included access for customers during an active contract, membership or service entitlement.
+
 ## 1.0.0-rc.29 - 2026-07-27
 
 ### One-tap communications UX

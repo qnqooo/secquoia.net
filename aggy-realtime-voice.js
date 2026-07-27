@@ -20,7 +20,27 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.29';
+  const aggyVersion='1.0.0-rc.30';
+  const freeTimeNotices=Object.freeze([
+    Object.freeze({
+      thresholdSeconds:300,
+      title:'Te quedan 5 minutos de Voz LIVE',
+      detail:'Aprovecha para priorizar módulos, precios o próximos pasos. Después puedes seguir por chat o ampliar la conversación con Tiempo IA.',
+      speech:'Te quedan cinco minutos de Voz LIVE. Aprovechemos para priorizar lo más importante. Cuando termine, puedes seguir por chat o ampliar la conversación con un paquete de Tiempo IA.'
+    }),
+    Object.freeze({
+      thresholdSeconds:180,
+      title:'Te quedan 3 minutos de Voz LIVE',
+      detail:'Enfoquémonos en tus preguntas clave. Después puedes continuar por chat o activar Tiempo IA para seguir por voz.',
+      speech:'Te quedan tres minutos de Voz LIVE. Enfoquémonos ahora en tus preguntas clave. Después puedes continuar por chat o activar Tiempo IA para seguir conversando por voz.'
+    }),
+    Object.freeze({
+      thresholdSeconds:60,
+      title:'Te queda 1 minuto de Voz LIVE',
+      detail:'Cerremos lo esencial. Al finalizar, sigue por chat o activa Tiempo IA para continuar la conversación en vivo.',
+      speech:'Te queda un minuto de Voz LIVE. Cerremos lo esencial. Al finalizar, puedes seguir por chat o activar Tiempo IA para continuar la conversación en vivo.'
+    })
+  ]);
   const entitlementToken=(()=>{
     try{
       return String(window.SECQUOIA_AGGY_ENTITLEMENT_TOKEN||document.querySelector('meta[name="secquoia-aggy-entitlement"]')?.content||sessionStorage.getItem('secquoia.aggy.entitlement')||'').trim();
@@ -44,6 +64,8 @@
   let usageHeartbeat=null;
   let usageHardStop=null;
   let lastUsageStatus=null;
+  let previousFreeRemainingSeconds=null;
+  const freeTimeNoticesSent=new Set();
   let connectionOpenTimeout=null;
   const trustedParentOrigins=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);
   const parentOrigin=(()=>{
@@ -99,7 +121,7 @@
     if(continuePaidButton)continuePaidButton.hidden=true;
     if(topUp){
       if(status?.wallet?.topUpUrl)topUp.href=status.wallet.topUpUrl;
-      topUp.textContent=topUpAvailable?'Recargar QVit':'Solicitar activación QuPay';
+      topUp.textContent=topUpAvailable?'Ver paquetes de Tiempo IA':'Activar Tiempo IA';
       topUp.hidden=true;
     }
     if(status?.activeLease){
@@ -109,7 +131,7 @@
         'ready'
       );
     }else if(contractIncluded){
-      usageUi('Aggy incluida durante tu contrato',`Sin regla de 5 minutos ni débito QVit · acceso hasta ${new Date(status.access.validUntil).toLocaleDateString('es-CO')}`,'ready');
+      usageUi('Aggy incluida durante tu contrato',`Sin límite de cortesía ni débito QVit · acceso hasta ${new Date(status.access.validUntil).toLocaleDateString('es-CO')}`,'ready');
     }else if(free>0){
       usageUi(
         `${Math.ceil(free/60)} min gratis de Aggy Voice LIVE`,
@@ -118,17 +140,17 @@
       );
     }else if(!topUpAvailable){
       if(topUp)topUp.hidden=false;
-      usageUi('5 minutos gratis finalizados','Para continuar con Aggy Voice LIVE debes activar QuPay. No se realizará ningún cargo automático.','blocked');
+      usageUi('Tu recorrido de Voz LIVE finalizó','Sigue conversando por chat o activa un paquete de Tiempo IA para continuar por voz. No realizaremos cargos automáticos.','blocked');
     }else if(balance>=price&&price>0){
       if(topUp)topUp.hidden=false;
       if(continuePaidButton){
         continuePaidButton.hidden=false;
         continuePaidButton.textContent=`Continuar 1 min · ${price.toLocaleString('es-CO')} QVit`;
       }
-      usageUi('5 minutos gratis finalizados',`Tienes ${balance.toLocaleString('es-CO')} QVit. Confirma si deseas reservar ${price.toLocaleString('es-CO')} QVit para 1 minuto adicional.`,'checking');
+      usageUi('Continúa a tu manera',`Sigue por chat o confirma ${price.toLocaleString('es-CO')} QVit para ampliar Voz LIVE por 1 minuto. No realizaremos cargos automáticos.`,'checking');
     }else{
       if(topUp)topUp.hidden=false;
-      usageUi('5 minutos gratis finalizados',`Recarga QVit si deseas continuar. Un minuto adicional cuesta ${price.toLocaleString('es-CO')} QVit y nunca se cobra automáticamente.`,'blocked');
+      usageUi('Tu recorrido de Voz LIVE finalizó',`Sigue por chat o activa Tiempo IA. Un minuto adicional cuesta ${price.toLocaleString('es-CO')} QVit y nunca se cobra automáticamente.`,'blocked');
     }
   };
 
@@ -239,19 +261,46 @@
     usageHardStop=null;
   };
 
+  const notifyFreeTimeRemaining=remainingSeconds=>{
+    if(usageLease?.kind!=='FREE')return false;
+    const remaining=Math.max(0,Number(remainingSeconds||0));
+    const previous=previousFreeRemainingSeconds;
+    previousFreeRemainingSeconds=remaining;
+    if(!Number.isFinite(previous))return false;
+    const notice=freeTimeNotices.find(item=>
+      previous>item.thresholdSeconds&&
+      remaining<=item.thresholdSeconds&&
+      !freeTimeNoticesSent.has(item.thresholdSeconds)
+    );
+    if(!notice)return false;
+    freeTimeNoticesSent.add(notice.thresholdSeconds);
+    usageUi(notice.title,notice.detail,notice.thresholdSeconds===60?'checking':'ready');
+    if(connected&&channel?.readyState==='open'){
+      channel.send(JSON.stringify({
+        type:'response.create',
+        response:{
+          instructions:`Deliver this single brief service-time notice now in the user's current language, with Aggy's warm commercial tone. Preserve the exact remaining time and available choices. Do not add prices or pressure. Message: ${JSON.stringify(notice.speech)}`
+        }
+      }));
+    }
+    return true;
+  };
+
   const startUsageEnforcement=expiresAt=>{
     if(!usageLease)return;
     usageLease.expiresAt=expiresAt;
+    previousFreeRemainingSeconds=usageLease.kind==='FREE'?Number(usageLease.durationSeconds||0):null;
     stopUsageTimers();
     const endAt=Date.parse(expiresAt);
     usageHeartbeat=setInterval(()=>{
       usagePost('heartbeat').then(async response=>{
         if(!response?.ok){
-          usageUi('Tiempo finalizado','La sesión se cerró sin sobregiro. Recarga QVit para continuar.','blocked');
+          usageUi('Voz LIVE finalizada','Puedes seguir por chat o activar un paquete de Tiempo IA para continuar por voz.','blocked');
           endVoice('LEASE_EXPIRED');
           return;
         }
         const result=await response.json();
+        if(notifyFreeTimeRemaining(result.remainingSeconds))return;
         usageUi(
           usageLease.kind==='FREE'?'Tiempo incluido activo':'Aggy Minute activo',
           `${Math.max(0,result.remainingSeconds)} s restantes · corte automático del lado servidor`,
@@ -263,7 +312,7 @@
       });
     },10_000);
     usageHardStop=setTimeout(()=>{
-      usageUi('Tiempo finalizado','La sesión se cerró sin sobregiro. Recarga QVit para continuar.','blocked');
+      usageUi('Voz LIVE finalizada','Puedes seguir por chat o activar un paquete de Tiempo IA para continuar por voz.','blocked');
       endVoice('CLIENT_HARD_STOP');
     },Math.max(0,endAt-Date.now())+250);
   };
@@ -470,7 +519,7 @@
         connecting=false;
         startButton.disabled=false;
         startButton.textContent='Continuar con Aggy';
-        setState('idle','5 minutos gratis finalizados','Elige continuar con QVit o recarga saldo. Aggy no realizará cargos automáticos.','PAGO OPCIONAL');
+        setState('idle','Tu recorrido de Voz LIVE finalizó','Sigue por chat o activa un paquete de Tiempo IA para continuar por voz. Aggy no realizará cargos automáticos.','CONTINUIDAD');
         return;
       }
       setState(
@@ -487,7 +536,7 @@
         connecting=false;
         startButton.disabled=false;
         startButton.textContent='Continuar con Aggy';
-        setState('idle','5 minutos gratis finalizados','Elige continuar con QVit o recarga saldo. Aggy no realizará cargos automáticos.','PAGO OPCIONAL');
+        setState('idle','Tu recorrido de Voz LIVE finalizó','Sigue por chat o activa un paquete de Tiempo IA para continuar por voz. Aggy no realizará cargos automáticos.','CONTINUIDAD');
         return;
       }
       setState('connecting','Conectando con Aggy','Micrófono listo. Estableciendo la sesión WebRTC segura.','CONECTANDO');

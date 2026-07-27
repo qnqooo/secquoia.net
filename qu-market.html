@@ -69,7 +69,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <div class="runtime-settings" aria-hidden="true">
         <select class="nav-select" id="assistantLangTop" title="Aggy language"><option value="auto">Auto language</option><option value="en">English</option><option value="es">Español</option></select>
         <select class="nav-select" id="voiceContext" title="Aggy voice context"><option value="advisor">Advisor voice</option><option value="executive">Executive brief</option><option value="technical">Technical deep dive</option><option value="friendly">Friendly guide</option></select>
-        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.29 · Voz de SQAILE - Acento neutro</span>
+        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.30 · Voz de SQAILE - Acento neutro</span>
         <div class="language-toggle"><button class="btn active" id="enBtn" type="button">EN</button><button class="btn" id="esBtn" type="button">ES</button></div>
       </div>
     </div>
@@ -437,7 +437,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <aside class="aggy-privacy-note"><strong>Grupos gobernados</strong><span>Cada integrante debe aprobarse antes de una conversación o llamada real.</span></aside>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="more">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.29</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.30</span></div>
       <div class="aggy-profile-card"><div class="avatar">A</div><div><strong>Asistente inteligente</strong><small>Conversación, archivos, modelos y seguridad en un solo lugar.</small></div></div>
       <div class="aggy-more-list">
         <button type="button" data-open-aggy-panel="voice"><span>●</span><p><strong>Aggy Voice Live</strong><small>Conversación Realtime bidireccional</small></p><i>›</i></button>
@@ -448,7 +448,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <details class="aggy-drawer"><summary>Preferencias e identidad</summary><div class="aggy-form-grid two"><label class="aggy-label">Nombre<input id="visitorName" placeholder="Nombre"></label><label class="aggy-label">Necesidad<select id="assistantNeed"><option value="auto">Need context</option><option value="protect">Protect endpoints</option><option value="soc">SOC / monitoring</option><option value="payments">Payments / fintech</option><option value="finance">Cost / pricing</option><option value="ai">AI agent / voice</option></select></label></div><p class="aggy-note">QuIdentify es requerido para comunicaciones con terceros.</p></details>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="voice">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.29 · incluida durante contratos activos; visitantes: 5 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.30 · incluida durante contratos activos; visitantes: 10 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
       <div class="aggy-voice-stage" id="aggyVoiceStage" data-state="idle">
         <div class="aggy-orb" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <strong id="aggyVoiceHeadline">Activando Aggy Voice</strong>
@@ -461,7 +461,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       </div>
       <aside class="aggy-usage-meter" id="aggyUsageMeter" data-tone="checking">
         <span class="aggy-usage-icon" aria-hidden="true">◷</span>
-        <p><strong id="aggyUsageLabel">Verificando acceso</strong><small id="aggyUsageDetail">QuIdentify comprobará si Aggy está incluida en un contrato vigente; solo los visitantes usan la prueba de 5 minutos.</small></p>
+        <p><strong id="aggyUsageLabel">Verificando acceso</strong><small id="aggyUsageDetail">QuIdentify comprobará si Aggy está incluida en un contrato vigente; solo los visitantes usan los 10 minutos de cortesía.</small></p>
         <button class="btn" id="aggyUsageContinue" type="button" hidden>Continuar con QVit</button>
         <a class="btn" id="aggyUsageTopUp" href="https://secquoia.net/qu-market.html#ai-services" hidden>Recargar QVit</a>
       </aside>
@@ -659,7 +659,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   productRoot.addEventListener('click',e=>{const card=e.target.closest('[data-id]');if(card&&!e.target.closest('button')){const p=products.find(x=>x.id===card.dataset.id);if(p&&p.id==='qucfa'){agentSay(lang()==='es'?'El análisis interno de costos y procesos comerciales se consulta exclusivamente en el dashboard autenticado de QuCFA. En el Marketplace solo se publica el precio para el cliente.':'Internal cost and commercial-process analysis is available only in the authenticated QuCFA dashboard. The Marketplace publishes customer pricing only.');return}if(p)agentSay(technicalSheet(p))}});
   productRoot.addEventListener('dragstart',e=>{const item=e.target.closest('[data-id]');if(item)e.dataTransfer.setData('text/plain',item.dataset.id)});cart.addEventListener('dragover',e=>{e.preventDefault();cart.classList.add('drop-ready')});cart.addEventListener('dragleave',()=>cart.classList.remove('drop-ready'));cart.addEventListener('drop',e=>{e.preventDefault();cart.classList.remove('drop-ready');addProduct(e.dataTransfer.getData('text/plain'))});
   function openAggyVoice(options={}){const focus=options?.focus!==false;setAssistantState('expanded',{focus});document.querySelector('[data-open-aggy-panel="voice"]')?.click();document.getElementById('aggyLiveVoice')?.click();agentState.textContent=lang()==='es'?'Abriendo Aggy Voice Realtime…':'Opening Aggy Voice Realtime…'}
-  window.addEventListener('secquoia:aggy:voice-state',event=>{const state=event.detail?.state||'ready',copy=assistantLauncher.querySelector('small');assistantLauncher.dataset.voice=state;copy.textContent=state==='live'?'EN VIVO · 5 min gratis':state==='connecting'?'Conectando Voice LIVE…':state==='blocked'?'Toca para activar · 5 min gratis':'Voice LIVE · 5 min gratis'});
+  window.addEventListener('secquoia:aggy:voice-state',event=>{const state=event.detail?.state||'ready',copy=assistantLauncher.querySelector('small');assistantLauncher.dataset.voice=state;copy.textContent=state==='live'?'EN VIVO · 10 min gratis':state==='connecting'?'Conectando Voice LIVE…':state==='blocked'?'Toca para activar · 10 min gratis':'Voice LIVE · 10 min gratis'});
   document.getElementById('assistantHead').onclick=e=>{if(e.target.closest('button'))return;setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantToggle.onclick=e=>{e.stopPropagation();setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantHide.onclick=e=>{e.stopPropagation();setAssistantState('hidden')};assistantLauncher.onclick=openAggyVoice;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&assistant.dataset.state==='expanded')setAssistantState('minimized')});
   window.addEventListener('message',event=>{const trustedParents=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);if(event.source!==window.parent||!trustedParents.has(event.origin)||event.data?.type!=='secquoia:aggy:start-voice')return;openAggyVoice({focus:false})});
   document.getElementById('headerSupport').onclick=()=>{setAssistantState('expanded');document.querySelector('[data-market-aggy-tab="chat"]')?.click();agentInput.focus()};
@@ -688,10 +688,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   const params=new URLSearchParams(location.search);if(params.get('quidentify')==='verified')setVerified(params.get('session')||params.get('state')||'verified-callback');assistantLangTop.value=profile.langPref;voiceContext.value=profile.voiceContext;visitorName.value=profile.name;setLang(profile.langPref==='auto'?inferLanguage():profile.langPref);restoreSavedEstimate();renderProducts();renderPackages();renderEstimate();updateCart();renderDeployment();renderIdentityGate();setAssistantState('expanded',{persist:false,focus:false});if(params.get('embed')==='1'){document.body.classList.add('aggy-embed-mode');assistant.classList.add('aggy-full','open')}addMsg(greeting(),'agent');agentState.textContent=lang()==='es'?'Aggy disponible':'Aggy ready';micBtn.textContent='Aggy Voice';window.addEventListener('load',()=>openAggyVoice({focus:false}),{once:true});if(params.get('aggy')==='voice')openAggyVoice({focus:false});if(params.get('bundle')==='1')bundle();else if(params.get('product'))addProduct(params.get('product').toLowerCase());
 })();
 </script>
-<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.29"></script>
-<script src="aggy-secure-chat.js?v=1.0.0-rc.29"></script>
-<script src="aggy-marketplace.js?v=1.0.0-rc.29"></script>
-<script src="aggy-realtime-voice.js?v=1.0.0-rc.29"></script>
+<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.30"></script>
+<script src="aggy-secure-chat.js?v=1.0.0-rc.30"></script>
+<script src="aggy-marketplace.js?v=1.0.0-rc.30"></script>
+<script src="aggy-realtime-voice.js?v=1.0.0-rc.30"></script>
 <script src="qumarket-addons.js"></script>
 </body>
 </html>
