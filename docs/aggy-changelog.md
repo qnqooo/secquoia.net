@@ -2,6 +2,13 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.25 - 2026-07-27
+
+### Fixed
+
+- Exposes the governed `X-Aggy-Lease-Expires-At` response header through CORS so the browser can validate and enforce the server-side session deadline.
+- Prevents a valid OpenAI Realtime WebRTC session from being closed immediately after provider acceptance.
+
 ## 1.0.0-rc.24 - 2026-07-27
 
 ### Fixed

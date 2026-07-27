@@ -53,7 +53,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.24',
+  version:'1.0.0-rc.25',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -102,6 +102,7 @@ const corsHeaders=request=>{
     'Access-Control-Allow-Origin':origin,
     'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
     'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Lease, X-Aggy-Lease-Capability, X-QuPay-Signature',
+    'Access-Control-Expose-Headers':'X-Aggy-Lease-Expires-At',
     'Access-Control-Max-Age':'86400',
     'Vary':'Origin'
   };

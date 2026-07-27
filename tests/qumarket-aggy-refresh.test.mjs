@@ -104,6 +104,7 @@ test('Aggy backend keeps the current model and standard API key server-side',()=
   assert.doesNotMatch(worker,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}/);
   assert.match(worker,/https:\/\/secquoia\.net/);
   assert.match(worker,/Access-Control-Allow-Origin/);
+  assert.match(worker,/'Access-Control-Expose-Headers':'X-Aggy-Lease-Expires-At'/);
 });
 
 test('Aggy backend validates SDP and builds the trusted Realtime session',async()=>{
@@ -162,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.24');
+  assert.equal(release.version,'1.0.0-rc.25');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
