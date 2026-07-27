@@ -2,6 +2,16 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.21 - 2026-07-27
+
+### Fixed
+
+- Prevented the first microphone request from hanging indefinitely when a browser requires a user gesture.
+- Auto-starts Voice LIVE only when microphone permission was already granted; otherwise Aggy presents one direct activation action.
+- Added bounded microphone and WebRTC channel-open timeouts with actionable permission and retry messages.
+- Settles an already-established usage lease when the browser cannot open the audio channel, avoiding an abandoned five-minute session.
+- Restored the Voice button label after free allowance or connection failures.
+
 ## 1.0.0-rc.20 - 2026-07-27
 
 ### Fixed

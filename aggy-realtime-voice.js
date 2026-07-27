@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.20';
+  const aggyVersion='1.0.0-rc.21';
 
   let peer=null;
   let channel=null;
@@ -37,6 +37,8 @@
   let usageLease=null;
   let usageHeartbeat=null;
   let usageHardStop=null;
+  let lastUsageStatus=null;
+  let connectionOpenTimeout=null;
 
   const fetchWithTimeout=(url,options={},timeoutMs=8000)=>{
     const controller=new AbortController();
@@ -65,6 +67,7 @@
   };
 
   const renderUsageStatus=status=>{
+    lastUsageStatus=status;
     const free=Number(status?.free?.remainingSeconds||0);
     const balance=Number(status?.wallet?.balance||0);
     const price=Number(status?.continuation?.customerQVit||0);
@@ -106,6 +109,44 @@
     const status=await response.json();
     renderUsageStatus(status);
     return status;
+  };
+
+  const microphonePermissionState=async()=>{
+    if(!navigator.permissions?.query)return 'unknown';
+    try{
+      return (await navigator.permissions.query({name:'microphone'})).state;
+    }catch{
+      return 'unknown';
+    }
+  };
+
+  const requestMicrophone=async()=>{
+    let timedOut=false;
+    let timeoutId;
+    const request=navigator.mediaDevices.getUserMedia({
+      audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
+    }).then(stream=>{
+      if(timedOut){
+        stopTracks(stream);
+        return null;
+      }
+      return stream;
+    });
+    const timeout=new Promise((_,reject)=>{
+      timeoutId=setTimeout(()=>{
+        timedOut=true;
+        const error=new Error('microphone_permission_timeout');
+        error.name='MicrophonePermissionTimeout';
+        reject(error);
+      },20_000);
+    });
+    try{
+      const stream=await Promise.race([request,timeout]);
+      if(!stream)throw new Error('microphone_permission_timeout');
+      return stream;
+    }finally{
+      clearTimeout(timeoutId);
+    }
   };
 
   const acquireUsageLease=async(paidContinuationConfirmed=false)=>{
@@ -213,6 +254,8 @@
 
   const cleanupRealtime=(reason='CLIENT_END',settle=true)=>{
     stopUsageTimers();
+    clearTimeout(connectionOpenTimeout);
+    connectionOpenTimeout=null;
     try{channel?.close()}catch{}
     try{peer?.close()}catch{}
     stopTracks(microphone);
@@ -359,7 +402,7 @@
     }
   };
 
-  const startRealtime=async(paidContinuationConfirmed=false)=>{
+  const startRealtime=async(paidContinuationConfirmed=false,{userInitiated=false}={})=>{
     if(connecting||connected)return;
     if(!window.RTCPeerConnection||!navigator.mediaDevices?.getUserMedia){
       setState('error','Aggy Voice no es compatible','Este navegador no ofrece WebRTC y micrófono seguros. La voz legacy no se utilizará.','NO COMPATIBLE');
@@ -370,19 +413,37 @@
     greetingSent=false;
     startButton.disabled=true;
     setState('connecting','Conectando con Aggy','Solicitando una sesión WebRTC efímera al backend seguro.','CONECTANDO');
+    let providerSessionEstablished=false;
 
     try{
-      const usageStatus=await fetchUsageStatus();
+      let usageStatus=lastUsageStatus;
+      if(!usageStatus||!userInitiated)usageStatus=await fetchUsageStatus();
       const freeRemaining=Number(usageStatus?.free?.remainingSeconds||0);
       if(freeRemaining<=0&&!paidContinuationConfirmed){
         connecting=false;
         startButton.disabled=false;
+        startButton.textContent='Continuar con Aggy';
         setState('idle','5 minutos gratis finalizados','Elige continuar con QVit o recarga saldo. Aggy no realizará cargos automáticos.','PAGO OPCIONAL');
         return;
       }
-      microphone=await navigator.mediaDevices.getUserMedia({
-        audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
-      });
+      setState(
+        'connecting',
+        userInitiated?'Autoriza el micrófono':'Abriendo el micrófono',
+        userInitiated?'Acepta el permiso del navegador una sola vez. Aggy continuará inmediatamente.':'Permiso previamente concedido. Preparando la conversación LIVE.',
+        'MICRÓFONO'
+      );
+      microphone=await requestMicrophone();
+      usageStatus=await fetchUsageStatus();
+      if(Number(usageStatus?.free?.remainingSeconds||0)<=0&&!paidContinuationConfirmed){
+        stopTracks(microphone);
+        microphone=null;
+        connecting=false;
+        startButton.disabled=false;
+        startButton.textContent='Continuar con Aggy';
+        setState('idle','5 minutos gratis finalizados','Elige continuar con QVit o recarga saldo. Aggy no realizará cargos automáticos.','PAGO OPCIONAL');
+        return;
+      }
+      setState('connecting','Conectando con Aggy','Micrófono listo. Estableciendo la sesión WebRTC segura.','CONECTANDO');
       await acquireUsageLease(paidContinuationConfirmed);
       peer=new RTCPeerConnection();
       remoteAudio=document.createElement('audio');
@@ -410,12 +471,16 @@
         if('contentHint'in track)track.contentHint='speech';
         peer.addTrack(track,microphone);
       });
+      let leaseExpiresAt=null;
       channel=peer.createDataChannel('oai-events');
       channel.addEventListener('open',()=>{
+        clearTimeout(connectionOpenTimeout);
+        connectionOpenTimeout=null;
         connected=true;
         connecting=false;
         configureSession();
         sendInitialGreeting();
+        startUsageEnforcement(leaseExpiresAt);
         setState('listening','Aggy está escuchando','Voz bidireccional WebRTC con interrupción natural habilitada.','EN VIVO');
         startButton.textContent='Voz en vivo';
         startButton.disabled=true;
@@ -437,18 +502,37 @@
         },
         body:offer.sdp
       },8000);
-      if(!response.ok)throw new Error('realtime_session_unavailable');
-      const leaseExpiresAt=response.headers.get('X-Aggy-Lease-Expires-At');
+      if(!response.ok){
+        const detail=await response.json().catch(()=>({}));
+        const error=new Error(detail.error||'realtime_session_unavailable');
+        error.providerCode=detail.providerCode||null;
+        throw error;
+      }
+      leaseExpiresAt=response.headers.get('X-Aggy-Lease-Expires-At');
       if(!leaseExpiresAt)throw new Error('usage_lease_expiry_missing');
       const answer=await response.text();
       if(!answer.startsWith('v=0'))throw new Error('invalid_realtime_sdp');
+      providerSessionEstablished=true;
       await peer.setRemoteDescription({type:'answer',sdp:answer});
-      startUsageEnforcement(leaseExpiresAt);
+      connectionOpenTimeout=setTimeout(()=>{
+        if(connected)return;
+        cleanupRealtime('WEBRTC_OPEN_TIMEOUT',true);
+        startButton.disabled=false;
+        startButton.textContent='Reintentar voz LIVE';
+        setState('error','No se abrió el canal de audio','La sesión segura fue cerrada sin esperar indefinidamente. Revisa el micrófono y toca Reintentar voz LIVE.','CONEXIÓN AGOTADA');
+      },12_000);
     }catch(error){
       startButton.disabled=false;
-      cleanupRealtime('SESSION_START_FAILED',false);
+      startButton.textContent='Reintentar voz LIVE';
+      cleanupRealtime('SESSION_START_FAILED',providerSessionEstablished);
       if(error.usage)renderUsageStatus(error.usage);
-      setState('error','Aggy Voice no está disponible','No fue posible iniciar la sesión Realtime segura. La voz legacy permanece desactivada.','SIN CONEXIÓN');
+      if(error?.name==='NotAllowedError'||error?.name==='SecurityError'){
+        setState('error','Activa el permiso del micrófono','En el navegador, abre los permisos del sitio, habilita Micrófono y toca Reintentar voz LIVE.','PERMISO BLOQUEADO');
+      }else if(error?.name==='MicrophonePermissionTimeout'||error?.message==='microphone_permission_timeout'){
+        setState('error','El navegador no respondió','Habilita el micrófono para este sitio y toca Reintentar voz LIVE. No se consumió una sesión.','PERMISO PENDIENTE');
+      }else{
+        setState('error','Aggy Voice no está disponible','No fue posible iniciar la sesión Realtime segura. Intenta nuevamente; la voz legacy permanece desactivada.','SIN CONEXIÓN');
+      }
     }
   };
 
@@ -512,16 +596,30 @@
       sessionStorage.setItem('secquoia.qugeo.locale',qugeoLocale);
       if(qugeoContext)sessionStorage.setItem('secquoia.qugeo.context',JSON.stringify(qugeoContext));
       const place=qugeoContext?.location?.countryName||qugeoLocale;
-      startButton.textContent='Iniciando voz';
-      setState('connecting','Aggy está iniciando',`QuGEO detectó ${place} · ${qugeoLocale}. Abriendo voz en vivo para saludarte.`,'INICIANDO');
-      await startRealtime();
+      const permissionState=await microphonePermissionState();
+      if(permissionState==='granted'){
+        startButton.textContent='Iniciando voz';
+        setState('connecting','Aggy está iniciando',`QuGEO detectó ${place} · ${qugeoLocale}. Abriendo voz en vivo para saludarte.`,'INICIANDO');
+        await startRealtime(false,{userInitiated:false});
+        return;
+      }
+      startButton.disabled=false;
+      startButton.textContent=permissionState==='denied'?'Reintentar voz LIVE':'Activar micrófono';
+      setState(
+        permissionState==='denied'?'error':'idle',
+        permissionState==='denied'?'Permiso de micrófono bloqueado':'Aggy está lista para conversar',
+        permissionState==='denied'
+          ?'Habilita Micrófono en los permisos del sitio y toca Reintentar voz LIVE.'
+          :`QuGEO detectó ${place} · ${qugeoLocale}. Toca Activar micrófono; el navegador exige este primer gesto.`,
+        permissionState==='denied'?'PERMISO BLOQUEADO':'LISTA'
+      );
     }catch{
       setState('error','Aggy Voice no está disponible','No se pudo verificar el backend seguro. El modo local permanece disponible.','SIN CONEXIÓN');
     }
   };
 
-  startButton.addEventListener('click',()=>startRealtime(false));
-  continuePaidButton?.addEventListener('click',()=>startRealtime(true));
+  startButton.addEventListener('click',()=>startRealtime(false,{userInitiated:true}));
+  continuePaidButton?.addEventListener('click',()=>startRealtime(true,{userInitiated:true}));
   endButton.addEventListener('click',()=>endVoice('CLIENT_END'));
   muteButton.addEventListener('click',()=>{
     const track=microphone?.getAudioTracks()[0];
@@ -531,12 +629,12 @@
     setState(track.enabled?'listening':'idle',track.enabled?'Te escucho':'Micrófono silenciado',track.enabled?'La conversación continúa abierta.':'Aggy no recibe audio mientras el micrófono está silenciado.',track.enabled?'EN VIVO':'SILENCIADA');
   });
   window.AggyVoice=Object.freeze({
-    start:()=>startRealtime(),
+    start:()=>startRealtime(false,{userInitiated:true}),
     readAloud:text=>{
       pendingReadAloud=String(text||'').replace(/\s+/g,' ').trim().slice(0,4000);
       if(!pendingReadAloud)return;
       if(connected&&channel?.readyState==='open')sendPendingReadAloud();
-      else startRealtime();
+      else startRealtime(false,{userInitiated:true});
     },
     isLive:()=>connected
   });

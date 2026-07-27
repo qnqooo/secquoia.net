@@ -50,8 +50,13 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/const healthEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/health'/);
   assert.match(voice,/prewarmVoice\(\)/);
   assert.match(voice,/setState\('connecting','Aggy está iniciando'/);
-  assert.match(voice,/await startRealtime\(\)/);
-  assert.doesNotMatch(voice,/navigator\.permissions/);
+  assert.match(voice,/await startRealtime\(false,\{userInitiated:false\}\)/);
+  assert.match(voice,/navigator\.permissions\?\.query/);
+  assert.match(voice,/permissionState==='granted'/);
+  assert.match(voice,/startRealtime\(false,\{userInitiated:true\}\)/);
+  assert.match(voice,/microphone_permission_timeout/);
+  assert.match(voice,/WEBRTC_OPEN_TIMEOUT/);
+  assert.match(voice,/connectionOpenTimeout=setTimeout/);
   assert.match(voice,/type:'response\.create'/);
   assert.match(voice,/sendInitialGreeting\(\)/);
   assert.match(voice,/greetingSent/);
@@ -157,7 +162,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.20');
+  assert.equal(release.version,'1.0.0-rc.21');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -341,7 +346,7 @@ test('Voice client exposes five free minutes and requires explicit paid continua
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.paidContinuationConsentRequired,true);
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.silentPaidContinuationAllowed,false);
   assert.match(voice,/5 minutos gratis finalizados/);
-  assert.match(voice,/startRealtime\(true\)/);
+  assert.match(voice,/startRealtime\(true,\{userInitiated:true\}\)/);
   assert.match(voice,/JSON\.stringify\(\{paidContinuationConfirmed\}\)/);
   assert.match(worker,/PREPAID_ONE_MINUTE_MICROLEASE/);
   assert.match(voice,/retention_ratio:\.8/);
