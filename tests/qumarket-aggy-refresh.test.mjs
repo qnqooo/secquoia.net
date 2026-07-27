@@ -63,7 +63,7 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/QuGEO selected \$\{language\}/);
   assert.match(voice,/Start speaking immediately/);
   assert.match(voice,/Keep it compact, with no introductory filler or long pause/);
-  assert.match(voice,/How can I help you\?/);
+  assert.match(voice,/It's a pleasure to meet you\. How can I help you\?/);
   assert.match(voice,/new RTCPeerConnection\(\)/);
   assert.match(voice,/Content-Type':'application\/sdp'/);
   assert.match(voice,/credentials:'omit'/);
@@ -162,7 +162,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.21');
+  assert.equal(release.version,'1.0.0-rc.22');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -223,8 +223,11 @@ test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
   assert.doesNotMatch(voice,/AbortSignal\.timeout/);
 });
 
-test('Marketplace opens Aggy and routes Voice LIVE through the visible governed controls',()=>{
-  assert.match(html,/setAssistantState\('expanded',\{persist:false\}\)/);
+test('Marketplace keeps Aggy compact and routes the first launcher click to Voice LIVE',()=>{
+  assert.match(html,/else setAssistantState\('hidden',\{persist:false\}\)/);
+  assert.match(html,/assistantLauncher\.onclick=openAggyVoice/);
+  assert.match(html,/secquoia:aggy:start-voice/);
+  assert.match(html,/trustedParents/);
   assert.match(html,/data-open-aggy-panel="voice"/);
   assert.match(html,/document\.getElementById\('aggyLiveVoice'\)\?\.click\(\)/);
   assert.doesNotMatch(html,/data-market-aggy-tab="voice"/);

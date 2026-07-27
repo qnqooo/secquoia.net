@@ -2,6 +2,16 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.22 - 2026-07-27
+
+### Fixed
+
+- Keeps the shared Aggy experience compact on initial page load instead of expanding the communications panel automatically.
+- Uses the first explicit launcher click to open the Voice LIVE panel and request microphone access.
+- Preserves silent backend, QuGEO, knowledge and usage prewarming before interaction without consuming a provider session.
+- Starts the Realtime greeting immediately after the governed audio channel opens.
+- Applies the same compact-first behavior to the standalone Marketplace.
+
 ## 1.0.0-rc.21 - 2026-07-27
 
 ### Fixed

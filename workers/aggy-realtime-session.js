@@ -53,7 +53,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.21',
+  version:'1.0.0-rc.22',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',

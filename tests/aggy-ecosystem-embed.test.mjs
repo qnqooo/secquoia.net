@@ -26,11 +26,14 @@ test('Aggy embed is accessible, responsive and grants only required frame capabi
   assert.doesNotMatch(embed,/camera|geolocation|clipboard-write|payment/);
 });
 
-test('Aggy opens automatically after mounting without stealing keyboard focus',()=>{
-  assert.match(embed,/document\.body\.append\(host\);\s*requestAnimationFrame\(\(\)=>setOpen\(true,\{focus:false\}\)\)/);
+test('Aggy stays compact after mounting and starts Voice LIVE from the launcher gesture',()=>{
+  assert.doesNotMatch(embed,/requestAnimationFrame\(\(\)=>setOpen\(true/);
   assert.match(embed,/const setOpen=\(open,\{focus=true\}=\{\}\)=>/);
-  assert.match(embed,/launcher\.addEventListener\('click',\(\)=>setOpen\(!panel\.classList\.contains\('open'\)\)\)/);
+  assert.match(embed,/type:'secquoia:aggy:start-voice'/);
+  assert.match(embed,/if\(!opening\)return/);
+  assert.match(embed,/requestAnimationFrame\(requestVoiceStart\)/);
   assert.match(embed,/close\.addEventListener\('click',\(\)=>setOpen\(false\)\)/);
+  assert.match(embed,/Voice LIVE · 5 min gratis/);
 });
 
 test('Aggy compact widget uses the governed Realtime voice client only',()=>{
@@ -38,13 +41,13 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.21"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.22"/);
   assert.match(embed,/qu-market\.html\?embed=1&aggy=1/);
   assert.match(embed,/title="Aggy Communications"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.21"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.21"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.22"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.22"[^>]*data-aggy-site="secquoia\.net"/);
 });
