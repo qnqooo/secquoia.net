@@ -28,6 +28,8 @@ test('chat keeps messages files and encrypted calls within immediate reach',asyn
   assert.match(html,/data-chat-call="audio"/);
   assert.match(html,/data-chat-call="video"/);
   assert.match(html,/E2EE\/PQC/);
+  assert.match(css,/\.assistant\.open:not\(\.aggy-full\)\{width:min\(720px,calc\(100% - 28px\)\)/);
+  assert.match(css,/\.aggy-chat-shell\{display:grid;grid-template-columns:210px minmax\(0,1fr\);width:100%;min-width:0/);
   assert.match(client,/preflightChatAttachment/);
   assert.match(client,/PENDIENTE: Glasswall \+ QuSOC \+ QuFense \+ E2EE\/PQC \+ QuVault/);
   assert.match(client,/Aggy verificará E2EE\/PQC antes de solicitar permisos/);
