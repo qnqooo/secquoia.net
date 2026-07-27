@@ -1,7 +1,7 @@
 {
   "schema": "secquoia.aggy.rollout.v1",
   "release": "1.0.0-rc.18",
-  "generatedAt": "2026-07-27T05:30:00Z",
+  "generatedAt": "2026-07-27T06:15:00Z",
   "webSurfaces": [
     {
       "name": "SECQUOIA Marketplace and corporate site",
@@ -30,7 +30,9 @@
       "access": "owner-only",
       "integration": "universal-loader",
       "siteVersion": 25,
-      "status": "deployed"
+      "observedLoaderRelease": "1.0.0-rc.8",
+      "targetLoaderRelease": "1.0.0-rc.18",
+      "status": "update-blocked-authentication"
     },
     {
       "name": "QuSpace / QuHub",
@@ -38,7 +40,9 @@
       "access": "owner-only",
       "integration": "universal-loader",
       "siteVersion": 4,
-      "status": "deployed"
+      "observedLoaderRelease": "1.0.0-rc.8",
+      "targetLoaderRelease": "1.0.0-rc.18",
+      "status": "update-blocked-authentication"
     }
   ],
   "serviceEndpoints": [
