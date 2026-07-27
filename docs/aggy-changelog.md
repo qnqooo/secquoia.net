@@ -2,6 +2,21 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.18 - 2026-07-27
+
+### Changed
+
+- Established one shared 300-second Aggy Voice LIVE allowance per pseudonymous user across the SECQUOIA website ecosystem.
+- The free clock starts only when a LIVE voice conversation starts; browsing a website does not consume the allowance.
+- Hid payment and QVit actions while free time remains.
+- After the free allowance ends, Aggy presents either a QVit top-up action or an explicit one-minute continuation confirmation.
+
+### Security and cost controls
+
+- Paid continuation now fails closed unless the client sends explicit confirmation for that single one-minute reservation.
+- Existing QVit balance is never silently reserved after the free allowance ends.
+- QuPay top-up remains user-initiated and no automatic overdraft or charge is permitted.
+
 ## 1.0.0-rc.17 - 2026-07-27
 
 ### Changed

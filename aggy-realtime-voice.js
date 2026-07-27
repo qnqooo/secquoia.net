@@ -11,6 +11,7 @@
   const caption=$('#aggyVoiceCaption');
   const muteButton=$('#aggyVoiceMute');
   const endButton=$('#aggyVoiceEnd');
+  const continuePaidButton=$('#aggyUsageContinue');
   const sessionEndpoint='https://aggy.secquoia.group/api/aggy/realtime/session';
   const healthEndpoint='https://aggy.secquoia.group/api/aggy/realtime/health';
   const usageEndpoint='https://aggy.secquoia.group/api/aggy/usage';
@@ -19,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.17';
+  const aggyVersion='1.0.0-rc.18';
 
   let peer=null;
   let channel=null;
@@ -69,26 +70,33 @@
     const price=Number(status?.continuation?.customerQVit||0);
     const topUpAvailable=status?.wallet?.topUpAvailable===true;
     const topUp=$('#aggyUsageTopUp');
+    if(continuePaidButton)continuePaidButton.hidden=true;
     if(topUp){
       if(status?.wallet?.topUpUrl)topUp.href=status.wallet.topUpUrl;
       topUp.textContent=topUpAvailable?'Recargar QVit':'Solicitar activación QuPay';
+      topUp.hidden=true;
     }
     if(status?.activeLease){
       usageUi('Sesión medida en curso',`${status.activeLease.kind==='FREE'?'Prueba sin costo':'Aggy Minute'} · corte automático activo`,'ready');
     }else if(free>0){
       usageUi(
-        `${Math.ceil(free/60)} min incluidos`,
-        topUpAvailable
-          ? `Después, cada Aggy Minute de 60 s cuesta ${price.toLocaleString('es-CO')} QVit.`
-          : `Después, cada minuto cuesta ${price.toLocaleString('es-CO')} QVit; la recarga automática permanece bloqueada hasta activar QuPay LIVE.`,
+        `${Math.ceil(free/60)} min gratis de Aggy Voice LIVE`,
+        'El contador inicia con la conversación de voz. Durante este periodo no se consume saldo QVit.',
         'ready'
       );
     }else if(!topUpAvailable){
-      usageUi('Continuidad pagada no disponible','QuPay LIVE todavía no está enlazado. Aggy no realizará cargos ni permitirá sobregiros.','blocked');
+      if(topUp)topUp.hidden=false;
+      usageUi('5 minutos gratis finalizados','Para continuar con Aggy Voice LIVE debes activar QuPay. No se realizará ningún cargo automático.','blocked');
     }else if(balance>=price&&price>0){
-      usageUi(`${balance.toLocaleString('es-CO')} QVit disponibles`,`Saldo para ${Math.floor(balance/price)} Aggy Minute(s) adicional(es).`,'ready');
+      if(topUp)topUp.hidden=false;
+      if(continuePaidButton){
+        continuePaidButton.hidden=false;
+        continuePaidButton.textContent=`Continuar 1 min · ${price.toLocaleString('es-CO')} QVit`;
+      }
+      usageUi('5 minutos gratis finalizados',`Tienes ${balance.toLocaleString('es-CO')} QVit. Confirma si deseas reservar ${price.toLocaleString('es-CO')} QVit para 1 minuto adicional.`,'checking');
     }else{
-      usageUi('Recarga requerida',`Un Aggy Minute cuesta ${price.toLocaleString('es-CO')} QVit. No hay sobregiro automático.`,'blocked');
+      if(topUp)topUp.hidden=false;
+      usageUi('5 minutos gratis finalizados',`Recarga QVit si deseas continuar. Un minuto adicional cuesta ${price.toLocaleString('es-CO')} QVit y nunca se cobra automáticamente.`,'blocked');
     }
   };
 
@@ -100,12 +108,12 @@
     return status;
   };
 
-  const acquireUsageLease=async()=>{
+  const acquireUsageLease=async(paidContinuationConfirmed=false)=>{
     const response=await fetchWithTimeout(`${usageEndpoint}/lease`,{
       method:'POST',
       credentials:'omit',
       headers:{'Content-Type':'application/json'},
-      body:'{}'
+      body:JSON.stringify({paidContinuationConfirmed})
     },6000);
     const body=await response.json().catch(()=>({}));
     if(!response.ok){
@@ -351,7 +359,7 @@
     }
   };
 
-  const startRealtime=async()=>{
+  const startRealtime=async(paidContinuationConfirmed=false)=>{
     if(connecting||connected)return;
     if(!window.RTCPeerConnection||!navigator.mediaDevices?.getUserMedia){
       setState('error','Aggy Voice no es compatible','Este navegador no ofrece WebRTC y micrófono seguros. La voz legacy no se utilizará.','NO COMPATIBLE');
@@ -364,10 +372,18 @@
     setState('connecting','Conectando con Aggy','Solicitando una sesión WebRTC efímera al backend seguro.','CONECTANDO');
 
     try{
+      const usageStatus=await fetchUsageStatus();
+      const freeRemaining=Number(usageStatus?.free?.remainingSeconds||0);
+      if(freeRemaining<=0&&!paidContinuationConfirmed){
+        connecting=false;
+        startButton.disabled=false;
+        setState('idle','5 minutos gratis finalizados','Elige continuar con QVit o recarga saldo. Aggy no realizará cargos automáticos.','PAGO OPCIONAL');
+        return;
+      }
       microphone=await navigator.mediaDevices.getUserMedia({
         audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
       });
-      await acquireUsageLease();
+      await acquireUsageLease(paidContinuationConfirmed);
       peer=new RTCPeerConnection();
       remoteAudio=document.createElement('audio');
       remoteAudio.autoplay=true;
@@ -504,7 +520,8 @@
     }
   };
 
-  startButton.addEventListener('click',startRealtime);
+  startButton.addEventListener('click',()=>startRealtime(false));
+  continuePaidButton?.addEventListener('click',()=>startRealtime(true));
   endButton.addEventListener('click',()=>endVoice('CLIENT_END'));
   muteButton.addEventListener('click',()=>{
     const track=microphone?.getAudioTracks()[0];

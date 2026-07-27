@@ -34,9 +34,13 @@ const AGGY_PAID_BLOCK_QVIT=roundUp(
 );
 const AGGY_QUOPTIO_POLICY=Object.freeze({
   schema:'secquoia.quoptio.aggy-pricing-policy.v1',
-  version:'2026-07-26.1',
+  version:'2026-07-27.1',
   mode:'PREPAID_ONE_MINUTE_MICROLEASE',
   freeSeconds:AGGY_FREE_MS/1000,
+  freeScope:'SECQUOIA_ECOSYSTEM_USER',
+  freeClockStarts:'FIRST_LIVE_VOICE_SESSION',
+  paidContinuationConsentRequired:true,
+  silentPaidContinuationAllowed:false,
   paidLeaseSeconds:AGGY_PAID_BLOCK_MS/1000,
   latestApprovedRealtimeModelRequired:true,
   silentModelDowngradeAllowed:false,
@@ -49,7 +53,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.17',
+  version:'1.0.0-rc.18',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -479,6 +483,15 @@ class AggyUsageMeter {
     let duration=freeRemaining;
     let reserved=0;
     if(duration<=0){
+      if(body.paidContinuationConfirmed!==true){
+        return this.reply({
+          error:'paid_continuation_confirmation_required',
+          paymentRequired:true,
+          consentRequired:true,
+          silentChargeAllowed:false,
+          ...this.status(now)
+        },402);
+      }
       kind='PAID';
       duration=AGGY_PAID_BLOCK_MS;
       reserved=AGGY_PAID_BLOCK_QVIT;
@@ -786,9 +799,14 @@ export default {
         return json(body,response.status,request);
       }
       if(url.pathname==='/api/aggy/usage/lease'&&request.method==='POST'){
+        let leaseRequest;
+        try{leaseRequest=await safeJson(request)}catch(error){return json({error:error.message},400,request)}
         const capability=randomCapability();
         const capabilityHash=await sha256Hex(capability);
-        const response=await meterRequest(meter.stub,'/lease','POST',{capabilityHash});
+        const response=await meterRequest(meter.stub,'/lease','POST',{
+          capabilityHash,
+          paidContinuationConfirmed:leaseRequest.paidContinuationConfirmed===true
+        });
         const body=await response.json();
         if(response.ok)body.capability=capability;
         body.walletReference=meter.reference;

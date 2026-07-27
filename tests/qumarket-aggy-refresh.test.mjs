@@ -157,7 +157,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.17');
+  assert.equal(release.version,'1.0.0-rc.18');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -278,8 +278,39 @@ test('Usage API and health fail closed when the Durable Object binding is absent
   assert.equal((await health.json()).usageMeter,'not_configured');
 });
 
-test('Voice client exposes QVit status, heartbeats, usage settlement and hard stop',()=>{
-  for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageTopUp']){
+test('Usage API forwards paid continuation only after an explicit user confirmation',async()=>{
+  const forwarded=[];
+  const meters={
+    idFromName:name=>name,
+    get:()=>({
+      fetch:async request=>{
+        forwarded.push(await request.json());
+        return new Response(JSON.stringify({
+          error:'paid_continuation_confirmation_required',
+          paymentRequired:true,
+          consentRequired:true,
+          wallet:{balance:1_000_000},
+          free:{remainingSeconds:0},
+          continuation:{customerQVit:240_000}
+        }),{status:402,headers:{'Content-Type':'application/json'}});
+      }
+    })
+  };
+  for(const paidContinuationConfirmed of [false,true]){
+    const response=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/usage/lease',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept-Language':'es-CO'},
+      body:JSON.stringify({paidContinuationConfirmed})
+    }),{AGGY_USAGE_METERS:meters});
+    assert.equal(response.status,402);
+  }
+  assert.equal(forwarded[0].paidContinuationConfirmed,false);
+  assert.equal(forwarded[1].paidContinuationConfirmed,true);
+  assert.match(forwarded[0].capabilityHash,/^[a-f0-9]{64}$/);
+});
+
+test('Voice client exposes five free minutes and requires explicit paid continuation',()=>{
+  for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageContinue','aggyUsageTopUp']){
     assert.match(html,new RegExp(`id="${id}"`));
   }
   assert.match(voice,/\/api\/aggy\/usage/);
@@ -294,6 +325,16 @@ test('Voice client exposes QVit status, heartbeats, usage settlement and hard st
   assert.match(worker,/AGGY_MAX_PAID_BLOCKS_DAY=15/);
   assert.match(worker,/AGGY_MAX_PAID_BLOCKS_MONTH=150/);
   assert.match(worker,/let duration=freeRemaining/);
+  assert.match(worker,/paid_continuation_confirmation_required/);
+  assert.match(worker,/paidContinuationConfirmed===true/);
+  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeSeconds,300);
+  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeScope,'SECQUOIA_ECOSYSTEM_USER');
+  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeClockStarts,'FIRST_LIVE_VOICE_SESSION');
+  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.paidContinuationConsentRequired,true);
+  assert.equal(workerModule.AGGY_QUOPTIO_POLICY.silentPaidContinuationAllowed,false);
+  assert.match(voice,/5 minutos gratis finalizados/);
+  assert.match(voice,/startRealtime\(true\)/);
+  assert.match(voice,/JSON\.stringify\(\{paidContinuationConfirmed\}\)/);
   assert.match(worker,/PREPAID_ONE_MINUTE_MICROLEASE/);
   assert.match(voice,/retention_ratio:\.8/);
   assert.match(worker,/AGGY_QUPAY_WEBHOOK_SECRET/);
