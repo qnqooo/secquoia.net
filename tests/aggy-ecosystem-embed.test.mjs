@@ -26,18 +26,25 @@ test('Aggy embed is accessible, responsive and grants only required frame capabi
   assert.doesNotMatch(embed,/camera|geolocation|clipboard-write|payment/);
 });
 
+test('Aggy opens automatically after mounting without stealing keyboard focus',()=>{
+  assert.match(embed,/document\.body\.append\(host\);\s*requestAnimationFrame\(\(\)=>setOpen\(true,\{focus:false\}\)\)/);
+  assert.match(embed,/const setOpen=\(open,\{focus=true\}=\{\}\)=>/);
+  assert.match(embed,/launcher\.addEventListener\('click',\(\)=>setOpen\(!panel\.classList\.contains\('open'\)\)\)/);
+  assert.match(embed,/close\.addEventListener\('click',\(\)=>setOpen\(false\)\)/);
+});
+
 test('Aggy compact widget uses the governed Realtime voice client only',()=>{
   for(const id of ['aggyVoiceStage','aggyVoiceBadge','aggyVoiceHeadline','aggyVoiceCaption','aggyLanguage','aggyLiveVoice','aggyVoiceMute','aggyVoiceEnd']){
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.18"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.19"/);
   assert.match(embed,/qu-market\.html\?embed=1&aggy=1/);
   assert.match(embed,/title="Aggy Communications"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.18"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.18"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.19"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.19"[^>]*data-aggy-site="secquoia\.net"/);
 });

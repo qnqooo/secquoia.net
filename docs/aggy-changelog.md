@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.19 - 2026-07-27
+
+### Fixed
+
+- Restored automatic Aggy panel deployment when a public SECQUOIA ecosystem page loads.
+- Preserved the launcher, close button and Escape-key controls after the automatic opening.
+- Prevented automatic opening from stealing keyboard focus from the page.
+- Updated public loader cache keys for SECQUOIA.NET, SECQUOIA.GROUP and QnQ.
+
 ## 1.0.0-rc.18 - 2026-07-27
 
 ### Changed

@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.18';
+  const version='1.0.0-rc.19';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -40,9 +40,10 @@
   const launcher=root.querySelector('.launcher');
   const panel=root.querySelector('.panel');
   const close=root.querySelector('.close');
-  const setOpen=open=>{
+  const setOpen=(open,{focus=true}={})=>{
     panel.classList.toggle('open',open);
     launcher.setAttribute('aria-expanded',String(open));
+    if(!focus)return;
     if(open)close.focus();
     else launcher.focus();
   };
@@ -50,4 +51,5 @@
   close.addEventListener('click',()=>setOpen(false));
   root.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false)});
   document.body.append(host);
+  requestAnimationFrame(()=>setOpen(true,{focus:false}));
 })();
