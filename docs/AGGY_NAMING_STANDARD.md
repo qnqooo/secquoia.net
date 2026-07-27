@@ -25,5 +25,10 @@ The landing-page router may continue accepting the historical inbound aliases
 `quchat`, `quvoice` and `quagent`, but it must resolve them to the canonical
 `aggy` product. These aliases are compatibility inputs, not current branding.
 
+`QuSpace` is not an Aggy alias. It remains the enterprise workspace, with Aggy
+embedded as its contextual copilot. `QuHub` is not an Aggy alias or a QuSpace
+synonym; it remains the independent integration, knowledge and LLM gateway
+consumed by Aggy and QuSpace.
+
 Historical exports, signed manifests, certification evidence and immutable
 archives retain their original text and hashes. They must not be rewritten.
