@@ -30,6 +30,7 @@ test('chat keeps messages files and encrypted calls within immediate reach',asyn
   assert.match(html,/E2EE\/PQC/);
   assert.match(css,/\.assistant\.open:not\(\.aggy-full\)\{width:min\(720px,calc\(100% - 28px\)\)/);
   assert.match(css,/\.aggy-chat-shell\{display:grid;grid-template-columns:210px minmax\(0,1fr\);width:100%;min-width:0/);
+  assert.match(css,/\.aggy-composer button\[hidden\]\{display:none!important\}/);
   assert.match(client,/preflightChatAttachment/);
   assert.match(client,/syncComposerAction/);
   assert.match(client,/composerSend\.hidden=!hasMessage/);
