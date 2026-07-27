@@ -2,6 +2,20 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.27 - 2026-07-27
+
+### Restored
+
+- Opens Aggy automatically on SECQUOIA web surfaces without stealing keyboard focus.
+- Attempts to activate the microphone and Voice LIVE immediately after secure service preflight, including the browser's native first-use permission flow.
+- Starts the QuGEO-localized greeting as soon as the governed WebRTC data channel is live.
+- Synchronizes the compact launcher with the real voice state: animated connecting halo, `EN VIVO` only after connection, and a direct activation fallback when browser permission blocks automatic startup.
+
+### Preserved
+
+- Starts the five-minute free allowance only after a usable WebRTC channel is confirmed.
+- Keeps close, minimize and reopen controls available.
+
 ## 1.0.0-rc.26 - 2026-07-27
 
 ### Fixed

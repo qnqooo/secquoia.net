@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.26';
+  const aggyVersion='1.0.0-rc.27';
 
   let peer=null;
   let channel=null;
@@ -39,6 +39,21 @@
   let usageHardStop=null;
   let lastUsageStatus=null;
   let connectionOpenTimeout=null;
+  const trustedParentOrigins=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);
+  const parentOrigin=(()=>{
+    try{
+      const origin=new URL(document.referrer).origin;
+      return trustedParentOrigins.has(origin)?origin:null;
+    }catch{return null}
+  })();
+
+  const publishVoiceState=(state,label)=>{
+    const live=connected&&['listening','speaking'].includes(state);
+    const publicState=live?'live':state==='connecting'?'connecting':state==='error'?'blocked':'ready';
+    const detail=Object.freeze({type:'secquoia:aggy:voice-state',state:publicState,label:String(label||''),version:aggyVersion});
+    window.dispatchEvent(new CustomEvent('secquoia:aggy:voice-state',{detail}));
+    if(window.parent!==window&&parentOrigin)window.parent.postMessage(detail,parentOrigin);
+  };
 
   const fetchWithTimeout=(url,options={},timeoutMs=8000)=>{
     const controller=new AbortController();
@@ -53,6 +68,7 @@
     caption.textContent=detail;
     badge.textContent=label;
     badge.className='aggy-state '+(state==='error'?'blocked':state==='idle'?'checking':'ready');
+    publishVoiceState(state,label);
   };
 
   const stopTracks=stream=>stream?.getTracks().forEach(track=>track.stop());
@@ -627,21 +643,19 @@
       if(qugeoContext)sessionStorage.setItem('secquoia.qugeo.context',JSON.stringify(qugeoContext));
       const place=qugeoContext?.location?.countryName||qugeoLocale;
       const permissionState=await microphonePermissionState();
-      if(permissionState==='granted'){
+      if(permissionState!=='denied'){
         startButton.textContent='Iniciando voz';
-        setState('connecting','Aggy está iniciando',`QuGEO detectó ${place} · ${qugeoLocale}. Abriendo voz en vivo para saludarte.`,'INICIANDO');
-        await startRealtime(false,{userInitiated:false});
+        setState('connecting','Aggy está iniciando',`QuGEO detectó ${place} · ${qugeoLocale}. Abriendo el micrófono y la voz en vivo para saludarte.`,'INICIANDO');
+        await startRealtime(false,{userInitiated:permissionState!=='granted'});
         return;
       }
       startButton.disabled=false;
-      startButton.textContent=permissionState==='denied'?'Reintentar voz LIVE':'Activar micrófono';
+      startButton.textContent='Reintentar voz LIVE';
       setState(
-        permissionState==='denied'?'error':'idle',
-        permissionState==='denied'?'Permiso de micrófono bloqueado':'Aggy está lista para conversar',
-        permissionState==='denied'
-          ?'Habilita Micrófono en los permisos del sitio y toca Reintentar voz LIVE.'
-          :`QuGEO detectó ${place} · ${qugeoLocale}. Toca Activar micrófono; el navegador exige este primer gesto.`,
-        permissionState==='denied'?'PERMISO BLOQUEADO':'LISTA'
+        'error',
+        'Permiso de micrófono bloqueado',
+        'Habilita Micrófono en los permisos del sitio y toca Reintentar voz LIVE.',
+        'PERMISO BLOQUEADO'
       );
     }catch{
       setState('error','Aggy Voice no está disponible','No se pudo verificar el backend seguro. El modo local permanece disponible.','SIN CONEXIÓN');

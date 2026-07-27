@@ -50,9 +50,9 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/const healthEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/health'/);
   assert.match(voice,/prewarmVoice\(\)/);
   assert.match(voice,/setState\('connecting','Aggy está iniciando'/);
-  assert.match(voice,/await startRealtime\(false,\{userInitiated:false\}\)/);
+  assert.match(voice,/await startRealtime\(false,\{userInitiated:permissionState!=='granted'\}\)/);
   assert.match(voice,/navigator\.permissions\?\.query/);
-  assert.match(voice,/permissionState==='granted'/);
+  assert.match(voice,/permissionState!=='denied'/);
   assert.match(voice,/startRealtime\(false,\{userInitiated:true\}\)/);
   assert.match(voice,/microphone_permission_timeout/);
   assert.match(voice,/WEBRTC_OPEN_TIMEOUT/);
@@ -163,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.26');
+  assert.equal(release.version,'1.0.0-rc.27');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -224,15 +224,18 @@ test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
   assert.doesNotMatch(voice,/AbortSignal\.timeout/);
 });
 
-test('Marketplace keeps Aggy compact and routes the first launcher click to Voice LIVE',()=>{
-  assert.match(html,/else setAssistantState\('hidden',\{persist:false\}\)/);
+test('Marketplace opens Aggy automatically and routes Voice LIVE without stealing focus',()=>{
+  assert.match(html,/setAssistantState\('expanded',\{persist:false,focus:false\}\)/);
+  assert.match(html,/window\.addEventListener\('load',\(\)=>openAggyVoice\(\{focus:false\}\)/);
   assert.match(html,/assistantLauncher\.onclick=openAggyVoice/);
   assert.match(html,/secquoia:aggy:start-voice/);
+  assert.match(html,/secquoia:aggy:voice-state/);
   assert.match(html,/trustedParents/);
   assert.match(html,/data-open-aggy-panel="voice"/);
   assert.match(html,/document\.getElementById\('aggyLiveVoice'\)\?\.click\(\)/);
   assert.doesNotMatch(html,/data-market-aggy-tab="voice"/);
-  assert.match(html,/Voice LIVE · 5 min gratis/);
+  assert.match(html,/EN VIVO · 5 min gratis/);
+  assert.match(html,/aggy-market-live-halo/);
 });
 
 test('QuCFA prices one prepaid Aggy Minute without overdraft',()=>{

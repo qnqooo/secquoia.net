@@ -26,14 +26,16 @@ test('Aggy embed is accessible, responsive and grants only required frame capabi
   assert.doesNotMatch(embed,/camera|geolocation|clipboard-write|payment/);
 });
 
-test('Aggy stays compact after mounting and starts Voice LIVE from the launcher gesture',()=>{
-  assert.doesNotMatch(embed,/requestAnimationFrame\(\(\)=>setOpen\(true/);
+test('Aggy opens without stealing focus and starts Voice LIVE automatically',()=>{
+  assert.match(embed,/requestAnimationFrame\(\(\)=>setOpen\(true,\{focus:false\}\)\)/);
   assert.match(embed,/const setOpen=\(open,\{focus=true\}=\{\}\)=>/);
   assert.match(embed,/type:'secquoia:aggy:start-voice'/);
-  assert.match(embed,/if\(!opening\)return/);
-  assert.match(embed,/requestAnimationFrame\(requestVoiceStart\)/);
+  assert.match(embed,/frame\.addEventListener\('load'/);
+  assert.match(embed,/requestVoiceStart\(\)/);
   assert.match(embed,/close\.addEventListener\('click',\(\)=>setOpen\(false\)\)/);
-  assert.match(embed,/Voice LIVE · 5 min gratis/);
+  assert.match(embed,/EN VIVO · 5 min gratis/);
+  assert.match(embed,/aggy-live-halo/);
+  assert.match(embed,/secquoia:aggy:voice-state/);
 });
 
 test('Aggy compact widget uses the governed Realtime voice client only',()=>{
@@ -41,13 +43,13 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.26"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0-rc\.27"/);
   assert.match(embed,/qu-market\.html\?embed=1&aggy=1/);
   assert.match(embed,/title="Aggy Communications"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.26"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.26"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.27"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0-rc\.27"[^>]*data-aggy-site="secquoia\.net"/);
 });
