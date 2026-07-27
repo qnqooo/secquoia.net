@@ -2,6 +2,18 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.20 - 2026-07-27
+
+### Fixed
+
+- Opened the native Aggy Marketplace experience automatically on every fresh page load while preserving minimize, hide and reopen controls.
+- Routed the Marketplace Voice action to the real Voice panel and its governed WebRTC start control.
+- Removed the stale tab selector that could leave Voice LIVE hidden after a user request.
+
+### Changed
+
+- Added the compact launcher message `Voice LIVE · 5 min gratis` so the free allowance is visible without adding friction.
+
 ## 1.0.0-rc.19 - 2026-07-27
 
 ### Fixed

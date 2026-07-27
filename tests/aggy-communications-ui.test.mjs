@@ -64,8 +64,8 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.19');
-  assert.match(html,/v1\.0\.0-rc\.19/);
+  assert.equal(release.version,'1.0.0-rc.20');
+  assert.match(html,/v1\.0\.0-rc\.20/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.19'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.20'/);
 });

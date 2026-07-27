@@ -157,7 +157,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.19');
+  assert.equal(release.version,'1.0.0-rc.20');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -216,6 +216,14 @@ test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
   assert.match(voice,/fetchVoiceHealth\(\)/);
   assert.match(voice,/new AbortController\(\)/);
   assert.doesNotMatch(voice,/AbortSignal\.timeout/);
+});
+
+test('Marketplace opens Aggy and routes Voice LIVE through the visible governed controls',()=>{
+  assert.match(html,/setAssistantState\('expanded',\{persist:false\}\)/);
+  assert.match(html,/data-open-aggy-panel="voice"/);
+  assert.match(html,/document\.getElementById\('aggyLiveVoice'\)\?\.click\(\)/);
+  assert.doesNotMatch(html,/data-market-aggy-tab="voice"/);
+  assert.match(html,/Voice LIVE · 5 min gratis/);
 });
 
 test('QuCFA prices one prepaid Aggy Minute without overdraft',()=>{
