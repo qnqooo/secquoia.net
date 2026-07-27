@@ -40,6 +40,7 @@ test('QuSOC text policy normalizes controls and blocks empty payloads',()=>{
 test('Aggy creates verifiable hybrid E2EE/PQC envelopes and rejects tampering',()=>{
   const alice=createDeviceKeys(),bob=createDeviceKeys(),room=createRoomSecret();
   assert.equal(validatePublicBundle(alice.publicBundle),true);
+  assert.equal(alice.publicBundle.cryptoProfile,'E2EE/PQC');
   const receipt={
     schema:'secquoia.qusoc.chat-text-admission.v1',
     receiptId:crypto.randomUUID(),
@@ -54,6 +55,7 @@ test('Aggy creates verifiable hybrid E2EE/PQC envelopes and rejects tampering',(
     recipient:bob.publicBundle
   });
   assert.equal(validateEnvelope(envelope),true);
+  assert.equal(envelope.header.cryptoProfile,'E2EE/PQC');
   assert.equal(decryptMessage({
     roomId:room.roomId,
     envelope,

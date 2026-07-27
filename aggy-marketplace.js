@@ -82,7 +82,7 @@
     resetCallReadiness();setCallGate('identity',identity);setCallGate('webrtc',webRtc);setCallGate('media',encoded);
     if(!target){state.textContent=`Selecciona ${callKind==='group'?'un grupo':'un contacto'} antes de verificar.`;recordCall(false,'Destino no seleccionado');return}
     if(!identity){state.textContent='BLOQUEADO · QuIdentify/Okta no está verificado. No se abrió el micrófono ni la cámara.';recordCall(false,target);return}
-    if(!webRtc||!encoded){state.textContent='BLOQUEADO · este navegador no demuestra soporte para medios WebRTC cifrados de extremo a extremo.';recordCall(false,target);return}
+    if(!webRtc||!encoded){state.textContent='BLOQUEADO · este navegador no demuestra soporte para medios WebRTC bajo el perfil E2EE/PQC.';recordCall(false,target);return}
     badge.className='aggy-state checking';badge.textContent='VERIFICANDO';state.textContent='Consultando señalización, llaves efímeras y recibos de cifrado…';
     try{
       const response=await fetch(callEndpoint,{method:'GET',cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(5000)}),body=await response.json();

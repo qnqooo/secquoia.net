@@ -8,6 +8,7 @@ import {randomBytes} from '@noble/hashes/utils.js';
 
 const te=new TextEncoder(),td=new TextDecoder();
 const PROFILE='secquoia.aggy.quvault-e2ee-pqc.v1';
+const CRYPTO_PROFILE='E2EE/PQC';
 const ALG=Object.freeze({
   kem:'ML-KEM-768+X25519',
   signature:'ML-DSA-65',
@@ -45,6 +46,7 @@ function createDeviceKeys(){
   const deviceId=crypto.randomUUID();
   const bundle={
     schema:'secquoia.aggy.device-public-bundle.v1',
+    cryptoProfile:CRYPTO_PROFILE,
     deviceId,
     kemPublicKey:b64(kem.publicKey),
     signaturePublicKey:b64(signature.publicKey),
@@ -72,6 +74,7 @@ function encryptMessage({roomId,text,admissionReceipt,sender,recipient}){
   const innerNonce=randomBytes(12),outerNonce=randomBytes(24);
   const header={
     schema:PROFILE,
+    cryptoProfile:CRYPTO_PROFILE,
     recordId:crypto.randomUUID(),
     roomId,
     senderDeviceId:sender.publicBundle.deviceId,
@@ -102,7 +105,7 @@ function encryptMessage({roomId,text,admissionReceipt,sender,recipient}){
 function decryptMessage({roomId,envelope,recipient,expectedSenderFingerprint}){
   const unsigned={...envelope};
   delete unsigned.signature;
-  if(envelope?.header?.schema!==PROFILE||envelope.header.roomId!==roomId)throw new Error('invalid_envelope_profile');
+  if(envelope?.header?.schema!==PROFILE||envelope.header.cryptoProfile!==CRYPTO_PROFILE||envelope.header.roomId!==roomId)throw new Error('invalid_envelope_profile');
   if(envelope.header.recipientDeviceId!==recipient.privateBundle.deviceId)throw new Error('wrong_recipient');
   if(expectedSenderFingerprint&&envelope.senderPublicBundle?.fingerprint!==expectedSenderFingerprint)throw new Error('sender_fingerprint_mismatch');
   if(publicBundleDigest(envelope.senderPublicBundle)!==envelope.senderPublicBundle.fingerprint)throw new Error('sender_bundle_tampered');
@@ -133,6 +136,7 @@ function decryptMessage({roomId,envelope,recipient,expectedSenderFingerprint}){
     evidence:{
       signatureVerified:true,
       admissionReceiptVerified:true,
+      cryptoProfile:CRYPTO_PROFILE,
       algorithms:ALG
     }
   };
@@ -152,4 +156,4 @@ function deriveRoomSecret(encodedSecret){
   };
 }
 
-export {ALG,PROFILE,b64,unb64,canonical,digest,createDeviceKeys,encryptMessage,decryptMessage,createRoomSecret,deriveRoomSecret};
+export {ALG,PROFILE,CRYPTO_PROFILE,b64,unb64,canonical,digest,createDeviceKeys,encryptMessage,decryptMessage,createRoomSecret,deriveRoomSecret};

@@ -1,7 +1,7 @@
 const DEFAULT_REALTIME_MODEL='gpt-realtime-2.1';
 const DEFAULT_REALTIME_VOICE='marin';
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.11',
+  version:'1.0.0-rc.12',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -81,6 +81,7 @@ const sanitizeChatText=raw=>{
 };
 const validatePublicBundle=bundle=>{
   if(bundle?.schema!=='secquoia.aggy.device-public-bundle.v1')return false;
+  if(bundle?.cryptoProfile!=='E2EE/PQC')return false;
   if(!/^[0-9a-f-]{36}$/i.test(String(bundle.deviceId||'')))return false;
   return validToken(bundle.fingerprint)&&
     typeof bundle.kemPublicKey==='string'&&bundle.kemPublicKey.length<3000&&
@@ -91,6 +92,7 @@ const validateEnvelope=envelope=>{
   const raw=JSON.stringify(envelope||{});
   return raw.length<MAX_CHAT_BODY_BYTES&&
     envelope?.header?.schema==='secquoia.aggy.quvault-e2ee-pqc.v1'&&
+    envelope?.header?.cryptoProfile==='E2EE/PQC'&&
     envelope?.admissionReceipt?.schema==='secquoia.qusoc.chat-text-admission.v1'&&
     envelope?.admissionReceipt?.admissionAuthorized===true&&
     envelope?.admissionReceipt?.quvaultAuthorized===true&&
@@ -201,6 +203,7 @@ export default {
     if(url.pathname==='/api/aggy/messages/health'&&request.method==='GET'){
       return json({
         schema:'secquoia.aggy.secure-messages.health.v1',
+        cryptoProfile:'E2EE/PQC',
         status:env.AGGY_CHAT_ROOMS?'ready':'not_configured',
         release:AGGY_RELEASE,
         storage:'Durable Objects SQLite · ciphertext and public keys only',
@@ -292,7 +295,8 @@ export default {
           qufense:false,
           quvault:false
         },
-        requiredServices:['QuIdentify identity binding','WebRTC signaling','ephemeral group key exchange','encoded media E2EE','QuFense receipt','QuVault receipt']
+        cryptoProfile:'E2EE/PQC',
+        requiredServices:['QuIdentify identity binding','WebRTC signaling','ephemeral group key exchange','encoded media E2EE/PQC','QuFense receipt','QuVault receipt']
       },503,request);
     }
     if(url.pathname==='/api/aggy/version'&&request.method==='GET'){

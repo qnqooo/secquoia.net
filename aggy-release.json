@@ -1,13 +1,14 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "1.0.0-rc.11",
-  "releaseId": "aggy-1.0.0-rc.11",
-  "releasedAt": "2026-07-27T00:38:37Z",
+  "version": "1.0.0-rc.12",
+  "releaseId": "aggy-1.0.0-rc.12",
+  "releasedAt": "2026-07-27T01:00:13Z",
   "channel": "rc",
   "lifecycle": "production-validation",
   "distribution": "ecosystem-hosted",
   "productionApproved": false,
   "thirdPartySale": false,
-  "releaseNotes": "https://secquoia.net/docs/aggy-changelog.md"
+  "releaseNotes": "https://secquoia.net/docs/aggy-changelog.md",
+  "cryptoProfile": "E2EE/PQC"
 }

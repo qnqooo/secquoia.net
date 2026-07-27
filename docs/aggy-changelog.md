@@ -2,6 +2,19 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.12 - 2026-07-26
+
+### Changed
+
+- Standardized the ecosystem cryptography name as E2EE/PQC across Aggy, Marketplace, public product literature and deployment metadata.
+- Added the canonical E2EE/PQC profile to public device bundles, encrypted message headers, release metadata and worker health responses.
+- Retained exact normative algorithm identifiers and fail-closed validation; historical evidence remains unchanged.
+
+### Security
+
+- New device bundles and message envelopes are rejected when their declared cryptographic profile is not exactly `E2EE/PQC`.
+- The E2EE/PQC label identifies the architecture profile and does not claim external certification.
+
 ## 1.0.0-rc.11 - 2026-07-26
 
 ### Changed

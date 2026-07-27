@@ -21,11 +21,11 @@ Status: customer-facing draft calculated by QuCFA. It is not a binding quote and
 | Support | Human remote-support ticket | ticket | 149 |
 | Support | Remote specialist | hour | 195 |
 | Support | Live video support | hour | 245 |
-| Consulting | Senior PQC/cybersecurity architect | hour | 295 |
+| Consulting | Senior E2EE/PQC cybersecurity architect | hour | 295 |
 | Consulting | Incident-response assistance | hour, minimum 4 | 350 |
 | Implementation | QuDeploy connector implementation | project | 2,490 |
 | Implementation | Cloud or on-premises deployment | project | 3,900 |
-| Assessment | PQC readiness assessment | project | 4,900 |
+| Assessment | E2EE/PQC readiness assessment | project | 4,900 |
 | Training | Team security workshop, up to 12 people | workshop | 1,490 |
 | Finance | QuCFA product-economics workshop | project | 1,950 |
 | Finance | QuBank/Plaid readiness | project | 2,900 |

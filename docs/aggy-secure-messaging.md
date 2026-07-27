@@ -6,7 +6,7 @@ Aggy RC.10 supports text conversations between browser devices. Each device crea
 
 This release does **not** claim:
 
-- externally certified PQC;
+- externally certified E2EE/PQC;
 - QuIdentify/Okta organization identity binding;
 - hardware-backed device keys;
 - scanned, reconstructed or admitted attachments;
@@ -23,7 +23,7 @@ This release does **not** claim:
 6. The room Durable Object stores the ciphertext envelope in SQLite.
 7. A recipient verifies the public-bundle fingerprint, ML-DSA signature, admission receipt, intended recipient and authenticated ciphertext before rendering text.
 
-The server-side sanitation step is a deliberate privacy boundary: the draft exists transiently at QuSOC before E2EE starts. The room relay and its durable storage never receive plaintext.
+The server-side sanitation step is a deliberate privacy boundary: the draft exists transiently at QuSOC before the E2EE/PQC protection begins. The room relay and its durable storage never receive plaintext.
 
 ## Rooms and identity
 
