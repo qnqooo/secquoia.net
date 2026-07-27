@@ -1,4 +1,4 @@
-const RELEASE='1.1.2';
+const RELEASE='1.1.3';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
 const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
@@ -267,11 +267,13 @@ export default {
       let qufenseRuntimeReady=false;
       if(env.QUFENSE){
         try{
-          const response=await env.QUFENSE.fetch('https://qufense.internal/readyz',{
-            method:'GET',
+          const response=await env.QUFENSE.fetch('https://qufense.internal/v1/payments/checkout/authorize',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:'{}',
             signal:AbortSignal.timeout(4000)
           });
-          qufenseRuntimeReady=response.ok;
+          qufenseRuntimeReady=response.status===400||response.status===422;
         }catch{}
       }
       const checks={
