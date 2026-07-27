@@ -97,7 +97,8 @@ test('Aggy backend keeps the current model and standard API key server-side',()=
   assert.doesNotMatch(worker,/OPENAI_REALTIME_VOICE/);
   assert.match(worker,/https:\/\/api\.openai\.com\/v1\/realtime\/calls/);
   assert.match(worker,/env\.OPENAI_API_KEY/);
-  assert.match(worker,/form\.set\('session',session\)/);
+  assert.match(worker,/form\.set\('sdp',new Blob\(\[sdp\],\{type:'application\/sdp'\}\),'offer\.sdp'\)/);
+  assert.match(worker,/form\.set\('session',new Blob\(\[session\],\{type:'application\/json'\}\),'session\.json'\)/);
   assert.match(worker,/model=env\.OPENAI_REALTIME_MODEL\|\|DEFAULT_REALTIME_MODEL/);
   assert.doesNotMatch(worker,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}/);
   assert.match(worker,/https:\/\/secquoia\.net/);
@@ -128,8 +129,12 @@ test('Aggy backend validates SDP and builds the trusted Realtime session',async(
     assert.equal(response.status,200);
     assert.equal(upstreamRequest.url,'https://api.openai.com/v1/realtime/calls');
     assert.equal(upstreamRequest.init.headers.Authorization,'Bearer test-only-key');
-    assert.equal(upstreamRequest.init.body.get('sdp'),'v=0\r\no=aggy 1 1 IN IP4 127.0.0.1\r\n');
-    assert.deepEqual(JSON.parse(upstreamRequest.init.body.get('session')),{
+    const sdpPart=upstreamRequest.init.body.get('sdp');
+    const sessionPart=upstreamRequest.init.body.get('session');
+    assert.equal(sdpPart.type,'application/sdp');
+    assert.equal(sessionPart.type,'application/json');
+    assert.equal(await sdpPart.text(),'v=0\r\no=aggy 1 1 IN IP4 127.0.0.1\r\n');
+    assert.deepEqual(JSON.parse(await sessionPart.text()),{
       type:'realtime',
       model:'gpt-realtime-2.1',
       audio:{output:{voice:'marin'}}
@@ -162,7 +167,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.22');
+  assert.equal(release.version,'1.0.0-rc.23');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -334,6 +339,8 @@ test('Voice client exposes five free minutes and requires explicit paid continua
   assert.match(voice,/X-Aggy-Lease-Capability/);
   assert.match(voice,/reportUsage\(message\)/);
   assert.match(voice,/usagePost\('heartbeat'\)/);
+  assert.match(voice,/cancelUsage\('SESSION_START_FAILED'\)/);
+  assert.match(worker,/api\/aggy\/usage\/cancel/);
   assert.match(voice,/endVoice\('CLIENT_HARD_STOP'\)/);
   assert.match(voice,/Solicitar activación QuPay/);
   assert.match(worker,/qupay_credit_not_configured/);

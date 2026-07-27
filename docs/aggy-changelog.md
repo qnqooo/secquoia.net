@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.23 - 2026-07-27
+
+### Fixed
+
+- Sends the WebRTC offer and Realtime session as correctly typed multipart parts (`application/sdp` and `application/json`) to the OpenAI Realtime calls endpoint.
+- Releases failed startup reservations and refreshes QuCFA/QVit status instead of leaving the free allowance marked as reserved.
+- Exposes a governed cancellation route for pre-provider usage leases.
+- Adds bounded structured diagnostics for provider rejection without logging prompts, SDP, API keys or provider messages.
+
 ## 1.0.0-rc.22 - 2026-07-27
 
 ### Fixed

@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.22';
+  const aggyVersion='1.0.0-rc.23';
 
   let peer=null;
   let channel=null;
@@ -250,6 +250,21 @@
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({leaseId:lease.leaseId,capability:lease.capability,reason})
     }).then(()=>fetchUsageStatus()).catch(()=>{});
+  };
+
+  const cancelUsage=async(reason='SESSION_START_FAILED')=>{
+    if(!usageLease)return;
+    const lease=usageLease;
+    usageLease=null;
+    try{
+      await fetch(`${usageEndpoint}/cancel`,{
+        method:'POST',
+        credentials:'omit',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({leaseId:lease.leaseId,capability:lease.capability,reason})
+      });
+    }catch{}
+    await fetchUsageStatus().catch(()=>{});
   };
 
   const cleanupRealtime=(reason='CLIENT_END',settle=true)=>{
@@ -506,6 +521,7 @@
         const detail=await response.json().catch(()=>({}));
         const error=new Error(detail.error||'realtime_session_unavailable');
         error.providerCode=detail.providerCode||null;
+        error.providerStatus=detail.providerStatus||null;
         throw error;
       }
       leaseExpiresAt=response.headers.get('X-Aggy-Lease-Expires-At');
@@ -525,6 +541,7 @@
       startButton.disabled=false;
       startButton.textContent='Reintentar voz LIVE';
       cleanupRealtime('SESSION_START_FAILED',providerSessionEstablished);
+      if(!providerSessionEstablished)await cancelUsage('SESSION_START_FAILED');
       if(error.usage)renderUsageStatus(error.usage);
       if(error?.name==='NotAllowedError'||error?.name==='SecurityError'){
         setState('error','Activa el permiso del micrófono','En el navegador, abre los permisos del sitio, habilita Micrófono y toca Reintentar voz LIVE.','PERMISO BLOQUEADO');

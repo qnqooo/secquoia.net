@@ -53,7 +53,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.22',
+  version:'1.0.0-rc.23',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -824,6 +824,9 @@ export default {
       if(url.pathname==='/api/aggy/usage/response'&&request.method==='POST'){
         return roomResponse(await meterRequest(meter.stub,'/usage','POST',internal),request);
       }
+      if(url.pathname==='/api/aggy/usage/cancel'&&request.method==='POST'){
+        return roomResponse(await meterRequest(meter.stub,'/cancel','POST',internal),request);
+      }
       if(url.pathname==='/api/aggy/usage/end'&&request.method==='POST'){
         return roomResponse(await meterRequest(meter.stub,'/settle','POST',internal),request);
       }
@@ -900,8 +903,8 @@ export default {
       audio:{output:{voice}}
     });
     const form=new FormData();
-    form.set('sdp',sdp);
-    form.set('session',session);
+    form.set('sdp',new Blob([sdp],{type:'application/sdp'}),'offer.sdp');
+    form.set('session',new Blob([session],{type:'application/json'}),'session.json');
 
     let upstream;
     try{
@@ -911,7 +914,12 @@ export default {
         body:form,
         signal:AbortSignal.timeout(12000)
       });
-    }catch{
+    }catch(error){
+      console.warn(JSON.stringify({
+        event:'aggy_realtime_provider_unavailable',
+        model,
+        errorName:String(error?.name||'unknown').slice(0,40)
+      }));
       await meterRequest(meter.stub,'/cancel','POST',{leaseId,capabilityHash,reason:'realtime_provider_unavailable'});
       return json({error:'realtime_provider_unavailable'},502,request);
     }
@@ -923,6 +931,12 @@ export default {
         const detail=JSON.parse(body);
         providerCode=String(detail?.error?.code||detail?.error?.type||'unknown').slice(0,80);
       }catch{}
+      console.warn(JSON.stringify({
+        event:'aggy_realtime_provider_rejected',
+        model,
+        providerStatus:upstream.status,
+        providerCode
+      }));
       await meterRequest(meter.stub,'/cancel','POST',{leaseId,capabilityHash,reason:`provider_${upstream.status}_${providerCode}`});
       return json({error:'realtime_session_rejected',providerStatus:upstream.status,providerCode},502,request);
     }
