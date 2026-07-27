@@ -353,6 +353,7 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and requires explici
   assert.match(worker,/paid_continuation_confirmation_required/);
   assert.match(worker,/paidContinuationConfirmed===true/);
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeSeconds,600);
+  assert.match(worker,/TEN_MINUTES_THEN_EXPLICIT_QVIT/);
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeScope,'SECQUOIA_ECOSYSTEM_USER');
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.freeClockStarts,'FIRST_LIVE_VOICE_SESSION');
   assert.equal(workerModule.AGGY_QUOPTIO_POLICY.paidContinuationConsentRequired,true);

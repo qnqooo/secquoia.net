@@ -578,7 +578,7 @@ class AggyUsageMeter {
         validUntil:entitlement.expiresAt,
         operationalSessionSeconds:Math.min(AGGY_CONTRACT_SESSION_MS,Number(entitlement.expiresAtMs)-now)/1000,
         automaticRevalidation:true
-      }:{mode:'VISITOR_TRIAL',billing:'FIVE_MINUTES_THEN_EXPLICIT_QVIT'},
+      }:{mode:'VISITOR_TRIAL',billing:'TEN_MINUTES_THEN_EXPLICIT_QVIT'},
       free:{limitSeconds:AGGY_FREE_MS/1000,usedSeconds:Math.ceil(Number(account.free_used_ms)/1000),remainingSeconds:Math.floor(freeRemainingMs/1000),lifetimeAllowance:true},
       wallet:{currency:'QVIT',balance:Number(account.qvit_balance),overdraftAllowed:false},
       continuation:aggyBlockQuote(),
