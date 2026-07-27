@@ -53,7 +53,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.25',
+  version:'1.0.0-rc.26',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -539,15 +539,15 @@ class AggyUsageMeter {
   bindProvider(body,now){
     const row=[...this.sql.exec('SELECT * FROM leases WHERE lease_id = ?',String(body.leaseId||''))][0];
     if(!this.validCapability(row,String(body.capabilityHash||'')))return this.reply({error:'invalid_lease_capability'},401);
-    if(row.status!=='ACTIVE')return this.reply({error:'lease_not_active'},409);
+    if(row.status!=='PENDING')return this.reply({error:'lease_not_pending',status:row.status},409);
     this.sql.exec('UPDATE leases SET provider_established=1,provider_call_id=? WHERE lease_id=?',String(body.providerCallId||'').slice(0,160)||null,row.lease_id);
     this.ledger(`provider:${row.lease_id}`,'OPENAI_REALTIME_SESSION_OPENED',0,{callIdStored:Boolean(body.providerCallId)},now);
-    return this.reply({bound:true,expiresAt:new Date(Number(row.expires_at_ms)).toISOString()});
+    return this.reply({bound:true,pendingExpiresAt:new Date(Number(row.expires_at_ms)).toISOString()});
   }
   async cancel(body,now){
     const row=[...this.sql.exec('SELECT * FROM leases WHERE lease_id = ?',String(body.leaseId||''))][0];
     if(!this.validCapability(row,String(body.capabilityHash||'')))return this.reply({error:'invalid_lease_capability'},401);
-    if(!['PENDING','ACTIVE'].includes(row.status)||Number(row.provider_established))return this.reply({error:'lease_not_refundable'},409);
+    if(row.status!=='PENDING'&&(row.status!=='ACTIVE'||Number(row.provider_established)))return this.reply({error:'lease_not_refundable'},409);
     if(row.kind==='PAID'&&row.reserved_qvit>0){
       this.sql.exec(
         'UPDATE account SET qvit_balance = qvit_balance + ?, paid_blocks_day = MAX(0,paid_blocks_day - 1), paid_blocks_month = MAX(0,paid_blocks_month - 1), qvit_debit_day = MAX(0,qvit_debit_day - ?), qvit_debit_month = MAX(0,qvit_debit_month - ?) WHERE id = 1',
@@ -557,7 +557,11 @@ class AggyUsageMeter {
     }
     this.sql.exec("UPDATE leases SET status='CANCELLED',ended_at_ms=?,end_reason=? WHERE lease_id=?",now,String(body.reason||'provider_failure').slice(0,80),row.lease_id);
     await this.ctx.storage.deleteAlarm();
-    return this.reply({cancelled:true,refundedQVit:row.kind==='PAID'?Number(row.reserved_qvit):0});
+    return this.reply({
+      cancelled:true,
+      refundedQVit:row.kind==='PAID'?Number(row.reserved_qvit):0,
+      providerCallId:String(row.provider_call_id||'').slice(0,160)||null
+    });
   }
   heartbeat(body,now){
     this.closeExpired(now);
@@ -825,8 +829,23 @@ export default {
       if(url.pathname==='/api/aggy/usage/response'&&request.method==='POST'){
         return roomResponse(await meterRequest(meter.stub,'/usage','POST',internal),request);
       }
+      if(url.pathname==='/api/aggy/usage/start'&&request.method==='POST'){
+        return roomResponse(await meterRequest(meter.stub,'/activate','POST',internal),request);
+      }
       if(url.pathname==='/api/aggy/usage/cancel'&&request.method==='POST'){
-        return roomResponse(await meterRequest(meter.stub,'/cancel','POST',internal),request);
+        const response=await meterRequest(meter.stub,'/cancel','POST',internal);
+        const result=await response.json();
+        if(response.ok&&result.providerCallId&&env.OPENAI_API_KEY){
+          try{
+            await fetch(`https://api.openai.com/v1/realtime/calls/${encodeURIComponent(result.providerCallId)}/hangup`,{
+              method:'POST',
+              headers:{Authorization:`Bearer ${env.OPENAI_API_KEY}`},
+              signal:AbortSignal.timeout(5000)
+            });
+          }catch{}
+        }
+        delete result.providerCallId;
+        return json(result,response.status,request);
       }
       if(url.pathname==='/api/aggy/usage/end'&&request.method==='POST'){
         return roomResponse(await meterRequest(meter.stub,'/settle','POST',internal),request);
@@ -893,9 +912,6 @@ export default {
     if(!sdp.startsWith('v=0')||new TextEncoder().encode(sdp).byteLength>MAX_SDP_BYTES){
       return json({error:'invalid_sdp'},400,request);
     }
-    const activation=await meterRequest(meter.stub,'/activate','POST',{leaseId,capabilityHash});
-    if(!activation.ok)return roomResponse(activation,request);
-
     const model=env.OPENAI_REALTIME_MODEL||DEFAULT_REALTIME_MODEL;
     const voice=DEFAULT_REALTIME_VOICE;
     const session=JSON.stringify({
@@ -955,15 +971,12 @@ export default {
     const providerCallId=(upstream.headers.get('Location')||'').split('/').pop()||'';
     const bound=await meterRequest(meter.stub,'/bind','POST',{leaseId,capabilityHash,providerCallId});
     if(!bound.ok)return json({error:'usage_lease_binding_failed',failClosed:true},502,request);
-    const lease=await bound.json();
-
     return new Response(body,{
       status:200,
       headers:{
         'Content-Type':'application/sdp',
         'Cache-Control':'no-store',
         'X-Content-Type-Options':'nosniff',
-        'X-Aggy-Lease-Expires-At':lease.expiresAt,
         ...corsHeaders(request)
       }
     });

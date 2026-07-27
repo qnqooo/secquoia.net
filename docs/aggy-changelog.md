@@ -2,6 +2,14 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.26 - 2026-07-27
+
+### Fixed
+
+- Starts the five-minute free clock only after the WebRTC data channel is actually open.
+- Keeps provider initialization leases pending until the browser confirms a usable live channel.
+- Cancels and, when possible, hangs up provider sessions that fail before `EN VIVO`, without consuming free allowance or refund-eligible QVit reservations.
+
 ## 1.0.0-rc.25 - 2026-07-27
 
 ### Fixed

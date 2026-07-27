@@ -163,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.25');
+  assert.equal(release.version,'1.0.0-rc.26');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -335,6 +335,9 @@ test('Voice client exposes five free minutes and requires explicit paid continua
   assert.match(voice,/X-Aggy-Lease-Capability/);
   assert.match(voice,/reportUsage\(message\)/);
   assert.match(voice,/usagePost\('heartbeat'\)/);
+  assert.match(voice,/channel\.addEventListener\('open',async\(\)=>\{/);
+  assert.match(voice,/usagePost\('start'\)/);
+  assert.match(worker,/api\/aggy\/usage\/start/);
   assert.match(voice,/cancelUsage\('SESSION_START_FAILED'\)/);
   assert.match(worker,/api\/aggy\/usage\/cancel/);
   assert.match(voice,/endVoice\('CLIENT_HARD_STOP'\)/);

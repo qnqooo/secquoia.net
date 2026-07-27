@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.25';
+  const aggyVersion='1.0.0-rc.26';
 
   let peer=null;
   let channel=null;
@@ -268,6 +268,7 @@
   };
 
   const cleanupRealtime=(reason='CLIENT_END',settle=true)=>{
+    const wasConnected=connected;
     stopUsageTimers();
     clearTimeout(connectionOpenTimeout);
     connectionOpenTimeout=null;
@@ -281,7 +282,10 @@
     remoteAudio=null;
     connected=false;
     connecting=false;
-    if(settle)settleUsage(reason);
+    if(settle){
+      if(wasConnected)settleUsage(reason);
+      else void cancelUsage(reason);
+    }
   };
 
   const selectedLanguage=()=>{
@@ -428,8 +432,6 @@
     greetingSent=false;
     startButton.disabled=true;
     setState('connecting','Conectando con Aggy','Solicitando una sesión WebRTC efímera al backend seguro.','CONECTANDO');
-    let providerSessionEstablished=false;
-
     try{
       let usageStatus=lastUsageStatus;
       if(!usageStatus||!userInitiated)usageStatus=await fetchUsageStatus();
@@ -488,19 +490,32 @@
       });
       let leaseExpiresAt=null;
       channel=peer.createDataChannel('oai-events');
-      channel.addEventListener('open',()=>{
+      channel.addEventListener('open',async()=>{
         clearTimeout(connectionOpenTimeout);
         connectionOpenTimeout=null;
-        connected=true;
-        connecting=false;
-        configureSession();
-        sendInitialGreeting();
-        startUsageEnforcement(leaseExpiresAt);
-        setState('listening','Aggy está escuchando','Voz bidireccional WebRTC con interrupción natural habilitada.','EN VIVO');
-        startButton.textContent='Voz en vivo';
-        startButton.disabled=true;
-        muteButton.disabled=false;
-        endButton.disabled=false;
+        try{
+          const activationResponse=await usagePost('start');
+          if(!activationResponse?.ok)throw new Error('usage_activation_failed');
+          const activation=await activationResponse.json();
+          leaseExpiresAt=activation.expiresAt;
+          if(!leaseExpiresAt)throw new Error('usage_lease_expiry_missing');
+          connected=true;
+          connecting=false;
+          configureSession();
+          sendInitialGreeting();
+          startUsageEnforcement(leaseExpiresAt);
+          setState('listening','Aggy está escuchando','Voz bidireccional WebRTC con interrupción natural habilitada.','EN VIVO');
+          startButton.textContent='Voz en vivo';
+          startButton.disabled=true;
+          muteButton.disabled=false;
+          endButton.disabled=false;
+        }catch{
+          cleanupRealtime('USAGE_ACTIVATION_FAILED',false);
+          await cancelUsage('USAGE_ACTIVATION_FAILED');
+          startButton.disabled=false;
+          startButton.textContent='Reintentar voz LIVE';
+          setState('error','No se activó la medición segura','La sesión se cerró sin consumir tiempo. Intenta nuevamente.','SIN CONEXIÓN');
+        }
       });
       channel.addEventListener('message',handleRealtimeEvent);
 
@@ -524,15 +539,13 @@
         error.providerStatus=detail.providerStatus||null;
         throw error;
       }
-      leaseExpiresAt=response.headers.get('X-Aggy-Lease-Expires-At');
-      if(!leaseExpiresAt)throw new Error('usage_lease_expiry_missing');
       const answer=await response.text();
       if(!answer.startsWith('v=0'))throw new Error('invalid_realtime_sdp');
-      providerSessionEstablished=true;
       await peer.setRemoteDescription({type:'answer',sdp:answer});
-      connectionOpenTimeout=setTimeout(()=>{
+      connectionOpenTimeout=setTimeout(async()=>{
         if(connected)return;
-        cleanupRealtime('WEBRTC_OPEN_TIMEOUT',true);
+        cleanupRealtime('WEBRTC_OPEN_TIMEOUT',false);
+        await cancelUsage('WEBRTC_OPEN_TIMEOUT');
         startButton.disabled=false;
         startButton.textContent='Reintentar voz LIVE';
         setState('error','No se abrió el canal de audio','La sesión segura fue cerrada sin esperar indefinidamente. Revisa el micrófono y toca Reintentar voz LIVE.','CONEXIÓN AGOTADA');
@@ -540,8 +553,8 @@
     }catch(error){
       startButton.disabled=false;
       startButton.textContent='Reintentar voz LIVE';
-      cleanupRealtime('SESSION_START_FAILED',providerSessionEstablished);
-      if(!providerSessionEstablished)await cancelUsage('SESSION_START_FAILED');
+      cleanupRealtime('SESSION_START_FAILED',false);
+      await cancelUsage('SESSION_START_FAILED');
       if(error.usage)renderUsageStatus(error.usage);
       if(error?.name==='NotAllowedError'||error?.name==='SecurityError'){
         setState('error','Activa el permiso del micrófono','En el navegador, abre los permisos del sitio, habilita Micrófono y toca Reintentar voz LIVE.','PERMISO BLOQUEADO');

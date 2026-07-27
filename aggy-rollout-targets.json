@@ -1,7 +1,7 @@
 {
   "schema": "secquoia.aggy.rollout.v1",
-  "release": "1.0.0-rc.25",
-  "generatedAt": "2026-07-27T20:10:00Z",
+  "release": "1.0.0-rc.26",
+  "generatedAt": "2026-07-27T20:18:00Z",
   "webSurfaces": [
     {
       "name": "SECQUOIA Marketplace and corporate site",
@@ -33,7 +33,7 @@
       "canonicalDestination": "https://secquoia.net/qu-market.html?aggy=chat",
       "siteVersion": 25,
       "observedLoaderRelease": "1.0.0-rc.8",
-      "targetLoaderRelease": "1.0.0-rc.25",
+      "targetLoaderRelease": "1.0.0-rc.26",
       "status": "update-blocked-authentication"
     },
     {
@@ -45,7 +45,7 @@
       "quhubRole": "independent-integration-and-llm-gateway",
       "siteVersion": 4,
       "observedLoaderRelease": "1.0.0-rc.8",
-      "targetLoaderRelease": "1.0.0-rc.25",
+      "targetLoaderRelease": "1.0.0-rc.26",
       "status": "update-blocked-authentication"
     }
   ],
