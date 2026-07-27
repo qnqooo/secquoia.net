@@ -154,7 +154,7 @@ test('Health reports each secret gate without exposing values',async()=>{
     STRIPE_RESTRICTED_KEY:'unit-test-restricted-key',
     STRIPE_WEBHOOK_SECRET:'unit-test-webhook-key',
     AGGY_QUPAY_WEBHOOK_SECRET:'shared_test',
-    QUFENSE:{fetch:async()=>new Response()},
+    QUFENSE:{fetch:async()=>new Response(JSON.stringify({status:'ready'}),{status:200})},
     QUFENSE_AUTHORITY_FINGERPRINT:'e17334292df7d6f72b3395109e401b11'
   });
   const body=await response.json();
@@ -167,4 +167,19 @@ test('Health reports each secret gate without exposing values',async()=>{
     stripeNativePqcClaimed:false
   });
   assert.doesNotMatch(JSON.stringify(body),/unit-test-restricted-key|unit-test-webhook-key|shared_test/);
+});
+
+test('Health reports degraded when the QuFense runtime rejects its mesh credential',async()=>{
+  const response=await worker.default.fetch(new Request('https://qupay.secquoia.group/v1/qupay/health'),{
+    STRIPE_RESTRICTED_KEY:'unit-test-restricted-key',
+    STRIPE_WEBHOOK_SECRET:'unit-test-webhook-key',
+    AGGY_QUPAY_WEBHOOK_SECRET:'shared_test',
+    QUFENSE:{fetch:async()=>new Response(JSON.stringify({error:'mesh_unauthorized'}),{status:401})},
+    QUFENSE_AUTHORITY_FINGERPRINT:'e17334292df7d6f72b3395109e401b11'
+  });
+  const body=await response.json();
+  assert.equal(response.status,503);
+  assert.equal(body.ready,false);
+  assert.equal(body.checks.qufenseServiceBinding,true);
+  assert.equal(body.checks.qufenseRuntimeReady,false);
 });

@@ -1,4 +1,4 @@
-const RELEASE='1.1.1';
+const RELEASE='1.1.2';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
 const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
@@ -264,11 +264,22 @@ export default {
       return new Response(null,{status:204,headers:cors(request)});
     }
     if(url.pathname==='/v1/qupay/health'&&request.method==='GET'){
+      let qufenseRuntimeReady=false;
+      if(env.QUFENSE){
+        try{
+          const response=await env.QUFENSE.fetch('https://qufense.internal/readyz',{
+            method:'GET',
+            signal:AbortSignal.timeout(4000)
+          });
+          qufenseRuntimeReady=response.ok;
+        }catch{}
+      }
       const checks={
         stripeRestrictedKey:Boolean(env.STRIPE_RESTRICTED_KEY),
         stripeWebhookSecret:Boolean(env.STRIPE_WEBHOOK_SECRET),
         aggySharedSecret:Boolean(env.AGGY_QUPAY_WEBHOOK_SECRET),
         qufenseServiceBinding:Boolean(env.QUFENSE),
+        qufenseRuntimeReady,
         qufenseAuthorityFingerprint:/^[a-f0-9]{32}$/.test(String(env.QUFENSE_AUTHORITY_FINGERPRINT||''))
       };
       const ready=Object.values(checks).every(Boolean);
