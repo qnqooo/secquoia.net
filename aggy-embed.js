@@ -6,8 +6,8 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.10';
-  const frameUrl=`https://secquoia.net/aggy-widget.html?site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
+  const version='1.0.0-rc.11';
+  const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
   const root=host.attachShadow({mode:'open'});
@@ -24,7 +24,7 @@
       .bar{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 10px 0 15px;border-bottom:1px solid rgba(255,255,255,.12);background:#07180f;color:#effff5;font:850 12px/1 Inter,Segoe UI,Arial,sans-serif}
       .bar small{color:#9fb3a6;font-weight:700}
       .close{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font:900 18px/1 Arial;cursor:pointer}
-      iframe{display:block;width:100%;height:calc(100% - 46px);border:0;background:#06110b}
+      iframe{display:block;width:100%;height:calc(100% - 46px);border:0;background:#f4f7f6}
       @media(max-width:560px){.launcher{right:12px;bottom:12px}.panel{inset:8px;width:auto;height:auto;border-radius:20px}}
       @media(prefers-reduced-motion:reduce){.panel{transition:none}}
     </style>
@@ -33,7 +33,7 @@
     </button>
     <section class="panel" id="aggy-panel" role="dialog" aria-label="Aggy, asistente de SECQUOIA">
       <div class="bar"><span>Aggy <small>${version}</small></span><button class="close" type="button" aria-label="Cerrar Aggy">×</button></div>
-      <iframe title="Aggy Voice" src="${frameUrl}" allow="microphone; autoplay" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"></iframe>
+      <iframe title="Aggy Communications" src="${frameUrl}" allow="microphone; autoplay" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"></iframe>
     </section>
   `;
 

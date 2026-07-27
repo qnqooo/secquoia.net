@@ -2,6 +2,14 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.11 - 2026-07-26
+
+### Changed
+
+- The universal Aggy launcher now opens the complete communications interface instead of the legacy voice-only widget.
+- Added an isolated embed mode for external SECQUOIA sites, preserving Chats, secure rooms, Contacts, Calls, Groups, Voice, AI Models and Security.
+- The launcher remains compact until the user opens it; the embedded experience is responsive on desktop and mobile.
+
 ## 1.0.0-rc.10 - 2026-07-26
 
 ### Added
