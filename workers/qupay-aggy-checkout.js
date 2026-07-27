@@ -1,6 +1,12 @@
-const RELEASE='1.1.0';
+const RELEASE='1.1.1';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
+const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
+  secquoiaGovernance:'QUFENSE_END_TO_END_WITHIN_SECQUOIA',
+  internalCryptoProfile:'E2EE/PQC',
+  stripeHandoff:'HTTPS_MANAGED_BY_STRIPE',
+  stripeNativePqcClaimed:false
+});
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
 const PACKS=Object.freeze({
   'qvit-ai-credit-25':Object.freeze({usdCents:2500,qvitAmount:25_000_000,label:'QVit AI resource credit · $25'}),
@@ -190,7 +196,8 @@ const createCheckout=async(request,env)=>{
       authorityFingerprint:authorization.document.authorityFingerprint,
       authorizationProfile:authorization.document.receipt.authorizationProfile,
       providerPayloadPqcClaimed:false
-    }
+    },
+    transportBoundary:STRIPE_TRANSPORT_BOUNDARY
   },201,request);
 };
 const creditAggy=async(event,object,env)=>{
@@ -276,7 +283,8 @@ export default {
         validationPackEnabled:false,
         cardDataStored:false,
         overdraftAllowed:false,
-        qufenseCheckoutAuthorizationRequired:true
+        qufenseCheckoutAuthorizationRequired:true,
+        transportBoundary:STRIPE_TRANSPORT_BOUNDARY
       },ready?200:503,request);
     }
     if(url.pathname==='/v1/qupay/checkout'&&request.method==='POST')return createCheckout(request,env);
@@ -285,4 +293,4 @@ export default {
   }
 };
 
-export {PACKS,authorizeCheckoutWithQuFense,checkoutDigestInput,hmacHex,stripeForm,validQuFenseReceipt,verifyStripeSignature};
+export {PACKS,STRIPE_TRANSPORT_BOUNDARY,authorizeCheckoutWithQuFense,checkoutDigestInput,hmacHex,stripeForm,validQuFenseReceipt,verifyStripeSignature};

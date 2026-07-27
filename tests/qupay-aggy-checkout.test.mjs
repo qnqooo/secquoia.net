@@ -160,5 +160,11 @@ test('Health reports each secret gate without exposing values',async()=>{
   const body=await response.json();
   assert.equal(response.status,200);
   assert.equal(body.ready,true);
+  assert.deepEqual(body.transportBoundary,{
+    secquoiaGovernance:'QUFENSE_END_TO_END_WITHIN_SECQUOIA',
+    internalCryptoProfile:'E2EE/PQC',
+    stripeHandoff:'HTTPS_MANAGED_BY_STRIPE',
+    stripeNativePqcClaimed:false
+  });
   assert.doesNotMatch(JSON.stringify(body),/unit-test-restricted-key|unit-test-webhook-key|shared_test/);
 });

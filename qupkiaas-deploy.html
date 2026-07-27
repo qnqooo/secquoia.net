@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QuDeploy · QuPKIaaS | SECQUOIA</title>
+<meta name="description" content="Governed QuPKIaaS certificate onboarding, issuance tracking and secure public-certificate delivery through QuDeploy.">
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="qupkiaas-deploy.css">
+</head>
+<body>
+<header class="top"><nav class="wrap nav"><a href="qu-market.html" aria-label="SECQUOIA Marketplace"><img src="secquoia-logo.webp" alt="SECQUOIA"></a><div class="nav-actions"><a class="btn" href="qu-market.html" data-en>Marketplace</a><a class="btn" href="qu-market.html" data-es>Marketplace</a><button class="btn" id="en" type="button">EN</button><button class="btn" id="es" type="button">ES</button></div></nav></header>
+<main>
+  <section class="wrap hero">
+    <article class="panel hero-copy">
+      <div class="eyebrow">QuDeploy · QuPKIaaS</div>
+      <h1 data-en>Certificates delivered without surrendering your private key.</h1>
+      <h1 data-es>Certificados entregados sin ceder tu clave privada.</h1>
+      <p data-en>Generate the key in your HSM, KMS or device, submit only a PKCS#10 CSR, and let QuDeploy govern identity, policy, issuance, delivery, evidence and revocation.</p>
+      <p data-es>Genera la clave en tu HSM, KMS o dispositivo, envía únicamente un CSR PKCS#10 y permite que QuDeploy gobierne identidad, política, emisión, entrega, evidencia y revocación.</p>
+      <div class="trust-row"><span>CSR only</span><span>ML-DSA-65 profile</span><span>mTLS · TLS 1.3</span><span>CRL + OCSP</span><span>Fail closed</span></div>
+    </article>
+    <aside class="panel status-card">
+      <div class="eyebrow" data-en>Live prerequisites</div><div class="eyebrow" data-es>Prerrequisitos en vivo</div>
+      <h2 data-en>Issuance gates</h2><h2 data-es>Compuertas de emisión</h2>
+      <div class="gate-list">
+        <div class="gate" id="identityGate"><span class="lamp"></span><div><strong>QuIdentify</strong><small data-en>Verified user and tenant</small><small data-es>Usuario y tenant verificados</small></div><b>CHECKING</b></div>
+        <div class="gate" id="apiGate"><span class="lamp"></span><div><strong>QuPKIaaS API</strong><small data-en>Provider and policy plane</small><small data-es>Proveedor y plano de política</small></div><b>CHECKING</b></div>
+        <div class="gate ok" id="keyGate"><span class="lamp"></span><div><strong data-en>Private-key custody</strong><strong data-es>Custodia de clave privada</strong><small data-en>Customer-side, non-exportable preferred</small><small data-es>Del lado del cliente; preferiblemente no exportable</small></div><b>CUSTOMER</b></div>
+      </div>
+      <div class="api-state"><span data-en>Control-plane endpoint:</span><span data-es>Endpoint del plano de control:</span> <code id="apiEndpoint">pki.secquoia.group</code>. <span data-en>No issuance is presented as successful unless the API returns a signed receipt.</span><span data-es>Ninguna emisión se presenta como exitosa sin un recibo firmado de la API.</span></div>
+    </aside>
+  </section>
+
+  <section class="wrap panel workspace">
+    <nav class="stepper" aria-label="QuPKIaaS onboarding">
+      <div class="step active" data-step="1"><b>01 · Identity</b><span data-en>Owner and tenant</span><span data-es>Responsable y tenant</span></div>
+      <div class="step" data-step="2"><b>02 · Key custody</b><span data-en>Choose generation route</span><span data-es>Elige ruta de generación</span></div>
+      <div class="step" data-step="3"><b>03 · CSR</b><span data-en>Inspect and request</span><span data-es>Inspecciona y solicita</span></div>
+      <div class="step" data-step="4"><b>04 · Issue</b><span data-en>Policy and provider</span><span data-es>Política y proveedor</span></div>
+      <div class="step" data-step="5"><b>05 · Deliver</b><span data-en>Certificate and evidence</span><span data-es>Certificado y evidencia</span></div>
+    </nav>
+
+    <article class="screen active" data-screen="1">
+      <h2 data-en>Verify the certificate owner.</h2><h2 data-es>Verifica al titular del certificado.</h2>
+      <p data-en>QuIdentify must bind the user, organization, tenant and authorized role. Browser-only identity flags never authorize server-side issuance.</p>
+      <p data-es>QuIdentify debe vincular usuario, organización, tenant y rol autorizado. Las señales del navegador nunca autorizan por sí solas la emisión en servidor.</p>
+      <div class="form-grid"><label class="field-wrap"><span data-en>Organization</span><span data-es>Organización</span><input class="field" autocomplete="organization" placeholder="Company legal name"></label><label class="field-wrap"><span data-en>Technical contact</span><span data-es>Contacto técnico</span><input class="field" type="email" autocomplete="email" placeholder="pki@company.com"></label></div>
+      <div class="notice warn" data-en>QuIdentify authentication is required before a CSR can be transmitted.</div><div class="notice warn" data-es>La autenticación QuIdentify es obligatoria antes de transmitir un CSR.</div>
+      <div class="actions"><div><button class="btn primary" id="identify" type="button"><span data-en>Verify with QuIdentify</span><span data-es>Verificar con QuIdentify</span></button></div><button class="btn" data-next="2" type="button"><span data-en>Review custody</span><span data-es>Revisar custodia</span></button></div>
+    </article>
+
+    <article class="screen" data-screen="2">
+      <h2 data-en>Generate the key where it will live.</h2><h2 data-es>Genera la clave donde permanecerá.</h2>
+      <p data-en>QuPKIaaS does not need the private key. Use a non-exportable HSM/KMS key where supported, or an approved endpoint keystore.</p>
+      <p data-es>QuPKIaaS no necesita la clave privada. Usa una clave HSM/KMS no exportable cuando sea compatible, o un almacén aprobado del endpoint.</p>
+      <div class="method-grid">
+        <article class="method recommended"><span class="method-tag" data-en>Recommended</span><span class="method-tag" data-es>Recomendado</span><strong>HSM / KMS</strong><p data-en>Non-exportable key, governed operator roles and audit trail.</p><p data-es>Clave no exportable, roles gobernados y trazabilidad.</p></article>
+        <article class="method"><span class="method-tag">Enterprise</span><strong>PKCS#11 / TPM</strong><p data-en>On-premise or endpoint-backed key with customer custody.</p><p data-es>Clave on-premise o de endpoint bajo custodia del cliente.</p></article>
+        <article class="method"><span class="method-tag">Development</span><strong>Local keystore</strong><p data-en>Allowed only by an approved profile; never paste the private key here.</p><p data-es>Solo con un perfil aprobado; nunca pegues aquí la clave privada.</p></article>
+      </div>
+      <div class="notice" data-en>Output required for the next step: a PEM PKCS#10 certificate signing request. Keep the private key outside the portal.</div><div class="notice" data-es>Resultado requerido para el siguiente paso: una solicitud de firma PKCS#10 en PEM. Conserva la clave privada fuera del portal.</div>
+      <div class="actions"><button class="btn" data-prev="1" type="button"><span data-en>Back</span><span data-es>Atrás</span></button><button class="btn primary" data-next="3" type="button"><span data-en>I have a CSR</span><span data-es>Ya tengo un CSR</span></button></div>
+    </article>
+
+    <article class="screen" data-screen="3">
+      <h2 data-en>Inspect the CSR before transmission.</h2><h2 data-es>Inspecciona el CSR antes de transmitirlo.</h2>
+      <p data-en>The browser validates framing and size and calculates SHA-256. The server must independently parse the PKCS#10 signature, subject, extensions and approved algorithm profile.</p>
+      <p data-es>El navegador valida formato y tamaño y calcula SHA-256. El servidor debe analizar de forma independiente la firma PKCS#10, el sujeto, las extensiones y el perfil criptográfico aprobado.</p>
+      <div class="form-grid">
+        <label class="field-wrap"><span>Profile</span><select class="field" id="profile"><option value="ML_DSA_65_TLS_CLIENT">ML-DSA-65 · TLS client</option><option value="ML_DSA_65_TLS_SERVER">ML-DSA-65 · TLS server</option><option value="ML_DSA_65_CODE_SIGNING">ML-DSA-65 · Code signing</option></select></label>
+        <label class="field-wrap"><span>Common Name</span><input class="field" id="commonName" maxlength="253" placeholder="service.company.internal"></label>
+        <label class="field-wrap"><span data-en>Validity</span><span data-es>Vigencia</span><select class="field" id="validity"><option value="1">24 hours</option><option value="7" selected>7 days</option><option value="30">30 days</option></select></label>
+        <label class="field-wrap wide"><span>PKCS#10 CSR · PEM</span><textarea class="field" id="csr" spellcheck="false" placeholder="-----BEGIN CERTIFICATE REQUEST-----&#10;...&#10;-----END CERTIFICATE REQUEST-----"></textarea></label>
+      </div>
+      <div class="result" id="csrResult" aria-live="polite" data-en>No CSR inspected.</div>
+      <div class="actions"><button class="btn" data-prev="2" type="button"><span data-en>Back</span><span data-es>Atrás</span></button><div><button class="btn" id="inspectCsr" type="button"><span data-en>Inspect locally</span><span data-es>Inspeccionar localmente</span></button><button class="btn primary" id="submitRequest" type="button" disabled><span data-en>Submit request</span><span data-es>Enviar solicitud</span></button></div></div>
+    </article>
+
+    <article class="screen" data-screen="4">
+      <h2 data-en>Issuance is governed, not instantaneous by default.</h2><h2 data-es>La emisión es gobernada; no es instantánea por defecto.</h2>
+      <p data-en>QuDeploy correlates QuIdentify, QuFense policy, QuCFA authorization, QuHub provider routing and QuAudit evidence. Any missing gate blocks the transaction.</p>
+      <p data-es>QuDeploy correlaciona QuIdentify, política QuFense, autorización QuCFA, enrutamiento QuHub y evidencia QuAudit. Cualquier compuerta faltante bloquea la transacción.</p>
+      <div class="timeline"><div class="event"><i>✓</i><div><strong>CSR received</strong><small>Hash-bound request; private key received: false</small></div><time>01</time></div><div class="event"><i>2</i><div><strong>Policy evaluation</strong><small>Tenant, profile, budget and production approval</small></div><time>02</time></div><div class="event"><i>3</i><div><strong>Provider issuance</strong><small>AWS Private CA adapter through isolated QuPKIaaS motor</small></div><time>03</time></div><div class="event"><i>4</i><div><strong>Evidence receipt</strong><small>QuAudit receipt before delivery</small></div><time>04</time></div></div>
+      <div class="result"><pre id="requestReceipt">No signed issuance receipt received.</pre></div>
+      <div class="actions"><button class="btn" data-prev="3" type="button"><span data-en>Back</span><span data-es>Atrás</span></button><button class="btn primary" id="refreshStatus" type="button"><span data-en>Refresh signed status</span><span data-es>Actualizar estado firmado</span></button></div>
+    </article>
+
+    <article class="screen" data-screen="5">
+      <h2 data-en>Deliver public material and evidence.</h2><h2 data-es>Entrega material público y evidencia.</h2>
+      <p data-en>The portal and API deliver only the issued certificate, chain and evidence manifest. Installation binds that certificate to the customer-held private key.</p>
+      <p data-es>El portal y la API entregan únicamente el certificado emitido, la cadena y el manifiesto de evidencia. La instalación vincula ese certificado con la clave privada custodiada por el cliente.</p>
+      <div class="notice" id="deliveryResult" data-en>Certificate download unlocks only after state ISSUED.</div>
+      <div class="actions"><button class="btn" id="downloadManifest" type="button"><span data-en>Download evidence manifest</span><span data-es>Descargar manifiesto de evidencia</span></button><button class="btn primary" id="downloadCertificate" type="button" disabled><span data-en>Download certificate + chain</span><span data-es>Descargar certificado + cadena</span></button></div>
+      <details class="api-doc" id="api"><summary><span data-en>Parallel API workflow</span><span data-es>Flujo API paralelo</span></summary><pre>POST /v1/certificates/requests
+GET  /v1/certificates/requests/{requestId}
+GET  /v1/certificates/requests/{requestId}/certificate
+POST /v1/certificates/requests/{requestId}/revoke
+
+Authentication: QuIdentify OIDC session / OAuth 2.0 access token
+Authorization: tenant + role + certificate profile
+Transport: TLS 1.3 externally; mTLS internally
+Idempotency: Idempotency-Key required for mutations
+Private key: never accepted, never returned
+Revocation: CRL + OCSP publication required</pre></details>
+    </article>
+  </section>
+</main>
+<script src="qupkiaas-deploy.js" type="module"></script>
+</body>
+</html>

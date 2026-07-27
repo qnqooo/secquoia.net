@@ -27,7 +27,7 @@ const fakeUsageMeters=()=>({
 
 test('Marketplace header keeps only the requested direct controls',()=>{
   assert.match(header,/id="headerSupport"[^>]*>QuSupport · Aggy/);
-  assert.match(header,/href="#deployment">QuDeploy/);
+  assert.match(header,/href="qupkiaas-deploy\.html">QuDeploy/);
   assert.match(header,/class="btn cart-pill"/);
   assert.match(header,/id="headerCartCount"/);
   assert.doesNotMatch(header,/>SECQUOIA\.NET<\/a>/);

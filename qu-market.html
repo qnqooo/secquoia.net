@@ -63,7 +63,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     <div class="navlinks market-actions">
       <div class="nav-primary">
         <button class="btn" id="headerSupport" type="button">QuSupport · Aggy</button>
-        <a class="btn" href="#deployment">QuDeploy</a>
+        <a class="btn" href="qupkiaas-deploy.html">QuDeploy</a>
         <a class="btn cart-pill" href="#cart"><span data-en>Cart</span><span data-es>Carrito</span><b id="headerCartCount">0</b><small id="headerCartTotal">$0</small></a>
       </div>
       <div class="runtime-settings" aria-hidden="true">
@@ -240,6 +240,13 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     <div class="addon-cards" id="addonCards"></div>
     <aside class="addon-quote" id="addonQuote"><div><span>QuCFA</span><strong data-en>No add-ons selected</strong><strong data-es>No hay add-ons seleccionados</strong><small data-en>Customer-facing draft rate card · no provider invoice or workforce availability verified.</small><small data-es>Tarifario preliminar visible al cliente · sin factura de proveedor ni disponibilidad de personal verificadas.</small></div><button class="btn" type="button" id="addonScrollCart" data-en>View basket</button><button class="btn" type="button" id="addonScrollCartEs" data-es>Ver canasta</button></aside>
   </section>
+  <section class="wrap panel deployment" id="qupkiaas-deployment">
+    <div class="eyebrow"><span class="dot"></span><span>QuDeploy · QuPKIaaS</span></div>
+    <h2 data-en>Issue and deliver certificates without transferring the private key.</h2><h2 data-es>Emite y entrega certificados sin transferir la clave privada.</h2>
+    <p data-en>Use the governed portal for guided onboarding or the parallel API for enterprise automation. Both routes are CSR-only, require QuIdentify and QuFense gates, and deliver public certificate material plus auditable evidence.</p>
+    <p data-es>Usa el portal gobernado para un onboarding guiado o la API paralela para automatización empresarial. Ambas rutas reciben únicamente CSR, exigen compuertas QuIdentify y QuFense, y entregan material público del certificado junto con evidencia auditable.</p>
+    <div class="hero-actions"><a class="btn primary" href="qupkiaas-deploy.html" data-en>Open QuPKIaaS deployment</a><a class="btn primary" href="qupkiaas-deploy.html" data-es>Abrir deployment QuPKIaaS</a><a class="btn" href="qupkiaas-deploy.html#api" data-en>View API route</a><a class="btn" href="qupkiaas-deploy.html#api" data-es>Ver ruta API</a></div>
+  </section>
   <section class="wrap panel deployment" id="deployment">
     <div class="eyebrow"><span class="dot"></span><span>Aggy deployment center</span></div>
     <h2 data-en>Plug & Play endpoint onboarding</h2><h2 data-es>Onboarding Plug & Play de endpoints</h2>
@@ -282,6 +289,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
         <li data-en>Register: customer authenticates with QuIdentify / Okta before quotes, downloads or purchase.</li><li data-es>Registro: el cliente se autentica con QuIdentify / Okta antes de cotizar, descargar o comprar.</li>
         <li data-en>Quote: QnQ Platform sends the basket to QuCFA and returns the commercial price breakdown.</li><li data-es>Cotización: QnQ Platform envía la canasta a QuCFA y devuelve el desglose comercial.</li>
         <li data-en>Payment: QuPay opens the Stripe checkout only after identity is verified and QuFense policy permits the transaction.</li><li data-es>Pago: QuPay abre Stripe Checkout solo después de verificar la identidad y aprobar la política de QuFense.</li>
+        <li data-en><strong>Honest security boundary:</strong> QuFense governs checkout end to end inside SECQUOIA. The handoff to Stripe uses Stripe-managed HTTPS; SECQUOIA does not claim native PQC termination at Stripe.</li><li data-es><strong>Límite honesto de seguridad:</strong> QuFense gobierna el checkout de extremo a extremo dentro de SECQUOIA. El tramo hacia Stripe utiliza HTTPS administrado por Stripe; SECQUOIA no afirma que Stripe termine PQC nativo.</li>
         <li data-en>Fulfillment email: QuHub sends the order receipt, technical sheets, certificates, install guides and deployment manifest automatically.</li><li data-es>Correo de entrega: QuHub envía automáticamente el recibo, las fichas técnicas, las certificaciones, las guías y el manifiesto.</li>
         <li data-en>Activation: the email contains a time-bound activation link. Ephemeral API keys are retrieved after Okta re-authentication through QuVault, not exposed in plain email.</li><li data-es>Activación: el correo contiene un enlace temporal. Las llaves API efímeras se recuperan desde QuVault tras la reautenticación con Okta; no se exponen en texto plano.</li>
         <li data-en>Install: Aggy guides the customer through connector setup, endpoint agent installation, SIEM/SOC hooks and verification tests.</li><li data-es>Instalación: Aggy guía la configuración de conectores, la instalación del agente en los endpoints, la integración SIEM/SOC y las pruebas de verificación.</li>

@@ -6,7 +6,7 @@ const release=JSON.parse(await readFile(new URL('../aggy-release.json',import.me
 const rollout=JSON.parse(await readFile(new URL('../aggy-rollout-targets.json',import.meta.url),'utf8'));
 
 test('Aggy release candidate and rollout inventory stay synchronized',()=>{
-  assert.equal(release.version,'1.0.0-rc.17');
+  assert.equal(release.version,'1.0.0-rc.18');
   assert.equal(release.channel,'rc');
   assert.equal(release.lifecycle,'production-validation');
   assert.equal(rollout.release,release.version);
@@ -22,7 +22,16 @@ test('All known ecosystem web surfaces have an Aggy integration contract',()=>{
     'https://quhub-financial-intelligence.m2m-telecom-7238.chatgpt.site/'
   ]);
   assert.deepEqual(new Set(rollout.webSurfaces.map(surface=>surface.url)),expected);
-  assert.ok(rollout.webSurfaces.every(surface=>surface.integration.includes('loader')));
+  const surfaces=Object.fromEntries(rollout.webSurfaces.map(surface=>[surface.name,surface]));
+  assert.match(surfaces['SECQUOIA Marketplace and corporate site'].integration,/loader/);
+  assert.match(surfaces['SECQUOIA Strategic Holdings'].integration,/loader/);
+  assert.match(surfaces.QnQ.integration,/loader/);
+  assert.equal(surfaces.QuChat.lifecycle,'legacy-compatibility-alias');
+  assert.equal(surfaces.QuChat.integration,'permanent-redirect-to-canonical-aggy');
+  assert.match(surfaces.QuChat.canonicalDestination,/[?&]aggy=chat/);
+  assert.equal(surfaces['QuSpace / QuHub'].lifecycle,'active-enterprise-workspace');
+  assert.equal(surfaces['QuSpace / QuHub'].integration,'aggy-contextual-copilot');
+  assert.equal(surfaces['QuSpace / QuHub'].quhubRole,'independent-integration-and-llm-gateway');
 });
 
 test('RC status does not overclaim stable GA or third-party sale',()=>{
