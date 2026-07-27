@@ -85,7 +85,7 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/AUTHORIZED_SECQUOIA_WEBSITES_DATA_ONLY|Authorized SECQUOIA website reference data/);
   assert.match(voice,/Never require, force, delay, or block an answer because a source URL is not cited/);
   assert.match(voice,/Do not speak raw URLs by default/);
-  assert.doesNotMatch(voice,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}|OPENAI_API_KEY|Authorization:\s*`?Bearer/);
+  assert.doesNotMatch(voice,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}|OPENAI_API_KEY|api\.openai\.com/);
 });
 
 test('Aggy backend keeps the current model and standard API key server-side',()=>{
@@ -163,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.27');
+  assert.equal(release.version,'1.0.0-rc.28');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -364,4 +364,26 @@ test('Voice client exposes five free minutes and requires explicit paid continua
   assert.match(voice,/retention_ratio:\.8/);
   assert.match(worker,/AGGY_QUPAY_WEBHOOK_SECRET/);
   assert.match(worker,/QUPAY_CONFIRMED_QVIT_CREDIT/);
+});
+
+test('QuIdentify contract entitlements are signed, expiry-bound and tamper-evident',async()=>{
+  const secret='test-only-entitlement-secret-with-32-bytes';
+  const issued=await workerModule.issueAggyEntitlement({
+    subject:'customer-42',
+    contractId:'contract-2026-42',
+    serviceId:'qufense-enterprise',
+    contractEndsAt:new Date(Date.now()+86_400_000).toISOString()
+  },secret);
+  const entitlement=await workerModule.verifyAggyEntitlement(new Request('https://aggy.secquoia.group/api/aggy/usage/status',{
+    headers:{Authorization:`Bearer ${issued.token}`}
+  }),secret);
+  assert.equal(entitlement.accessMode,'CONTRACT_INCLUDED');
+  assert.equal(entitlement.contractId,'contract-2026-42');
+  assert.equal(entitlement.serviceId,'qufense-enterprise');
+  await assert.rejects(
+    workerModule.verifyAggyEntitlement(new Request('https://aggy.secquoia.group/api/aggy/usage/status',{
+      headers:{Authorization:`Bearer ${issued.token.slice(0,-1)}x`}
+    }),secret),
+    /invalid_entitlement_signature/
+  );
 });

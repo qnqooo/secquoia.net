@@ -20,7 +20,13 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.27';
+  const aggyVersion='1.0.0-rc.28';
+  const entitlementToken=(()=>{
+    try{
+      return String(window.SECQUOIA_AGGY_ENTITLEMENT_TOKEN||document.querySelector('meta[name="secquoia-aggy-entitlement"]')?.content||sessionStorage.getItem('secquoia.aggy.entitlement')||'').trim();
+    }catch{return ''}
+  })();
+  const authorizedHeaders=headers=>entitlementToken?{...headers,Authorization:`Bearer ${entitlementToken}`}:{...headers};
 
   let peer=null;
   let channel=null;
@@ -84,6 +90,7 @@
 
   const renderUsageStatus=status=>{
     lastUsageStatus=status;
+    const contractIncluded=status?.access?.mode==='CONTRACT_INCLUDED';
     const free=Number(status?.free?.remainingSeconds||0);
     const balance=Number(status?.wallet?.balance||0);
     const price=Number(status?.continuation?.customerQVit||0);
@@ -96,7 +103,13 @@
       topUp.hidden=true;
     }
     if(status?.activeLease){
-      usageUi('Sesión medida en curso',`${status.activeLease.kind==='FREE'?'Prueba sin costo':'Aggy Minute'} · corte automático activo`,'ready');
+      usageUi(
+        contractIncluded?'Aggy incluida en tu servicio':'Sesión medida en curso',
+        contractIncluded?`Acceso vigente hasta ${new Date(status.access.validUntil).toLocaleDateString('es-CO')} · revalidación automática`:`${status.activeLease.kind==='FREE'?'Prueba sin costo':'Aggy Minute'} · corte automático activo`,
+        'ready'
+      );
+    }else if(contractIncluded){
+      usageUi('Aggy incluida durante tu contrato',`Sin regla de 5 minutos ni débito QVit · acceso hasta ${new Date(status.access.validUntil).toLocaleDateString('es-CO')}`,'ready');
     }else if(free>0){
       usageUi(
         `${Math.ceil(free/60)} min gratis de Aggy Voice LIVE`,
@@ -120,7 +133,7 @@
   };
 
   const fetchUsageStatus=async()=>{
-    const response=await fetchWithTimeout(`${usageEndpoint}/status`,{method:'GET',credentials:'omit',cache:'no-store'},6000);
+    const response=await fetchWithTimeout(`${usageEndpoint}/status`,{method:'GET',credentials:'omit',cache:'no-store',headers:authorizedHeaders({})},6000);
     if(!response.ok)throw new Error('usage_status_unavailable');
     const status=await response.json();
     renderUsageStatus(status);
@@ -169,7 +182,7 @@
     const response=await fetchWithTimeout(`${usageEndpoint}/lease`,{
       method:'POST',
       credentials:'omit',
-      headers:{'Content-Type':'application/json'},
+      headers:authorizedHeaders({'Content-Type':'application/json'}),
       body:JSON.stringify({paidContinuationConfirmed})
     },6000);
     const body=await response.json().catch(()=>({}));
@@ -187,8 +200,8 @@
       expiresAt:null
     };
     usageUi(
-      body.kind==='FREE'?'Prueba incluida reservada':'QVit reservado',
-      body.kind==='FREE'?`${Math.ceil(body.durationSeconds/60)} min disponibles.`:`${Number(body.reservedQVit).toLocaleString('es-CO')} QVit · Aggy Minute de ${body.durationSeconds} s.`,
+      body.kind==='CONTRACT'?'Acceso contractual validado':body.kind==='FREE'?'Prueba incluida reservada':'QVit reservado',
+      body.kind==='CONTRACT'?`Incluido en tu servicio · sesión operativa renovable de ${Math.ceil(body.durationSeconds/60)} min.`:body.kind==='FREE'?`${Math.ceil(body.durationSeconds/60)} min disponibles.`:`${Number(body.reservedQVit).toLocaleString('es-CO')} QVit · Aggy Minute de ${body.durationSeconds} s.`,
       'ready'
     );
     return usageLease;
@@ -199,7 +212,7 @@
     return fetch(`${usageEndpoint}/${path}`,{
       method:'POST',
       credentials:'omit',
-      headers:{'Content-Type':'application/json'},
+      headers:authorizedHeaders({'Content-Type':'application/json'}),
       body:JSON.stringify({leaseId:usageLease.leaseId,capability:usageLease.capability,...payload})
     });
   };
@@ -263,7 +276,7 @@
       method:'POST',
       credentials:'omit',
       keepalive:true,
-      headers:{'Content-Type':'application/json'},
+      headers:authorizedHeaders({'Content-Type':'application/json'}),
       body:JSON.stringify({leaseId:lease.leaseId,capability:lease.capability,reason})
     }).then(()=>fetchUsageStatus()).catch(()=>{});
   };
@@ -276,7 +289,7 @@
       await fetch(`${usageEndpoint}/cancel`,{
         method:'POST',
         credentials:'omit',
-        headers:{'Content-Type':'application/json'},
+        headers:authorizedHeaders({'Content-Type':'application/json'}),
         body:JSON.stringify({leaseId:lease.leaseId,capability:lease.capability,reason})
       });
     }catch{}
@@ -452,7 +465,8 @@
       let usageStatus=lastUsageStatus;
       if(!usageStatus||!userInitiated)usageStatus=await fetchUsageStatus();
       const freeRemaining=Number(usageStatus?.free?.remainingSeconds||0);
-      if(freeRemaining<=0&&!paidContinuationConfirmed){
+      const contractIncluded=usageStatus?.access?.mode==='CONTRACT_INCLUDED';
+      if(!contractIncluded&&freeRemaining<=0&&!paidContinuationConfirmed){
         connecting=false;
         startButton.disabled=false;
         startButton.textContent='Continuar con Aggy';
@@ -467,7 +481,7 @@
       );
       microphone=await requestMicrophone();
       usageStatus=await fetchUsageStatus();
-      if(Number(usageStatus?.free?.remainingSeconds||0)<=0&&!paidContinuationConfirmed){
+      if(usageStatus?.access?.mode!=='CONTRACT_INCLUDED'&&Number(usageStatus?.free?.remainingSeconds||0)<=0&&!paidContinuationConfirmed){
         stopTracks(microphone);
         microphone=null;
         connecting=false;
@@ -540,12 +554,12 @@
       const response=await fetchWithTimeout(sessionEndpoint,{
         method:'POST',
         credentials:'omit',
-        headers:{
+        headers:authorizedHeaders({
           'Content-Type':'application/sdp',
           'Accept':'application/sdp',
           'X-Aggy-Lease':usageLease.leaseId,
           'X-Aggy-Lease-Capability':usageLease.capability
-        },
+        }),
         body:offer.sdp
       },8000);
       if(!response.ok){
@@ -598,7 +612,8 @@
         const response=await fetchWithTimeout(healthEndpoint,{
           method:'GET',
           credentials:'omit',
-          cache:'no-store'
+          cache:'no-store',
+          headers:authorizedHeaders({})
         },timeoutMs);
         if(response.ok)return response;
       }catch{}

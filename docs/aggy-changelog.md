@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.28 - 2026-07-27
+
+### Contract access and essential communications
+
+- QuIdentify signed entitlements distinguish public visitors from customers with an active contract, membership or service. Contracted access is included until entitlement expiry and does not consume the five-minute trial or QVit.
+- Voice, secure chat, protected file transfer and E2EE/PQC audio/video calls are the four primary interface actions; secondary tools remain in the grid menu.
+- Any file format may be selected, but delivery, release, download and QuVault storage fail closed without CDR-provider CLEAN, QuFense ALLOW, verified E2EE/PQC envelope and QuVault STORED receipts.
+- Calls expose one-to-one/group audio/video modes and an honest NIAP-aligned, evaluation-ready tunnel profile; no NIAP certification is claimed.
+
 ## 1.0.0-rc.27 - 2026-07-27
 
 ### Restored

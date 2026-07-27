@@ -4,7 +4,26 @@ Cryptographic terminology follows [`E2EE-PQC-NAMING-STANDARD.md`](E2EE-PQC-NAMIN
 
 Requirement: restore the approved advanced Aggy interface in the persistent floating QuMarket widget.
 
-Current release: `1.0.0-rc.27` (`rc`, ecosystem hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This release candidate is prepared for production validation; it is not yet a stable-production or third-party-sale claim.
+Current release: `1.0.0-rc.28` (`rc`, ecosystem hosted). See `aggy-release.json`, `docs/aggy-changelog.md` and `docs/aggy-versioning-policy.md`. This release candidate is prepared for production validation; it is not yet a stable-production or third-party-sale claim.
+
+## Contract and membership access
+
+Public visitors receive five minutes of Aggy Voice LIVE and must explicitly approve any later QVit minute. Customers with a current contracted service, membership or subscription receive Aggy for the validity of that entitlement. Their sessions do not consume the visitor trial or QVit.
+
+QuIdentify (or the governed contract-activation backend) calls `POST https://aggy.secquoia.group/api/aggy/entitlements/issue` with `X-Aggy-Issuer-Secret` and:
+
+```json
+{
+  "subject": "stable-QuIdentify-customer-id",
+  "contractId": "contract-reference",
+  "serviceId": "purchased-service-reference",
+  "contractEndsAt": "2027-07-27T23:59:59Z"
+}
+```
+
+The response is a short, signed access artifact whose validity never exceeds the contract end. The authenticated SECQUOIA surface injects it into `window.SECQUOIA_AGGY_ENTITLEMENT_TOKEN`, a `secquoia-aggy-entitlement` meta element, or session storage key `secquoia.aggy.entitlement`. It must not be stored in local storage, placed in URLs, logged, or embedded in static public HTML. Aggy verifies the signature, issuer, audience, status and expiry on every usage request. Invalid, expired or unverifiable artifacts fail closed.
+
+Long provider connections are bounded to one-hour operational sessions and revalidated against the contract. That technical boundary supports revocation and cost protection; it does not create a five-minute commercial cutoff for contracted customers.
 
 ## Restored areas
 

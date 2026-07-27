@@ -64,8 +64,34 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.27');
-  assert.match(html,/v1\.0\.0-rc\.27/);
+  assert.equal(release.version,'1.0.0-rc.28');
+  assert.match(html,/v1\.0\.0-rc\.28/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.27'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.28'/);
+});
+
+test('contracted customers bypass the visitor trial without bypassing governance',async()=>{
+  const [html,voice,worker]=await Promise.all([
+    read('qu-market.html'),
+    read('aggy-realtime-voice.js'),
+    read('workers/aggy-realtime-session.js')
+  ]);
+  assert.match(worker,/CONTRACT_INCLUDED/);
+  assert.match(worker,/contractedServiceTrialMinutesApplied:false/);
+  assert.match(worker,/contractedServiceQVitDebit:false/);
+  assert.match(worker,/AGGY_ENTITLEMENT_SIGNING_SECRET/);
+  assert.match(voice,/status\?\.access\?\.mode==='CONTRACT_INCLUDED'/);
+  assert.match(html,/incluida durante contratos activos; visitantes: 5 minutos gratis/);
+});
+
+test('essential communications remain primary and every file operation is receipt-gated',async()=>{
+  const [html,worker]=await Promise.all([
+    read('qu-market.html'),
+    read('workers/aggy-realtime-session.js')
+  ]);
+  for(const label of ['Voz LIVE','Chat seguro','Enviar','Llamar'])assert.match(html,new RegExp(label));
+  for(const receipt of ['CDR_PROVIDER_CLEAN','QUFENSE_ALLOW','E2EE_PQC_ENVELOPE_VERIFIED','QUVAULT_STORED'])assert.match(worker,new RegExp(receipt));
+  assert.match(worker,/operationsBlocked:\['send','receive_release','download','store'\]/);
+  assert.match(worker,/niapCertified:false/);
+  assert.match(worker,/NIAP_ALIGNED_EVALUATION_READY/);
 });

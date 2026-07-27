@@ -3,6 +3,8 @@ const DEFAULT_REALTIME_VOICE='marin';
 const QVIT_PER_USD=1_000_000;
 const TARGET_MARGIN_BPS=3500;
 const AGGY_FREE_MS=5*60*1000;
+const AGGY_CONTRACT_SESSION_MS=60*60*1000;
+const AGGY_CONTRACT_PROVIDER_BUDGET_USD=2.5;
 const AGGY_PAID_BLOCK_MS=60*1000;
 const AGGY_MAX_PAID_BLOCKS_DAY=15;
 const AGGY_MAX_PAID_BLOCKS_MONTH=150;
@@ -39,6 +41,10 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   freeSeconds:AGGY_FREE_MS/1000,
   freeScope:'SECQUOIA_ECOSYSTEM_USER',
   freeClockStarts:'FIRST_LIVE_VOICE_SESSION',
+  contractedServiceAccess:'INCLUDED_UNTIL_ENTITLEMENT_EXPIRY',
+  contractedServiceTrialMinutesApplied:false,
+  contractedServiceQVitDebit:false,
+  contractedSessionRevalidationSeconds:AGGY_CONTRACT_SESSION_MS/1000,
   paidContinuationConsentRequired:true,
   silentPaidContinuationAllowed:false,
   paidLeaseSeconds:AGGY_PAID_BLOCK_MS/1000,
@@ -53,7 +59,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.27',
+  version:'1.0.0-rc.28',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -191,7 +197,8 @@ const aggyBlockQuote=()=>Object.freeze({
   optimizer:{name:'QuOptio',policyVersion:AGGY_QUOPTIO_POLICY.version},
   rateCard:{provider:AGGY_RATE_CARD.provider,model:AGGY_RATE_CARD.model,version:AGGY_RATE_CARD.version,sourceRef:AGGY_RATE_CARD.sourceRef}
 });
-const usageSubject=async request=>{
+const usageSubject=async(request,entitlement=null)=>{
+  if(entitlement?.subject)return sha256Base64Url(`aggy-meter-contract-v1|${entitlement.subject}`);
   const edgeIp=request.headers.get('CF-Connecting-IP')||'local';
   const userAgent=(request.headers.get('User-Agent')||'unknown').slice(0,300);
   const accepted=(request.headers.get('Accept-Language')||'').slice(0,120);
@@ -206,6 +213,99 @@ const safeJson=async request=>{
 };
 const validToken=value=>/^[A-Za-z0-9_-]{32,128}$/.test(String(value||''));
 const validRoomId=value=>/^[A-Za-z0-9_-]{43}$/.test(String(value||''));
+const decodeBase64Url=value=>{
+  const normalized=String(value||'').replaceAll('-','+').replaceAll('_','/');
+  const padded=normalized.padEnd(Math.ceil(normalized.length/4)*4,'=');
+  return Uint8Array.from(atob(padded),character=>character.charCodeAt(0));
+};
+const encodeBase64Url=value=>{
+  const bytes=value instanceof Uint8Array?value:new TextEncoder().encode(String(value));
+  let binary='';
+  bytes.forEach(byte=>binary+=String.fromCharCode(byte));
+  return btoa(binary).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+};
+const secureSecretMatch=async(actual,expected)=>{
+  if(!actual||!expected)return false;
+  const [left,right]=await Promise.all([sha256Hex(String(actual)),sha256Hex(String(expected))]);
+  let mismatch=left.length^right.length;
+  for(let index=0;index<Math.min(left.length,right.length);index++)mismatch|=left.charCodeAt(index)^right.charCodeAt(index);
+  return mismatch===0;
+};
+const issueAggyEntitlement=async(body,secret)=>{
+  const now=Math.floor(Date.now()/1000);
+  const expiresAtMs=Date.parse(String(body.contractEndsAt||''));
+  const exp=Math.floor(expiresAtMs/1000);
+  if(
+    !secret||
+    !String(body.subject||'').trim()||
+    !String(body.contractId||'').trim()||
+    !String(body.serviceId||'').trim()||
+    !Number.isFinite(exp)||
+    exp<=now||
+    exp>now+5*366*24*60*60
+  )throw new Error('invalid_entitlement_request');
+  const header=encodeBase64Url(JSON.stringify({alg:'HS256',typ:'JWT'}));
+  const payload=encodeBase64Url(JSON.stringify({
+    schema:'secquoia.quidentify.aggy-entitlement.v1',
+    iss:'QuIdentify',
+    aud:'Aggy',
+    sub:String(body.subject).slice(0,180),
+    contractId:String(body.contractId).slice(0,180),
+    serviceId:String(body.serviceId).slice(0,180),
+    status:'ACTIVE',
+    aggyIncluded:true,
+    iat:now,
+    nbf:now-30,
+    exp
+  }));
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const signature=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(`${header}.${payload}`)));
+  return {token:`${header}.${payload}.${encodeBase64Url(signature)}`,expiresAt:new Date(exp*1000).toISOString()};
+};
+const verifyAggyEntitlement=async(request,secret)=>{
+  const authorization=String(request.headers.get('Authorization')||'');
+  if(!authorization)return null;
+  if(!secret)throw new Error('entitlement_verifier_not_configured');
+  const token=authorization.match(/^Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/i)?.[1];
+  if(!token)throw new Error('invalid_entitlement_token');
+  const [encodedHeader,encodedPayload,encodedSignature]=token.split('.');
+  let header;
+  let payload;
+  try{
+    header=JSON.parse(new TextDecoder().decode(decodeBase64Url(encodedHeader)));
+    payload=JSON.parse(new TextDecoder().decode(decodeBase64Url(encodedPayload)));
+  }catch{
+    throw new Error('invalid_entitlement_token');
+  }
+  if(header.alg!=='HS256'||header.typ!=='JWT')throw new Error('invalid_entitlement_algorithm');
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const actual=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`)));
+  const expected=decodeBase64Url(encodedSignature);
+  if(actual.length!==expected.length)throw new Error('invalid_entitlement_signature');
+  let mismatch=0;
+  for(let index=0;index<actual.length;index++)mismatch|=actual[index]^expected[index];
+  if(mismatch)throw new Error('invalid_entitlement_signature');
+  const now=Math.floor(Date.now()/1000);
+  if(
+    payload.schema!=='secquoia.quidentify.aggy-entitlement.v1'||
+    payload.iss!=='QuIdentify'||
+    payload.aud!=='Aggy'||
+    payload.status!=='ACTIVE'||
+    payload.aggyIncluded!==true||
+    !String(payload.sub||'').trim()||
+    !Number.isFinite(Number(payload.exp))||
+    Number(payload.exp)<=now||
+    (payload.nbf&&Number(payload.nbf)>now+30)
+  )throw new Error('inactive_or_expired_entitlement');
+  return Object.freeze({
+    accessMode:'CONTRACT_INCLUDED',
+    subject:String(payload.sub).slice(0,180),
+    contractId:String(payload.contractId||'').slice(0,180),
+    serviceId:String(payload.serviceId||'').slice(0,180),
+    expiresAt:new Date(Number(payload.exp)*1000).toISOString(),
+    expiresAtMs:Number(payload.exp)*1000
+  });
+};
 const sanitizeChatText=raw=>{
   const original=String(raw??'');
   if(!original.trim())throw new Error('empty_text');
@@ -388,6 +488,12 @@ class AggyUsageMeter {
           created_at_ms INTEGER NOT NULL
         );
       `);
+      for(const migration of [
+        "ALTER TABLE leases ADD COLUMN access_mode TEXT NOT NULL DEFAULT 'VISITOR_TRIAL'",
+        'ALTER TABLE leases ADD COLUMN entitlement_expires_at_ms INTEGER'
+      ]){
+        try{this.sql.exec(migration)}catch{}
+      }
     });
   }
   reply(body,status=200){
@@ -444,22 +550,35 @@ class AggyUsageMeter {
         this.sql.exec("UPDATE leases SET status='EXPIRED',ended_at_ms=?,end_reason='PENDING_TIMEOUT' WHERE lease_id=?",now,lease.lease_id);
         continue;
       }
-      if(lease.kind==='FREE'){
+      if(lease.kind==='FREE'&&lease.access_mode!=='CONTRACT_INCLUDED'){
         this.sql.exec('UPDATE account SET free_used_ms = MIN(?, free_used_ms + ?) WHERE id = 1',AGGY_FREE_MS,lease.duration_ms);
       }
       this.sql.exec("UPDATE leases SET status='EXPIRED',ended_at_ms=?,end_reason='TIME_LIMIT' WHERE lease_id=?",now,lease.lease_id);
       this.ledger(`settle:${lease.lease_id}`,'QUCFA_QVIT_LEASE_SETTLED',0,{kind:lease.kind,reason:'TIME_LIMIT',chargedQVit:lease.reserved_qvit},now);
     }
   }
-  status(now=Date.now()){
+  status(now=Date.now(),entitlement=null){
     this.rollover(now);
     this.closeExpired(now);
     const account=this.account();
     const lease=this.activeLease();
     const freeRemainingMs=Math.max(0,AGGY_FREE_MS-Number(account.free_used_ms));
+    const contractActive=entitlement?.accessMode==='CONTRACT_INCLUDED'&&Number(entitlement.expiresAtMs)>now;
+    const publicLeaseKind=lease?.access_mode==='CONTRACT_INCLUDED'?'CONTRACT':lease?.kind;
     return {
       schema:'secquoia.aggy.usage-status.v1',
-      status:lease?'LEASE_ACTIVE':freeRemainingMs?'FREE_AVAILABLE':Number(account.qvit_balance)>=AGGY_PAID_BLOCK_QVIT?'PAID_AVAILABLE':'TOP_UP_REQUIRED',
+      status:lease?'LEASE_ACTIVE':contractActive?'CONTRACT_INCLUDED':freeRemainingMs?'FREE_AVAILABLE':Number(account.qvit_balance)>=AGGY_PAID_BLOCK_QVIT?'PAID_AVAILABLE':'TOP_UP_REQUIRED',
+      access:contractActive?{
+        mode:'CONTRACT_INCLUDED',
+        billing:'INCLUDED_IN_ACTIVE_SERVICE',
+        trialApplied:false,
+        qvitDebit:false,
+        contractId:entitlement.contractId||null,
+        serviceId:entitlement.serviceId||null,
+        validUntil:entitlement.expiresAt,
+        operationalSessionSeconds:Math.min(AGGY_CONTRACT_SESSION_MS,Number(entitlement.expiresAtMs)-now)/1000,
+        automaticRevalidation:true
+      }:{mode:'VISITOR_TRIAL',billing:'FIVE_MINUTES_THEN_EXPLICIT_QVIT'},
       free:{limitSeconds:AGGY_FREE_MS/1000,usedSeconds:Math.ceil(Number(account.free_used_ms)/1000),remainingSeconds:Math.floor(freeRemainingMs/1000),lifetimeAllowance:true},
       wallet:{currency:'QVIT',balance:Number(account.qvit_balance),overdraftAllowed:false},
       continuation:aggyBlockQuote(),
@@ -469,7 +588,7 @@ class AggyUsageMeter {
         paidMinutesDayMax:AGGY_MAX_PAID_BLOCKS_DAY*AGGY_PAID_BLOCK_MS/60000,
         paidMinutesMonthMax:AGGY_MAX_PAID_BLOCKS_MONTH*AGGY_PAID_BLOCK_MS/60000
       },
-      activeLease:lease?{leaseId:lease.lease_id,kind:lease.kind,status:lease.status,expiresAt:new Date(Number(lease.expires_at_ms)).toISOString()}:null,
+      activeLease:lease?{leaseId:lease.lease_id,kind:publicLeaseKind,status:lease.status,expiresAt:new Date(Number(lease.expires_at_ms)).toISOString()}:null,
       engines:['QuCFA','QVit','QuPay','QuIdentify','QuFense','QuAudit'],
       audit:'SERVER_SIDE_SQLITE_LEDGER'
     };
@@ -477,20 +596,27 @@ class AggyUsageMeter {
   async openLease(body,now){
     this.rollover(now);
     this.closeExpired(now);
-    if(this.activeLease())return this.reply({error:'active_lease_exists',...this.status(now)},409);
+    if(this.activeLease())return this.reply({error:'active_lease_exists',...this.status(now,body.entitlement)},409);
     const account=this.account();
     const freeRemaining=Math.max(0,AGGY_FREE_MS-Number(account.free_used_ms));
     let kind='FREE';
     let duration=freeRemaining;
     let reserved=0;
-    if(duration<=0){
+    const contractActive=body.entitlement?.accessMode==='CONTRACT_INCLUDED'&&Number(body.entitlement.expiresAtMs)>now;
+    let accessMode='VISITOR_TRIAL';
+    let entitlementExpiresAtMs=null;
+    if(contractActive){
+      accessMode='CONTRACT_INCLUDED';
+      entitlementExpiresAtMs=Number(body.entitlement.expiresAtMs);
+      duration=Math.min(AGGY_CONTRACT_SESSION_MS,entitlementExpiresAtMs-now);
+    }else if(duration<=0){
       if(body.paidContinuationConfirmed!==true){
         return this.reply({
           error:'paid_continuation_confirmation_required',
           paymentRequired:true,
           consentRequired:true,
           silentChargeAllowed:false,
-          ...this.status(now)
+          ...this.status(now,body.entitlement)
         },402);
       }
       kind='PAID';
@@ -509,15 +635,16 @@ class AggyUsageMeter {
     if(!validToken(capabilityHash))return this.reply({error:'invalid_capability_hash'},400);
     const expires=now+AGGY_PENDING_LEASE_MS;
     this.sql.exec(
-      "INSERT INTO leases (lease_id,capability_hash,kind,status,duration_ms,reserved_qvit,created_at_ms,expires_at_ms) VALUES (?,?,?,'PENDING',?,?,?,?)",
-      leaseId,capabilityHash,kind,duration,reserved,now,expires
+      "INSERT INTO leases (lease_id,capability_hash,kind,status,duration_ms,reserved_qvit,created_at_ms,expires_at_ms,access_mode,entitlement_expires_at_ms) VALUES (?,?,?,'PENDING',?,?,?,?,?,?)",
+      leaseId,capabilityHash,kind,duration,reserved,now,expires,accessMode,entitlementExpiresAtMs
     );
     if(reserved)this.ledger(`reserve:${leaseId}`,'QUPAY_QVIT_RESERVED',-reserved,{kind,durationMs:duration,quote:aggyBlockQuote()},now);
     await this.ctx.storage.setAlarm(expires);
     return this.reply({
       schema:'secquoia.aggy.usage-lease.v1',
       leaseId,
-      kind,
+      kind:contractActive?'CONTRACT':kind,
+      accessMode,
       status:'PENDING',
       durationSeconds:duration/1000,
       pendingExpiresAt:new Date(expires).toISOString(),
@@ -569,7 +696,7 @@ class AggyUsageMeter {
     if(!this.validCapability(row,String(body.capabilityHash||'')))return this.reply({error:'invalid_lease_capability'},401);
     if(row.status!=='ACTIVE')return this.reply({error:'lease_expired',hardStop:true,status:row.status},402);
     const remaining=Math.max(0,Number(row.expires_at_ms)-now);
-    return this.reply({ok:true,leaseId:row.lease_id,kind:row.kind,remainingSeconds:Math.ceil(remaining/1000),hardStop:remaining<=0});
+    return this.reply({ok:true,leaseId:row.lease_id,kind:row.access_mode==='CONTRACT_INCLUDED'?'CONTRACT':row.kind,remainingSeconds:Math.ceil(remaining/1000),hardStop:remaining<=0});
   }
   usage(body,now){
     this.closeExpired(now);
@@ -589,7 +716,7 @@ class AggyUsageMeter {
     }
     const total=this.sql.exec('SELECT COALESCE(SUM(provider_cost_qcu),0) AS total FROM usage_receipts WHERE lease_id = ?',row.lease_id).one();
     const providerCostQcu=Number(total.total);
-    const providerReserveQcu=Math.round(AGGY_PROVIDER_RESERVE_USD*1e6);
+    const providerReserveQcu=Math.round((row.access_mode==='CONTRACT_INCLUDED'?AGGY_CONTRACT_PROVIDER_BUDGET_USD:AGGY_PROVIDER_RESERVE_USD)*1e6);
     const hardStop=providerCostQcu>=Math.round(providerReserveQcu*AGGY_QUOPTIO_STOP_RATIO);
     return this.reply({accepted:true,duplicate:false,quote,providerCostQcu,providerReserveQcu,hardStop});
   }
@@ -599,12 +726,12 @@ class AggyUsageMeter {
     if(!this.validCapability(row,String(body.capabilityHash||'')))return this.reply({error:'invalid_lease_capability'},401);
     if(row.status!=='ACTIVE')return this.reply({settled:true,status:row.status});
     const elapsed=Math.max(0,Math.min(Number(row.duration_ms),now-Number(row.started_at_ms)));
-    if(row.kind==='FREE')this.sql.exec('UPDATE account SET free_used_ms = MIN(?,free_used_ms + ?) WHERE id = 1',AGGY_FREE_MS,elapsed);
+    if(row.kind==='FREE'&&row.access_mode!=='CONTRACT_INCLUDED')this.sql.exec('UPDATE account SET free_used_ms = MIN(?,free_used_ms + ?) WHERE id = 1',AGGY_FREE_MS,elapsed);
     this.sql.exec("UPDATE leases SET status='ENDED',ended_at_ms=?,end_reason=? WHERE lease_id=?",now,String(body.reason||'CLIENT_END').slice(0,80),row.lease_id);
     const usage=this.sql.exec('SELECT COALESCE(SUM(provider_cost_qcu),0) AS provider_cost_qcu,COUNT(*) AS responses FROM usage_receipts WHERE lease_id = ?',row.lease_id).one();
     this.ledger(`settle:${row.lease_id}`,'QUCFA_QVIT_LEASE_SETTLED',0,{kind:row.kind,elapsedMs:elapsed,chargedQVit:row.reserved_qvit,providerCostQcu:Number(usage.provider_cost_qcu),responses:Number(usage.responses)},now);
     await this.ctx.storage.deleteAlarm();
-    return this.reply({settled:true,elapsedSeconds:Math.ceil(elapsed/1000),chargedQVit:Number(row.reserved_qvit),providerCostQcu:Number(usage.provider_cost_qcu),status:this.status(now)});
+    return this.reply({settled:true,elapsedSeconds:Math.ceil(elapsed/1000),chargedQVit:Number(row.reserved_qvit),providerCostQcu:Number(usage.provider_cost_qcu),status:this.status(now,body.entitlement)});
   }
   credit(body,now){
     const amount=Math.floor(Number(body.qvitAmount));
@@ -619,8 +746,8 @@ class AggyUsageMeter {
   async fetch(request){
     const url=new URL(request.url);
     const now=Date.now();
-    if(url.pathname==='/status'&&request.method==='GET')return this.reply(this.status(now));
     const body=await this.body(request);
+    if(url.pathname==='/status'&&(request.method==='GET'||request.method==='POST'))return this.reply(this.status(now,body.entitlement));
     if(url.pathname==='/lease'&&request.method==='POST')return this.openLease(body,now);
     if(url.pathname==='/activate'&&request.method==='POST')return this.activate(body,now);
     if(url.pathname==='/bind'&&request.method==='POST')return this.bindProvider(body,now);
@@ -636,9 +763,9 @@ class AggyUsageMeter {
   }
 }
 
-const meterStub=async(env,request,walletReference)=>{
+const meterStub=async(env,request,walletReference,entitlement=null)=>{
   if(!env.AGGY_USAGE_METERS)return null;
-  const reference=walletReference||await usageSubject(request);
+  const reference=walletReference||await usageSubject(request,entitlement);
   if(!validRoomId(reference))return null;
   return {reference,stub:env.AGGY_USAGE_METERS.get(env.AGGY_USAGE_METERS.idFromName(reference))};
 };
@@ -665,6 +792,37 @@ const verifyQuPaySignature=async(request,secret,raw)=>{
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
+    let entitlement=null;
+    if(request.headers.has('Authorization')){
+      try{
+        entitlement=await verifyAggyEntitlement(request,env.AGGY_ENTITLEMENT_SIGNING_SECRET);
+      }catch(error){
+        return json({error:error.message,accessMode:'FAIL_CLOSED'},401,request);
+      }
+    }
+    if(url.pathname==='/api/aggy/entitlements/issue'){
+      if(request.method!=='POST')return json({error:'method_not_allowed'},405,request);
+      if(!env.AGGY_ENTITLEMENT_SIGNING_SECRET||!env.AGGY_ENTITLEMENT_ISSUER_SECRET){
+        return json({error:'entitlement_issuer_not_configured',failClosed:true},503,request);
+      }
+      if(!await secureSecretMatch(request.headers.get('X-Aggy-Issuer-Secret'),env.AGGY_ENTITLEMENT_ISSUER_SECRET)){
+        return json({error:'invalid_entitlement_issuer'},401,request);
+      }
+      let body;
+      try{body=await safeJson(request)}catch(error){return json({error:error.message},400,request)}
+      try{
+        const issued=await issueAggyEntitlement(body,env.AGGY_ENTITLEMENT_SIGNING_SECRET);
+        return json({
+          schema:'secquoia.quidentify.aggy-entitlement-issued.v1',
+          accessMode:'CONTRACT_INCLUDED',
+          trialApplied:false,
+          qvitDebit:false,
+          ...issued
+        },201,request);
+      }catch(error){
+        return json({error:error.message},422,request);
+      }
+    }
     if(url.pathname==='/api/aggy/messages/health'&&request.method==='GET'){
       return json({
         schema:'secquoia.aggy.secure-messages.health.v1',
@@ -732,9 +890,21 @@ export default {
     if(url.pathname==='/api/aggy/messages/attachments'){
       return json({
         error:'attachments_fail_closed',
+        schema:'secquoia.aggy.attachment-admission.v2',
         provider:'Glasswall',
         mode:env.AGGY_GLASSWALL_MODE||'STRUCTURE_READY_NOT_CONNECTED',
-        externalCallsExecuted:false
+        externalCallsExecuted:false,
+        selectionPolicy:'ANY_FORMAT_MAY_BE_SELECTED',
+        admissionPolicy:'ONLY_CDR_SUPPORTED_AND_CLEAN_CONTENT_MAY_PROGRESS',
+        encryptedInputPolicy:'BLOCK_AND_QUARANTINE',
+        requiredReceipts:[
+          'CDR_PROVIDER_CLEAN_WITH_ORIGINAL_AND_REBUILT_SHA256',
+          'QUFENSE_ALLOW',
+          'E2EE_PQC_ENVELOPE_VERIFIED',
+          'QUVAULT_STORED'
+        ],
+        operationsBlocked:['send','receive_release','download','store'],
+        quarantine:true
       },503,request);
     }
     if(url.pathname==='/api/aggy/calls/preflight'){
@@ -749,7 +919,11 @@ export default {
         release:AGGY_RELEASE,
         status:'not_configured',
         error:'e2ee_call_infrastructure_not_configured',
+        callModes:['ONE_TO_ONE_AUDIO','GROUP_AUDIO','ONE_TO_ONE_VIDEO','GROUP_VIDEO'],
         e2eeVerified:false,
+        tunnelProfile:'NIAP_ALIGNED_EVALUATION_READY',
+        niapCertified:false,
+        certificationClaimed:false,
         microphoneRequested:false,
         cameraRequested:false,
         gates:{
@@ -757,11 +931,13 @@ export default {
           signaling:false,
           keyExchange:false,
           mediaE2EE:false,
+          managedTunnel:false,
           qufense:false,
           quvault:false
         },
         cryptoProfile:'E2EE/PQC',
-        requiredServices:['QuIdentify identity binding','WebRTC signaling','ephemeral group key exchange','encoded media E2EE/PQC','QuFense receipt','QuVault receipt']
+        requiredServices:['QuIdentify identity binding','WebRTC signaling','ephemeral group key exchange','encoded media E2EE/PQC','managed tunnel policy aligned to applicable NIAP protection profiles','QuFense receipt','QuVault receipt'],
+        assuranceBoundary:'NIAP alignment is a design target; certification requires independent evaluation and an official NIAP listing.'
       },503,request);
     }
     if(url.pathname.startsWith('/api/aggy/usage/')){
@@ -789,10 +965,10 @@ export default {
         if(!meter)return json({error:'invalid_wallet_reference'},400,request);
         return roomResponse(await meterRequest(meter.stub,'/credit','POST',body),request);
       }
-      const meter=await meterStub(env,request);
+      const meter=await meterStub(env,request,undefined,entitlement);
       if(!meter)return json({error:'invalid_usage_subject'},400,request);
       if(url.pathname==='/api/aggy/usage/status'&&request.method==='GET'){
-        const response=await meterRequest(meter.stub,'/status');
+        const response=await meterRequest(meter.stub,'/status','POST',{entitlement});
         const body=await response.json();
         body.wallet.reference=meter.reference;
         body.wallet.topUpAvailable=Boolean(env.AGGY_QUPAY_WEBHOOK_SECRET);
@@ -800,7 +976,12 @@ export default {
         body.wallet.topUpUrl=body.wallet.topUpAvailable
           ? `https://secquoia.net/qu-market.html?addon=qvit-ai-credit-25&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`
           : 'mailto:sqaile@secquoia.group?subject=Activacion%20QuPay%20para%20Aggy';
-        body.identity={engine:'QuIdentify',binding:'EDGE_PSEUDONYMOUS_V1',verified:false,paidContinuationRequiresVerifiedQuPayWebhook:true};
+        body.identity={
+          engine:'QuIdentify',
+          binding:entitlement?'SIGNED_CONTRACT_ENTITLEMENT_V1':'EDGE_PSEUDONYMOUS_V1',
+          verified:Boolean(entitlement),
+          paidContinuationRequiresVerifiedQuPayWebhook:!entitlement
+        };
         return json(body,response.status,request);
       }
       if(url.pathname==='/api/aggy/usage/lease'&&request.method==='POST'){
@@ -810,7 +991,8 @@ export default {
         const capabilityHash=await sha256Hex(capability);
         const response=await meterRequest(meter.stub,'/lease','POST',{
           capabilityHash,
-          paidContinuationConfirmed:leaseRequest.paidContinuationConfirmed===true
+          paidContinuationConfirmed:leaseRequest.paidContinuationConfirmed===true,
+          entitlement
         });
         const body=await response.json();
         if(response.ok)body.capability=capability;
@@ -822,7 +1004,7 @@ export default {
       try{body=await safeJson(request)}catch(error){return json({error:error.message},400,request)}
       const capability=String(body.capability||'');
       if(!validToken(capability))return json({error:'invalid_lease_capability'},401,request);
-      const internal={...body,capabilityHash:await sha256Hex(capability)};
+      const internal={...body,capabilityHash:await sha256Hex(capability),entitlement};
       if(url.pathname==='/api/aggy/usage/heartbeat'&&request.method==='POST'){
         return roomResponse(await meterRequest(meter.stub,'/heartbeat','POST',internal),request);
       }
@@ -901,7 +1083,7 @@ export default {
     if(!/^[0-9a-f-]{36}$/i.test(leaseId)||!validToken(leaseCapability)){
       return json({error:'usage_lease_required',failClosed:true},402,request);
     }
-    const meter=await meterStub(env,request);
+    const meter=await meterStub(env,request,undefined,entitlement);
     if(!meter)return json({error:'invalid_usage_subject'},400,request);
     const capabilityHash=await sha256Hex(leaseCapability);
 
@@ -994,11 +1176,13 @@ export {
   DEFAULT_REALTIME_VOICE,
   aggyBlockQuote,
   normalizeRealtimeUsage,
+  issueAggyEntitlement,
   quoteRealtimeUsage,
   qugeo,
   rateCardIsCurrent,
   sanitizeChatText,
   usageSubject,
+  verifyAggyEntitlement,
   validateEnvelope,
   validatePublicBundle
 };
