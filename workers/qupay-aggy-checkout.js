@@ -1,4 +1,4 @@
-const RELEASE='1.0.0-rc.3';
+const RELEASE='1.1.0';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
@@ -35,6 +35,84 @@ const hmacHex=async(secret,value)=>{
   const key=await crypto.subtle.importKey('raw',encoder.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
   return hex(await crypto.subtle.sign('HMAC',key,encoder.encode(value)));
 };
+const sha256Hex=async value=>hex(await crypto.subtle.digest('SHA-256',encoder.encode(value)));
+const checkoutDigestInput=({packId,pack,walletReference,orderRef})=>JSON.stringify({
+  schema:'secquoia.qupay.checkout-intent.v1',
+  source:'qupay',
+  provider:'stripe',
+  packId,
+  amount:pack.usdCents,
+  currency:'usd',
+  qvitAmount:pack.qvitAmount,
+  walletReference,
+  orderRef
+});
+const validQuFenseReceipt=(document,expected,authorityFingerprint,now=Date.now())=>{
+  const receipt=document?.receipt;
+  const issuedAt=Date.parse(receipt?.issuedAt);
+  const expiresAt=Date.parse(receipt?.expiresAt);
+  return Boolean(
+    document?.schema==='sqaile.qufense.signed-flow-receipt.v1'&&
+    document.authority==='QuFense'&&
+    document.authorityFingerprint===authorityFingerprint&&
+    typeof document.primarySignature==='string'&&document.primarySignature.length>64&&
+    typeof document.conservativeSignature==='string'&&document.conservativeSignature.length>64&&
+    document.moduleValidationClaimed===false&&
+    receipt?.schema==='sqaile.qufense.checkout-authorization.v1'&&
+    receipt.decision==='ALLOW'&&
+    receipt.source==='qupay'&&receipt.provider==='stripe'&&
+    receipt.action==='stripe.checkout.session.create'&&
+    receipt.purpose==='live_qvit_checkout'&&
+    receipt.orderRef===expected.orderRef&&receipt.packId===expected.packId&&
+    receipt.amount===expected.pack.usdCents&&receipt.currency==='usd'&&
+    receipt.payloadDigest===expected.payloadDigest&&
+    receipt.externalTransportEncrypted===true&&
+    receipt.providerAuthentication==='STRIPE_RESTRICTED_LIVE_KEY'&&
+    receipt.authorizationProfile==='QF-CHECKOUT-AUTHZ-PQC-1'&&
+    receipt.providerPayloadPqcClaimed===false&&
+    receipt.moduleValidationClaimed===false&&
+    Number.isFinite(issuedAt)&&Number.isFinite(expiresAt)&&
+    issuedAt<=now+1000&&expiresAt>now&&expiresAt-issuedAt===15_000
+  );
+};
+const authorizeCheckoutWithQuFense=async(intent,env)=>{
+  if(!env.QUFENSE||!env.QUFENSE_AUTHORITY_FINGERPRINT){
+    return {ok:false,status:503,error:'qufense_checkout_not_configured'};
+  }
+  const payloadDigest=await sha256Hex(checkoutDigestInput(intent));
+  const payload={
+    source:'qupay',
+    provider:'stripe',
+    action:'stripe.checkout.session.create',
+    purpose:'live_qvit_checkout',
+    orderRef:intent.orderRef,
+    packId:intent.packId,
+    amount:intent.pack.usdCents,
+    currency:'usd',
+    payloadDigest,
+    externalTransportEncrypted:true,
+    providerAuthentication:'STRIPE_RESTRICTED_LIVE_KEY'
+  };
+  let response;
+  try{
+    response=await env.QUFENSE.fetch('https://qufense.internal/v1/payments/checkout/authorize',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+      signal:AbortSignal.timeout(4000)
+    });
+  }catch{
+    return {ok:false,status:503,error:'qufense_checkout_unavailable'};
+  }
+  const document=await response.json().catch(()=>null);
+  if(!response.ok){
+    return {ok:false,status:response.status===403?403:503,error:response.status===403?'qufense_checkout_denied':'qufense_checkout_unavailable',reason:String(document?.reason||document?.error||'QUFENSE_DENIED').slice(0,100)};
+  }
+  if(!validQuFenseReceipt(document,{...intent,payloadDigest},env.QUFENSE_AUTHORITY_FINGERPRINT)){
+    return {ok:false,status:503,error:'qufense_receipt_invalid'};
+  }
+  return {ok:true,document,payloadDigest};
+};
 const verifyStripeSignature=async(raw,header,secret,now=Math.floor(Date.now()/1000))=>{
   if(!secret||!header)return false;
   const entries=String(header).split(',').map(value=>value.trim().split('=',2));
@@ -45,7 +123,7 @@ const verifyStripeSignature=async(raw,header,secret,now=Math.floor(Date.now()/10
   const expectedBytes=encoder.encode(expected);
   return candidates.some(candidate=>timingEqual(expectedBytes,encoder.encode(candidate)));
 };
-const stripeForm=body=>{
+const stripeForm=(body,qufense)=>{
   const form=new URLSearchParams();
   form.set('mode','payment');
   form.set('success_url','https://secquoia.net/qu-market.html?payment=success#ai-services');
@@ -61,10 +139,13 @@ const stripeForm=body=>{
   form.set('metadata[pack_id]',body.packId);
   form.set('metadata[qvit_amount]',String(body.pack.qvitAmount));
   form.set('metadata[order_ref]',body.orderRef);
+  form.set('metadata[qufense_evidence_id]',qufense.receipt.evidenceId);
+  form.set('metadata[qufense_authority_fingerprint]',qufense.authorityFingerprint);
+  form.set('metadata[qufense_payload_digest]',qufense.receipt.payloadDigest);
   return form;
 };
 const createCheckout=async(request,env)=>{
-  if(!env.STRIPE_RESTRICTED_KEY||!env.STRIPE_WEBHOOK_SECRET||!env.AGGY_QUPAY_WEBHOOK_SECRET){
+  if(!env.STRIPE_RESTRICTED_KEY||!env.STRIPE_WEBHOOK_SECRET||!env.AGGY_QUPAY_WEBHOOK_SECRET||!env.QUFENSE||!env.QUFENSE_AUTHORITY_FINGERPRINT){
     return json({error:'qupay_live_not_configured',failClosed:true},503,request);
   }
   let body;
@@ -76,6 +157,11 @@ const createCheckout=async(request,env)=>{
   if(!pack||!validWallet(walletReference)||!validOrder(orderRef)){
     return json({error:'invalid_checkout_request'},422,request);
   }
+  const intent={packId,pack,walletReference,orderRef};
+  const authorization=await authorizeCheckoutWithQuFense(intent,env);
+  if(!authorization.ok){
+    return json({error:authorization.error,failClosed:true,...(authorization.reason?{reason:authorization.reason}:{})},authorization.status,request);
+  }
   const response=await fetch(`${STRIPE_API}/checkout/sessions`,{
     method:'POST',
     headers:{
@@ -83,7 +169,7 @@ const createCheckout=async(request,env)=>{
       'Content-Type':'application/x-www-form-urlencoded',
       'Idempotency-Key':`aggy-${orderRef}`.slice(0,100)
     },
-    body:stripeForm({packId,pack,walletReference,orderRef})
+    body:stripeForm(intent,authorization.document)
   });
   const result=await response.json().catch(()=>({}));
   if(!response.ok){
@@ -92,7 +178,20 @@ const createCheckout=async(request,env)=>{
   if(!/^https:\/\/checkout\.stripe\.com\//.test(String(result.url||''))){
     return json({error:'invalid_stripe_checkout_url'},502,request);
   }
-  return json({schema:'secquoia.qupay.checkout.v1',status:'PENDING',checkoutUrl:result.url,sessionId:result.id,orderRef},201,request);
+  return json({
+    schema:'secquoia.qupay.checkout.v1',
+    status:'PENDING',
+    checkoutUrl:result.url,
+    sessionId:result.id,
+    orderRef,
+    qufense:{
+      authorized:true,
+      evidenceId:authorization.document.receipt.evidenceId,
+      authorityFingerprint:authorization.document.authorityFingerprint,
+      authorizationProfile:authorization.document.receipt.authorizationProfile,
+      providerPayloadPqcClaimed:false
+    }
+  },201,request);
 };
 const creditAggy=async(event,object,env)=>{
   const metadata=object.metadata||{};
@@ -161,7 +260,9 @@ export default {
       const checks={
         stripeRestrictedKey:Boolean(env.STRIPE_RESTRICTED_KEY),
         stripeWebhookSecret:Boolean(env.STRIPE_WEBHOOK_SECRET),
-        aggySharedSecret:Boolean(env.AGGY_QUPAY_WEBHOOK_SECRET)
+        aggySharedSecret:Boolean(env.AGGY_QUPAY_WEBHOOK_SECRET),
+        qufenseServiceBinding:Boolean(env.QUFENSE),
+        qufenseAuthorityFingerprint:/^[a-f0-9]{32}$/.test(String(env.QUFENSE_AUTHORITY_FINGERPRINT||''))
       };
       const ready=Object.values(checks).every(Boolean);
       return json({
@@ -174,7 +275,8 @@ export default {
         webhook:'/v1/qupay/webhooks/stripe',
         validationPackEnabled:false,
         cardDataStored:false,
-        overdraftAllowed:false
+        overdraftAllowed:false,
+        qufenseCheckoutAuthorizationRequired:true
       },ready?200:503,request);
     }
     if(url.pathname==='/v1/qupay/checkout'&&request.method==='POST')return createCheckout(request,env);
@@ -183,4 +285,4 @@ export default {
   }
 };
 
-export {PACKS,hmacHex,stripeForm,verifyStripeSignature};
+export {PACKS,authorizeCheckoutWithQuFense,checkoutDigestInput,hmacHex,stripeForm,validQuFenseReceipt,verifyStripeSignature};
