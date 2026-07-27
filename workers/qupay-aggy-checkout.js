@@ -1,8 +1,9 @@
-const RELEASE='1.0.0-rc.1';
+const RELEASE='1.0.0-rc.2';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
 const PACKS=Object.freeze({
+  'qvit-live-certification-1':Object.freeze({usdCents:100,qvitAmount:1_000_000,label:'QVit LIVE certification credit · $1'}),
   'qvit-ai-credit-25':Object.freeze({usdCents:2500,qvitAmount:25_000_000,label:'QVit AI resource credit · $25'}),
   'qvit-ai-credit-100':Object.freeze({usdCents:10_000,qvitAmount:100_000_000,label:'QVit AI resource credit · $100'}),
   'qvit-ai-credit-500':Object.freeze({usdCents:50_000,qvitAmount:500_000_000,label:'QVit AI resource credit · $500'})
@@ -172,6 +173,7 @@ export default {
         checks,
         checkout:'/v1/qupay/checkout',
         webhook:'/v1/qupay/webhooks/stripe',
+        validationPackEnabled:true,
         cardDataStored:false,
         overdraftAllowed:false
       },ready?200:503,request);
