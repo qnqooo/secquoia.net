@@ -33,4 +33,12 @@
   ['addonScrollCart','addonScrollCartEs'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>document.getElementById('cart').scrollIntoView({behavior:'smooth',block:'start'})));
   new MutationObserver(()=>{render();updateQuote()}).observe(document.body,{attributes:true,attributeFilter:['class']});
   render();updateQuote();
+  const activationParams=new URLSearchParams(location.search),requestedAddon=activationParams.get('addon'),walletReference=activationParams.get('wallet_ref');
+  if(/^qvit-ai-credit-(25|100|500)$/.test(requestedAddon||'')&&/^[A-Za-z0-9_-]{43}$/.test(walletReference||'')){
+    const service=services.find(item=>item.id===requestedAddon);
+    if(service){
+      window.QuMarketCart.addAddon({id:service.id,name:service.name[language()],category:categories[service.category][language()],billing:service.billing,pricingUnit:language()==='es'?service.unitEs:service.unit,quantity:1,unitPriceUsd:service.price,scopeLabel:service.description[language()],features:service.features[language()]});
+      document.getElementById('cart')?.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  }
 })();
