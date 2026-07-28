@@ -2,6 +2,17 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.36 - 2026-07-28
+
+### Independent ten-minute trial per browser
+
+- Separates the visitor trial by a persistent anonymous browser identity instead
+  of sharing the allowance across devices behind one public IP.
+- Sends the anonymous visitor identifier only to the Aggy usage and Realtime
+  backend; it contains no personal data.
+- Preserves QuIdentify contract entitlements, explicit QVit consent and
+  fail-closed QuPay/QuFense controls.
+
 ## 1.0.0-rc.35 - 2026-07-27
 
 ### Single launcher and clearer conversation surface

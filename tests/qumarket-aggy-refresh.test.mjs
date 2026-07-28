@@ -67,6 +67,7 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/new RTCPeerConnection\(\)/);
   assert.match(voice,/Content-Type':'application\/sdp'/);
   assert.match(voice,/credentials:'omit'/);
+  assert.match(voice,/X-Aggy-Visitor-ID/);
   assert.match(voice,/turn_detection:\{type:'semantic_vad',eagerness:'high',create_response:true,interrupt_response:true\}/);
   assert.match(voice,/const speechSpeed=1\.08/);
   assert.match(voice,/output:\{voice:naturalVoice,speed:speechSpeed\}/);
@@ -86,6 +87,24 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/Never require, force, delay, or block an answer because a source URL is not cited/);
   assert.match(voice,/Do not speak raw URLs by default/);
   assert.doesNotMatch(voice,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}|OPENAI_API_KEY|api\.openai\.com/);
+});
+
+test('Visitor trials are isolated per browser instead of being shared by public IP',async()=>{
+  const commonHeaders={
+    'CF-Connecting-IP':'203.0.113.10',
+    'User-Agent':'Secquoia Test Browser',
+    'Accept-Language':'es-CO'
+  };
+  const first=await workerModule.usageSubject(new Request('https://aggy.secquoia.group/api/aggy/usage/status',{
+    headers:{...commonHeaders,'X-Aggy-Visitor-ID':`v2_${'a'.repeat(43)}`}
+  }));
+  const second=await workerModule.usageSubject(new Request('https://aggy.secquoia.group/api/aggy/usage/status',{
+    headers:{...commonHeaders,'X-Aggy-Visitor-ID':`v2_${'b'.repeat(43)}`}
+  }));
+  assert.notEqual(first,second);
+  assert.equal(first.length,43);
+  assert.equal(second.length,43);
+  assert.match(worker,/X-Aggy-Visitor-ID/);
 });
 
 test('Aggy backend keeps the current model and standard API key server-side',()=>{
@@ -163,7 +182,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.35');
+  assert.equal(release.version,'1.0.0-rc.36');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);

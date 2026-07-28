@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.35';
+  const aggyVersion='1.0.0-rc.36';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -42,12 +42,29 @@
       speech:'Te queda un minuto de Voz LIVE. Cerremos lo esencial. Al finalizar, puedes seguir por chat o activar Tiempo IA para continuar la conversación en vivo.'
     })
   ]);
+  const visitorId=(()=>{
+    try{
+      const storageKey='secquoia.aggy.visitor.v2';
+      const existing=String(localStorage.getItem(storageKey)||'');
+      if(/^v2_[A-Za-z0-9_-]{43}$/.test(existing))return existing;
+      const bytes=crypto.getRandomValues(new Uint8Array(32));
+      let binary='';
+      bytes.forEach(byte=>binary+=String.fromCharCode(byte));
+      const created=`v2_${btoa(binary).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'')}`;
+      localStorage.setItem(storageKey,created);
+      return created;
+    }catch{return ''}
+  })();
   const entitlementToken=(()=>{
     try{
       return String(window.SECQUOIA_AGGY_ENTITLEMENT_TOKEN||document.querySelector('meta[name="secquoia-aggy-entitlement"]')?.content||sessionStorage.getItem('secquoia.aggy.entitlement')||'').trim();
     }catch{return ''}
   })();
-  const authorizedHeaders=headers=>entitlementToken?{...headers,Authorization:`Bearer ${entitlementToken}`}:{...headers};
+  const authorizedHeaders=headers=>({
+    ...headers,
+    ...(visitorId?{'X-Aggy-Visitor-ID':visitorId}:{}),
+    ...(entitlementToken?{Authorization:`Bearer ${entitlementToken}`}:{})
+  });
   const isUnmeteredAccess=mode=>['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(mode);
 
   let peer=null;

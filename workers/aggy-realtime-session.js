@@ -62,7 +62,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.35',
+  version:'1.0.0-rc.36',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -110,7 +110,7 @@ const corsHeaders=request=>{
   return {
     'Access-Control-Allow-Origin':origin,
     'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
-    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Lease, X-Aggy-Lease-Capability, X-QuPay-Signature',
+    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Visitor-ID, X-Aggy-Lease, X-Aggy-Lease-Capability, X-QuPay-Signature',
     'Access-Control-Expose-Headers':'X-Aggy-Lease-Expires-At',
     'Access-Control-Max-Age':'86400',
     'Vary':'Origin'
@@ -202,6 +202,11 @@ const aggyBlockQuote=()=>Object.freeze({
 });
 const usageSubject=async(request,entitlement=null)=>{
   if(entitlement?.subject)return sha256Base64Url(`aggy-meter-contract-v1|${entitlement.subject}`);
+  const visitorId=String(request.headers.get('X-Aggy-Visitor-ID')||'');
+  if(/^v2_[A-Za-z0-9_-]{43}$/.test(visitorId)){
+    const userAgent=(request.headers.get('User-Agent')||'unknown').slice(0,300);
+    return sha256Base64Url(`aggy-meter-browser-v2|${visitorId}|${userAgent}`);
+  }
   const edgeIp=request.headers.get('CF-Connecting-IP')||'local';
   const userAgent=(request.headers.get('User-Agent')||'unknown').slice(0,300);
   const accepted=(request.headers.get('Accept-Language')||'').slice(0,120);
