@@ -11,7 +11,7 @@
   const caption=$('#aggyVoiceCaption');
   const muteButton=$('#aggyVoiceMute');
   const endButton=$('#aggyVoiceEnd');
-  const continuePaidButton=$('#aggyUsageContinue');
+  const usageActionButton=$('#aggyUsageAction');
   const sessionEndpoint='https://aggy.secquoia.group/api/aggy/realtime/session';
   const healthEndpoint='https://aggy.secquoia.group/api/aggy/realtime/health';
   const usageEndpoint='https://aggy.secquoia.group/api/aggy/usage';
@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.38';
+  const aggyVersion='1.0.0-rc.39';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -84,6 +84,8 @@
   let usageHardStop=null;
   let lastUsageStatus=null;
   let previousFreeRemainingSeconds=null;
+  let usageActionMode='none';
+  let usageMarketplaceUrl='https://secquoia.net/qu-market.html?time_ai=1#ai-services';
   const freeTimeNoticesSent=new Set();
   let connectionOpenTimeout=null;
   const trustedParentOrigins=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);
@@ -153,13 +155,25 @@
     const balance=Number(status?.wallet?.balance||0);
     const price=Number(status?.continuation?.customerQVit||0);
     const topUpAvailable=status?.wallet?.topUpAvailable===true;
-    const topUp=$('#aggyUsageTopUp');
+    const topUpUrl=String(status?.wallet?.topUpUrl||'');
     publishUsageState(free,accessMode);
-    if(continuePaidButton)continuePaidButton.hidden=true;
-    if(topUp){
-      if(status?.wallet?.topUpUrl)topUp.href=status.wallet.topUpUrl;
-      topUp.textContent=topUpAvailable?'Comprar Tiempo IA · desde USD 1':'Activar Tiempo IA';
-      topUp.hidden=true;
+    usageActionMode='none';
+    if(usageActionButton){
+      usageActionButton.hidden=true;
+      usageActionButton.removeAttribute('aria-busy');
+      usageActionButton.disabled=false;
+    }
+    try{
+      const candidate=new URL(topUpUrl);
+      if(candidate.protocol==='https:'&&candidate.hostname==='secquoia.net'&&candidate.pathname==='/qu-market.html'){
+        usageMarketplaceUrl=candidate.href;
+      }
+    }catch{}
+    const showUsageAction=(mode,label)=>{
+      usageActionMode=mode;
+      if(!usageActionButton)return;
+      usageActionButton.textContent=label;
+      usageActionButton.hidden=false;
     }
     if(status?.activeLease){
       usageUi(
@@ -176,18 +190,14 @@
         'ready'
       );
     }else if(!topUpAvailable){
-      if(topUp)topUp.hidden=false;
-      usageUi('Tu recorrido de Voz LIVE finalizó','Sigue conversando por chat o activa un paquete de Tiempo IA para continuar por voz. No realizaremos cargos automáticos.','blocked');
+      showUsageAction('marketplace','Ver paquetes de Tiempo IA');
+      usageUi('Tus 10 minutos gratis finalizaron','Para seguir con Voz LIVE, elige el paquete de Tiempo IA que mejor se ajuste a ti. El pago es único y no activamos cargos automáticos.','blocked');
     }else if(balance>=price&&price>0){
-      if(topUp)topUp.hidden=false;
-      if(continuePaidButton){
-        continuePaidButton.hidden=false;
-        continuePaidButton.textContent=`Continuar 1 min · ${price.toLocaleString('es-CO')} QVit`;
-      }
-      usageUi('Continúa a tu manera',`Sigue por chat o confirma ${price.toLocaleString('es-CO')} QVit para ampliar Voz LIVE por 1 minuto. No realizaremos cargos automáticos.`,'checking');
+      showUsageAction('continue',`Continuar con mi saldo · ${price.toLocaleString('es-CO')} QVit`);
+      usageUi('Tu Tiempo IA está disponible','Toca el botón para continuar Voz LIVE por 1 minuto. Solo se descontará el saldo indicado y nunca realizaremos cargos automáticos.','checking');
     }else{
-      if(topUp)topUp.hidden=false;
-      usageUi('Tu recorrido de Voz LIVE finalizó',`Sigue por chat o activa Tiempo IA. Un minuto adicional cuesta ${price.toLocaleString('es-CO')} QVit y nunca se cobra automáticamente.`,'blocked');
+      showUsageAction('marketplace','Ver paquetes de Tiempo IA');
+      usageUi('Tus 10 minutos gratis finalizaron','Para seguir con Voz LIVE, elige el paquete de Tiempo IA que mejor se ajuste a ti. También puedes continuar por chat sin costo de voz.','blocked');
     }
   };
 
@@ -769,7 +779,20 @@
   };
 
   startButton.addEventListener('click',()=>startRealtime(false,{userInitiated:true}));
-  continuePaidButton?.addEventListener('click',()=>startRealtime(true,{userInitiated:true}));
+  usageActionButton?.addEventListener('click',()=>{
+    if(usageActionMode==='continue'){
+      startRealtime(true,{userInitiated:true});
+      return;
+    }
+    if(usageActionMode!=='marketplace')return;
+    usageActionButton.disabled=true;
+    usageActionButton.setAttribute('aria-busy','true');
+    if(window.parent!==window&&parentOrigin){
+      window.parent.postMessage({type:'secquoia:aggy:open-time-ai',marketplaceUrl:usageMarketplaceUrl},parentOrigin);
+      return;
+    }
+    window.location.assign(usageMarketplaceUrl);
+  });
   endButton.addEventListener('click',()=>endVoice('CLIENT_END'));
   muteButton.addEventListener('click',()=>{
     const track=microphone?.getAudioTracks()[0];

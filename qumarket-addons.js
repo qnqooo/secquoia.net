@@ -23,7 +23,8 @@
     {id:'qubank-plaid-readiness',category:'finance',name:{en:'QuBank/Plaid readiness project',es:'Proyecto de preparación QuBank/Plaid'},description:{en:'Consent, data-flow and production-readiness preparation; no bank connection included.',es:'Preparación de consentimiento, flujo de datos y producción; no incluye conexión bancaria.'},billing:'one_time',unit:'project',unitEs:'proyecto',price:2900,min:1,step:1,features:{en:['Consent map','Read-only flow','Readiness evidence'],es:['Mapa de consentimiento','Flujo de solo lectura','Evidencia de preparación']}}
   ];
   const categories={all:{en:'All',es:'Todos'},capacity:{en:'Capacity',es:'Capacidad'},ai:{en:'AI resources',es:'Recursos de IA'},support:{en:'Support',es:'Soporte'},consulting:{en:'Consulting',es:'Consultoría'},implementation:{en:'Implementation',es:'Implementación'},assessment:{en:'Assessment',es:'Evaluación'},training:{en:'Training',es:'Formación'},finance:{en:'Finance',es:'Finanzas'}};
-  let category='all';
+  const activationParams=new URLSearchParams(location.search);
+  let category=activationParams.get('time_ai')==='1'?'ai':'all';
   const language=()=>document.body.classList.contains('es')?'es':'en',money=value=>'$'+Number(value).toLocaleString('en-US');
   function renderFilters(){const l=language();filters.innerHTML=Object.entries(categories).map(([id,label])=>`<button type="button" data-addon-category="${id}" class="${id===category?'active':''}">${label[l]}</button>`).join('')}
   function render(){const l=language(),visible=services.filter(service=>category==='all'||service.category===category);renderFilters();root.innerHTML=visible.map(service=>`<article class="addon-card" data-service="${service.id}"><header><span class="addon-category">${categories[service.category][l]}</span><span class="addon-billing">${service.billing==='monthly'?(l==='es'?'RECURRENTE':'RECURRING'):(l==='es'?'UNA VEZ':'ONE TIME')}</span></header><h3>${service.name[l]}</h3><p>${service.description[l]}</p><ul>${service.features[l].map(feature=>`<li>${feature}</li>`).join('')}</ul><div class="addon-price"><div><strong>${money(service.price)}</strong><small>${l==='es'?'por ':'per '}${l==='es'?service.unitEs:service.unit}</small></div><small>QuCFA · draft</small></div><div class="addon-controls"><input type="number" min="${service.min}" step="${service.step}" value="${service.min}" aria-label="${l==='es'?'Cantidad':'Quantity'}"><button class="btn primary" type="button" data-add-addon="${service.id}">${l==='es'?'Agregar':'Add'}</button></div></article>`).join('')}
@@ -34,12 +35,14 @@
   ['addonScrollCart','addonScrollCartEs'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>document.getElementById('cart').scrollIntoView({behavior:'smooth',block:'start'})));
   new MutationObserver(()=>{render();updateQuote()}).observe(document.body,{attributes:true,attributeFilter:['class']});
   render();updateQuote();
-  const activationParams=new URLSearchParams(location.search),requestedAddon=activationParams.get('addon'),walletReference=activationParams.get('wallet_ref');
+  const requestedAddon=activationParams.get('addon'),walletReference=activationParams.get('wallet_ref');
   if(/^qvit-ai-credit-(1|25|100|500)$/.test(requestedAddon||'')&&/^[A-Za-z0-9_-]{43}$/.test(walletReference||'')){
     const service=services.find(item=>item.id===requestedAddon);
     if(service){
       window.QuMarketCart.addAddon({id:service.id,name:service.name[language()],category:categories[service.category][language()],billing:service.billing,pricingUnit:language()==='es'?service.unitEs:service.unit,quantity:1,unitPriceUsd:service.price,scopeLabel:service.description[language()],features:service.features[language()]});
       document.getElementById('cart')?.scrollIntoView({behavior:'smooth',block:'start'});
     }
+  }else if(activationParams.get('time_ai')==='1'){
+    document.getElementById('ai-services')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 })();

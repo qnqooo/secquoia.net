@@ -82,7 +82,7 @@ test('Aggy markup contains no duplicate element IDs',()=>{
 test('Aggy Realtime replaces browser legacy speech and recording',()=>{
   assert.doesNotMatch(html,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder|id="voiceSelect"/);
   assert.doesNotMatch(bridge,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
-  assert.match(html,/Aggy v1\.0\.0-rc\.38 [^<]* Voz de SQAILE - Acento neutro/);
+  assert.match(html,/Aggy v1\.0\.0-rc\.39 [^<]* Voz de SQAILE - Acento neutro/);
   assert.match(html,/Voz de SQAILE - Acento neutro/);
   assert.match(html,/Leer con Aggy/);
   assert.match(bridge,/window\.AggyVoice\.start/);
@@ -100,7 +100,7 @@ test('Aggy keeps the composer clean and the three primary actions in the convers
 });
 
 test('QuMarket add-ons expose the hybrid QuCFA commercial model',()=>{
-  assert.match(html,/id="addons"/);
+  assert.match(html,/id="ai-services"/);
   assert.match(html,/id="servicesTotal"/);
   assert.match(html,/qucfa_metric_aware_catalog_and_hybrid_service_rate_card/);
   for(const model of ['per_endpoint_monthly','per_ticket','per_hour','fixed_project'])assert.ok(html.includes(model));

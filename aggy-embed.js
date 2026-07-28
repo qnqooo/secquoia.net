@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.38';
+  const version='1.0.0-rc.39';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -152,6 +152,16 @@
         if(checkoutUrl.protocol==='https:'&&checkoutUrl.hostname==='checkout.stripe.com'){
           setOpen(false,{focus:false});
           window.location.assign(checkoutUrl.href);
+        }
+      }catch{}
+      return;
+    }
+    if(event.data?.type==='secquoia:aggy:open-time-ai'){
+      try{
+        const marketplaceUrl=new URL(String(event.data.marketplaceUrl||''));
+        if(marketplaceUrl.protocol==='https:'&&marketplaceUrl.hostname==='secquoia.net'&&marketplaceUrl.pathname==='/qu-market.html'){
+          setOpen(false,{focus:false});
+          window.location.assign(marketplaceUrl.href);
         }
       }catch{}
       return;

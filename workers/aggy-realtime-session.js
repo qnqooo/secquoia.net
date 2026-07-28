@@ -62,7 +62,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.38',
+  version:'1.0.0-rc.39',
   channel:'rc',
   lifecycle:'production-validation',
   distribution:'ecosystem-hosted',
@@ -1020,7 +1020,7 @@ export default {
         body.wallet.topUpAvailable=Boolean(env.AGGY_QUPAY_WEBHOOK_SECRET);
         body.wallet.topUpStatus=body.wallet.topUpAvailable?'QUPAY_SIGNED_WEBHOOK_READY':'ASSISTED_ACTIVATION_REQUIRED';
         body.wallet.topUpUrl=body.wallet.topUpAvailable
-          ? `https://secquoia.net/qu-market.html?addon=qvit-ai-credit-1&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`
+          ? `https://secquoia.net/qu-market.html?time_ai=1&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`
           : 'mailto:sqaile@secquoia.group?subject=Activacion%20QuPay%20para%20Aggy';
         body.identity={
           engine:'QuIdentify',
@@ -1043,7 +1043,7 @@ export default {
         const body=await response.json();
         if(response.ok)body.capability=capability;
         body.walletReference=meter.reference;
-        if(body.wallet)body.wallet.topUpUrl=`https://secquoia.net/qu-market.html?addon=qvit-ai-credit-1&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`;
+        if(body.wallet)body.wallet.topUpUrl=`https://secquoia.net/qu-market.html?time_ai=1&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`;
         return json(body,response.status,request);
       }
       let body;

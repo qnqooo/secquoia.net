@@ -5,6 +5,8 @@ import test from 'node:test';
 const html=await readFile(new URL('../qu-market.html',import.meta.url),'utf8');
 const css=await readFile(new URL('../aggy-marketplace.css',import.meta.url),'utf8');
 const voice=await readFile(new URL('../aggy-realtime-voice.js',import.meta.url),'utf8');
+const embed=await readFile(new URL('../aggy-embed.js',import.meta.url),'utf8');
+const addons=await readFile(new URL('../qumarket-addons.js',import.meta.url),'utf8');
 const worker=await readFile(new URL('../workers/aggy-realtime-session.js',import.meta.url),'utf8');
 const release=JSON.parse(await readFile(new URL('../aggy-release.json',import.meta.url),'utf8'));
 const workerModule=await import(`data:text/javascript;base64,${Buffer.from(worker).toString('base64')}`);
@@ -182,7 +184,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.38');
+  assert.equal(release.version,'1.0.0-rc.39');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -370,10 +372,11 @@ test('Usage API forwards paid continuation only after an explicit user confirmat
   assert.match(forwarded[0].capabilityHash,/^[a-f0-9]{64}$/);
 });
 
-test('Voice client exposes ten free minutes, warns at 5/3/1 and requires explicit paid continuation',()=>{
-  for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageContinue','aggyUsageTopUp']){
+test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one contextual continuation action',()=>{
+  for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageAction']){
     assert.match(html,new RegExp(`id="${id}"`));
   }
+  assert.doesNotMatch(html,/id="aggyUsageContinue"|id="aggyUsageTopUp"/);
   assert.match(voice,/\/api\/aggy\/usage/);
   assert.match(voice,/acquireUsageLease/);
   assert.match(voice,/X-Aggy-Lease-Capability/);
@@ -385,7 +388,7 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and requires explici
   assert.match(voice,/cancelUsage\('SESSION_START_FAILED'\)/);
   assert.match(worker,/api\/aggy\/usage\/cancel/);
   assert.match(voice,/endVoice\('CLIENT_HARD_STOP'\)/);
-  assert.match(voice,/Activar Tiempo IA/);
+  assert.match(voice,/Ver paquetes de Tiempo IA/);
   assert.match(worker,/qupay_credit_not_configured/);
   assert.match(worker,/ASSISTED_ACTIVATION_REQUIRED/);
   assert.match(worker,/AGGY_MAX_PAID_BLOCKS_DAY=15/);
@@ -413,14 +416,21 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and requires explici
   assert.match(worker,/QUPAY_CONFIRMED_QVIT_CREDIT/);
 });
 
-test('Time AI purchase is visible, retryable and uses the governed USD 1 starter pack',()=>{
+test('Time AI purchase uses one button and opens the Marketplace with all AI time options',()=>{
   assert.match(html,/\.btn\.primary\{[^}]*color:#000!important;[^}]*text-shadow:none/);
   assert.match(html,/let qupayCheckoutPending=false/);
   assert.match(html,/aria-busy/);
   assert.match(html,/QuPay–QuFense no respondió/);
   assert.match(html,/qvit-ai-credit-\(1\|25\|100\|500\)/);
-  assert.match(voice,/Comprar Tiempo IA · desde USD 1/);
-  assert.match(worker,/addon=qvit-ai-credit-1/);
+  assert.match(html,/id="ai-services"/);
+  assert.match(voice,/secquoia:aggy:open-time-ai/);
+  assert.match(voice,/Ver paquetes de Tiempo IA/);
+  assert.match(embed,/secquoia:aggy:open-time-ai/);
+  assert.match(embed,/marketplaceUrl\.pathname==='\/qu-market\.html'/);
+  assert.match(addons,/activationParams\.get\('time_ai'\)==='1'\?'ai':'all'/);
+  assert.match(addons,/getElementById\('ai-services'\)\?\.scrollIntoView/);
+  assert.match(worker,/time_ai=1&wallet_ref=/);
+  assert.doesNotMatch(worker,/addon=qvit-ai-credit-1&wallet_ref=/);
 });
 
 test('QuIdentify contract entitlements are signed, expiry-bound and tamper-evident',async()=>{
@@ -437,9 +447,11 @@ test('QuIdentify contract entitlements are signed, expiry-bound and tamper-evide
   assert.equal(entitlement.accessMode,'CONTRACT_INCLUDED');
   assert.equal(entitlement.contractId,'contract-2026-42');
   assert.equal(entitlement.serviceId,'qufense-enterprise');
+  const [entitlementHeader,entitlementPayload,entitlementSignature]=issued.token.split('.');
+  const tamperedSignature=`${entitlementSignature[0]==='A'?'B':'A'}${entitlementSignature.slice(1)}`;
   await assert.rejects(
     workerModule.verifyAggyEntitlement(new Request('https://aggy.secquoia.group/api/aggy/usage/status',{
-      headers:{Authorization:`Bearer ${issued.token.slice(0,-1)}x`}
+      headers:{Authorization:`Bearer ${entitlementHeader}.${entitlementPayload}.${tamperedSignature}`}
     }),secret),
     /invalid_entitlement_signature/
   );

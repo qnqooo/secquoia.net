@@ -14,19 +14,19 @@
     .aggy-state{border-radius:999px;padding:6px 9px;font-size:10px;font-weight:950;letter-spacing:.08em}.aggy-state.checking{background:rgba(255,255,255,.08)}.aggy-state.ready{background:var(--green);color:#031008}.aggy-state.blocked{background:#ff796e;color:#220300}
     h1{font-size:21px;margin:0}#aggyVoiceCaption{margin:0;color:var(--muted);line-height:1.5;max-width:30ch}
     .controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}.controls button,.language{border:1px solid var(--line);border-radius:14px;background:#0b2115;color:#fff;padding:11px;font-weight:850}.controls .primary{grid-column:1/-1;background:linear-gradient(135deg,var(--green),#00c76a);color:#031008;border:0}.controls button:disabled{opacity:.48}
-    .language{width:100%}.market{display:block;text-align:center;color:var(--green);font-size:12px;font-weight:850}
+    .language{width:100%}.market{display:block;width:100%;border:0;background:transparent;text-align:center;color:var(--green);font-size:12px;font-weight:850;cursor:pointer}
   </style>
 </head>
 <body>
   <main>
-    <div class="identity"><div><strong>Aggy</strong><br><small>Voz de SQAILE - Acento neutro</small></div><span class="version">v1.0.0-rc.38</span></div>
+    <div class="identity"><div><strong>Aggy</strong><br><small>Voz de SQAILE - Acento neutro</small></div><span class="version">v1.0.0-rc.39</span></div>
     <section class="aggy-voice-stage" id="aggyVoiceStage" data-state="connecting">
       <span class="aggy-state checking" id="aggyVoiceBadge">ACTIVANDO</span>
       <div class="aggy-orb" aria-hidden="true"></div>
       <h1 id="aggyVoiceHeadline">Preparando Aggy Voice</h1>
       <p id="aggyVoiceCaption">Preparando el micrófono y el saludo automático.</p>
     </section>
-    <aside class="note" id="aggyUsageMeter" data-tone="checking"><strong id="aggyUsageLabel">Verificando tus 10 minutos gratis</strong><br><span id="aggyUsageDetail">El tiempo se mide únicamente durante la conversación Voice LIVE.</span> <button id="aggyUsageContinue" type="button" hidden>Ampliar Voz LIVE</button> <a class="market" id="aggyUsageTopUp" href="https://secquoia.net/qu-market.html#ai-services" target="_top" hidden>Ver Tiempo IA</a></aside>
+    <aside class="note" id="aggyUsageMeter" data-tone="checking"><strong id="aggyUsageLabel">Verificando tus 10 minutos gratis</strong><br><span id="aggyUsageDetail">El tiempo se mide únicamente durante la conversación Voice LIVE.</span> <button class="market" id="aggyUsageAction" type="button" hidden>Ver paquetes de Tiempo IA</button></aside>
     <label class="note" for="aggyLanguage">Idioma
       <select class="language" id="aggyLanguage"><option value="AUTO">Automático por QuGEO</option><option value="ES">Español</option><option value="EN">English</option><option value="FR">Français</option><option value="DE">Deutsch</option><option value="IT">Italiano</option><option value="PT">Português</option></select>
     </label>
@@ -38,6 +38,6 @@
     <p class="note">Aggy inicia automáticamente. El navegador puede mostrar su permiso nativo la primera vez.</p>
     <a class="market" href="https://secquoia.net/qu-market.html?aggy=voice" target="_top" rel="noopener">Abrir experiencia completa</a>
   </main>
-  <script src="/aggy-realtime-voice.js?v=1.0.0-rc.38" defer></script>
+  <script src="/aggy-realtime-voice.js?v=1.0.0-rc.39" defer></script>
 </body>
 </html>

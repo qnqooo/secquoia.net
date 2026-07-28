@@ -53,7 +53,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
 @media(max-width:1100px){.package-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.onboarding-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.value-strip,.package-grid,.estimator,.onboarding-steps{grid-template-columns:1fr}.section-intro{align-items:flex-start;flex-direction:column}.conversion-section{padding-top:28px}.package-card{min-height:0}.estimator{gap:14px}.estimator-options,.governed-route ol{grid-template-columns:1fr}.market-tour-inner{padding:22px}}
 </style>
-<link rel="stylesheet" href="aggy-marketplace.css?v=1.0.0-rc.38">
+<link rel="stylesheet" href="aggy-marketplace.css?v=1.0.0-rc.39">
 <style>@media(max-width:780px){.aggy-tabs{grid-template-columns:minmax(130px,1fr) auto 54px}.aggy-top-trust small{display:none}}</style>
 <link rel="stylesheet" href="qumarket-addons.css">
 </head>
@@ -70,7 +70,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <div class="runtime-settings" aria-hidden="true">
         <select class="nav-select" id="assistantLangTop" title="Aggy language"><option value="auto">Auto language</option><option value="en">English</option><option value="es">Español</option></select>
         <select class="nav-select" id="voiceContext" title="Aggy voice context"><option value="advisor">Advisor voice</option><option value="executive">Executive brief</option><option value="technical">Technical deep dive</option><option value="friendly">Friendly guide</option></select>
-        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.38 · Voz de SQAILE - Acento neutro</span>
+        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.39 · Voz de SQAILE - Acento neutro</span>
         <div class="language-toggle"><button class="btn active" id="enBtn" type="button">EN</button><button class="btn" id="esBtn" type="button">ES</button></div>
       </div>
     </div>
@@ -234,7 +234,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       </form>
     </div>
   </section>
-  <section class="wrap addons-section" id="addons">
+  <section class="wrap addons-section" id="ai-services">
     <div class="addons-heading"><div><div class="tag">Add-ons · QuCFA + QVit</div><h2 data-en>AI resources, additional capacity and human services</h2><h2 data-es>Recursos de IA, capacidad adicional y servicios humanos</h2><p data-en>Select governed AI credits, endpoints, users, tickets, specialist hours or implementation projects. QuCFA separates recurring charges from one-time resources and services.</p><p data-es>Selecciona créditos gobernados de IA, endpoints, usuarios, tickets, horas de especialistas o proyectos de implementación. QuCFA separa los cargos recurrentes de los recursos y servicios de una sola vez.</p></div><div class="addons-assurance"><strong data-en>Hybrid commercial model</strong><strong data-es>Modelo comercial híbrido</strong><small data-en>Provider units require a current rate card. Human availability and projects require confirmed scope and SOW.</small><small data-es>Las unidades del proveedor requieren un tarifario vigente. La disponibilidad humana y los proyectos requieren alcance y SOW confirmados.</small></div></div>
     <aside class="ai-credit-policy" role="note"><strong>QVit · AI continuity</strong><span data-en>Included allowance first → purchased credits → safe suspension at zero → metadata-only checkpoint → resume after confirmed QuPay top-up or renewal. A non-renewed membership retains the checkpoint for 30 days with reminders, then deletes it. Production encryption requires the pending QuVault storage adapter.</span><span data-es>Primero se consume la asignación incluida → créditos comprados → suspensión segura al llegar a cero → checkpoint solo de metadatos → reanudación después de una recarga QuPay confirmada o renovación. Una membresía no renovada conserva el checkpoint durante 30 días con recordatorios y luego lo elimina. El cifrado en producción requiere el adaptador QuVault pendiente.</span></aside>
     <nav class="addon-filters" id="addonFilters" aria-label="Categorías de add-ons"></nav>
@@ -422,7 +422,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <aside class="aggy-privacy-note"><strong>Grupos gobernados</strong><span>Cada integrante debe aprobarse antes de una conversación o llamada real.</span></aside>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="more">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.38</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.39</span></div>
       <div class="aggy-profile-card"><div class="avatar">A</div><div><strong>Asistente inteligente</strong><small>Conversación, archivos, modelos y seguridad en un solo lugar.</small></div></div>
       <div class="aggy-more-list">
         <button type="button" data-open-aggy-panel="models"><span>✦</span><p><strong>IA Models</strong><small>SQAILE Core y proveedores en QuHub</small></p><i>›</i></button>
@@ -431,7 +431,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <details class="aggy-drawer"><summary>Preferencias e identidad</summary><div class="aggy-form-grid two"><label class="aggy-label">Nombre<input id="visitorName" placeholder="Nombre"></label><label class="aggy-label">Necesidad<select id="assistantNeed"><option value="auto">Need context</option><option value="protect">Protect endpoints</option><option value="soc">SOC / monitoring</option><option value="payments">Payments / fintech</option><option value="finance">Cost / pricing</option><option value="ai">AI agent / voice</option></select></label></div><p class="aggy-note">QuIdentify es requerido para comunicaciones con terceros.</p></details>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="voice">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.38 · incluida durante contratos activos; visitantes: 10 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.39 · incluida durante contratos activos; visitantes: 10 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
       <div class="aggy-voice-stage" id="aggyVoiceStage" data-state="idle">
         <div class="aggy-orb" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <strong id="aggyVoiceHeadline">Activando Aggy Voice</strong>
@@ -445,8 +445,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <aside class="aggy-usage-meter" id="aggyUsageMeter" data-tone="checking">
         <span class="aggy-usage-icon" aria-hidden="true">◷</span>
         <p><strong id="aggyUsageLabel">Verificando acceso</strong><small id="aggyUsageDetail">QuIdentify comprobará si Aggy está incluida en un contrato vigente; solo los visitantes usan los 10 minutos de cortesía.</small></p>
-        <button class="btn" id="aggyUsageContinue" type="button" hidden>Continuar con QVit</button>
-        <a class="btn" id="aggyUsageTopUp" href="https://secquoia.net/qu-market.html#ai-services" hidden>Recargar QVit</a>
+        <button class="btn primary" id="aggyUsageAction" type="button" hidden>Ver paquetes de Tiempo IA</button>
       </aside>
       <div class="aggy-card-grid"><button type="button" class="aggy-feature" id="aggyVoiceTalk"><strong>Conversar con Aggy</strong><small>Voz Realtime bidireccional e interrumpible</small></button><button type="button" class="aggy-feature" id="aggyVoiceRecord"><strong>Activar Aggy Voice</strong><small>Voz de SQAILE - Acento neutro · WebRTC</small></button><button type="button" class="aggy-feature" id="aggyVoiceRead"><strong>Leer con Aggy</strong><small>Reproduce la última respuesta con Aggy Voice</small></button></div>
       <label class="aggy-label">Personalidad<select id="aggyPersonality"><option value="friendly">Humana y cercana</option><option value="executive">Ejecutiva</option><option value="technical">Técnica</option><option value="empathetic">Empática</option></select></label>
@@ -721,10 +720,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   const params=new URLSearchParams(location.search);if(params.get('quidentify')==='verified')setVerified(params.get('session')||params.get('state')||'verified-callback');assistantLangTop.value=profile.langPref;voiceContext.value=profile.voiceContext;visitorName.value=profile.name;setLang(profile.langPref==='auto'?inferLanguage():profile.langPref);restoreSavedEstimate();renderProducts();renderPackages();renderEstimate();updateCart();renderDeployment();renderIdentityGate();const embedded=params.get('embed')==='1';if(embedded){document.body.classList.add('aggy-embed-mode');assistantLauncher.hidden=true;assistant.classList.add('aggy-full','open')}setAssistantState(embedded?'expanded':'hidden',{persist:false,focus:false});addMsg(greeting(),'agent');agentState.textContent=lang()==='es'?'Aggy disponible':'Aggy ready';window.addEventListener('load',()=>openAggyVoice({focus:false,reveal:false}),{once:true});if(params.get('aggy')==='voice')openAggyVoice({focus:false,reveal:false});if(params.get('bundle')==='1')bundle();else if(params.get('product'))addProduct(params.get('product').toLowerCase());
 })();
 </script>
-<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.38"></script>
-<script src="aggy-secure-chat.js?v=1.0.0-rc.38"></script>
-<script src="aggy-marketplace.js?v=1.0.0-rc.38"></script>
-<script src="aggy-realtime-voice.js?v=1.0.0-rc.38"></script>
+<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.39"></script>
+<script src="aggy-secure-chat.js?v=1.0.0-rc.39"></script>
+<script src="aggy-marketplace.js?v=1.0.0-rc.39"></script>
+<script src="aggy-realtime-voice.js?v=1.0.0-rc.39"></script>
 <script src="qumarket-addons.js"></script>
 </body>
 </html>

@@ -2,6 +2,18 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.39 - 2026-07-28
+
+### One-step Time AI purchase entry
+
+- Replaces the competing QVit and top-up controls with one contextual action.
+- Sends visitors whose free Voice LIVE time ended directly to the Marketplace
+  filtered to the available Time AI packages.
+- Keeps one-click paid continuation only when a confirmed QVit balance already
+  covers the next governed minute.
+- Fixes the former `#ai-services` destination so it resolves to the actual
+  Marketplace section.
+
 ## 1.0.0-rc.38 - 2026-07-28
 
 ### One contextual file entry point
