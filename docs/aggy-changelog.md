@@ -2,6 +2,16 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.33 - 2026-07-27
+
+### Compact-by-default communications and unobstructed QuPay
+
+- Keeps the Aggy chat panel closed on page load while Voice LIVE initializes in the background.
+- Opens the communication-first chat only after the user taps the Aggy launcher.
+- Adds a blue visual guide pointing to chat, secure files and encrypted individual or group calls.
+- Navigates the top-level page to governed Stripe Checkout so an embedded Aggy panel cannot cover or trap QuPay.
+- Adds a concise spoken reminder that advanced communication functions are available from the Aggy button.
+
 ## 1.0.0-rc.32 - 2026-07-27
 
 ### Time AI Checkout recovery and stronger action contrast

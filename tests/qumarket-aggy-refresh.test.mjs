@@ -163,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.32');
+  assert.equal(release.version,'1.0.0-rc.33');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -224,11 +224,12 @@ test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
   assert.doesNotMatch(voice,/AbortSignal\.timeout/);
 });
 
-test('Marketplace opens Aggy automatically and routes Voice LIVE without stealing focus',()=>{
-  assert.match(html,/setAssistantState\('expanded',\{persist:false,focus:false\}\)/);
-  assert.match(html,/window\.addEventListener\('load',\(\)=>openAggyVoice\(\{focus:false\}\)/);
-  assert.match(html,/assistantLauncher\.onclick=openAggyVoice/);
+test('Marketplace keeps chat compact while Voice LIVE starts without stealing focus',()=>{
+  assert.match(html,/setAssistantState\(embedded\?'expanded':'hidden',\{persist:false,focus:false\}\)/);
+  assert.match(html,/window\.addEventListener\('load',\(\)=>openAggyVoice\(\{focus:false,reveal:false\}\)/);
+  assert.match(html,/assistantLauncher\.onclick=\(\)=>\{assistantLauncher\.dataset\.guideDismissed='true';openAgent\(\)\}/);
   assert.match(html,/secquoia:aggy:start-voice/);
+  assert.match(html,/openAggyVoice\(\{focus:false,reveal:false\}\)/);
   assert.match(html,/secquoia:aggy:voice-state/);
   assert.match(html,/trustedParents/);
   assert.match(html,/data-open-aggy-panel="voice"/);
@@ -236,10 +237,19 @@ test('Marketplace opens Aggy automatically and routes Voice LIVE without stealin
   assert.doesNotMatch(html,/data-market-aggy-tab="voice"/);
   assert.match(html,/EN VIVO · 10 min gratis/);
   assert.match(html,/aggy-market-live-halo/);
+  assert.match(html,/aggy-guide-pulse/);
+  assert.match(html,/Toca aquí: chat, archivos y llamadas seguras/);
   assert.match(html,/class="assistant-minute-chain" role="meter"/);
   assert.equal((html.match(/<i class="assistant-minute-link"><\/i>/g)||[]).length,10);
   assert.match(html,/secquoia:aggy:usage-state/);
   assert.match(html,/updateAggyMinuteChain/);
+});
+
+test('QuPay exits the embedded chat before navigating to Stripe Checkout',()=>{
+  assert.match(html,/setAssistantState\('hidden',\{persist:false,focus:false\}\)/);
+  assert.match(html,/secquoia:aggy:qupay-checkout/);
+  assert.match(html,/window\.parent\.postMessage\(\{type:'secquoia:aggy:qupay-checkout',checkoutUrl:result\.checkoutUrl\}/);
+  assert.match(html,/window\.location\.assign\(result\.checkoutUrl\)/);
 });
 
 test('QuCFA prices one prepaid Aggy Minute without overdraft',()=>{

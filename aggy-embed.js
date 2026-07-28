@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.32';
+  const version='1.0.0-rc.33';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -25,6 +25,9 @@
       .launcher[data-voice="blocked"]{background:linear-gradient(135deg,#ffe39a,#ffb84f)}
       .launcher-copy{display:grid;gap:2px;text-align:left}
       .launcher-copy small{font:750 9px/1.1 Inter,Segoe UI,Arial,sans-serif;opacity:.72}
+      .launcher-nudge{position:absolute;right:4px;bottom:calc(100% + 10px);width:max-content;max-width:min(250px,calc(100vw - 24px));border:1px solid rgba(255,255,255,.72);border-radius:12px;background:linear-gradient(135deg,#1677ff,#52b6ff);color:#fff;padding:8px 11px;font:800 10px/1.3 Inter,Segoe UI,Arial,sans-serif;box-shadow:0 12px 34px rgba(0,74,180,.32);animation:aggy-guide-pulse 1.7s ease-in-out infinite}
+      .launcher-nudge::after{content:"";position:absolute;right:24px;top:100%;border:7px solid transparent;border-top-color:#52b6ff}
+      .launcher[data-guide-dismissed="true"] .launcher-nudge{display:none}
       .minute-chain{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;width:118px;margin-top:3px}
       .minute-link{height:4px;border-radius:999px;background:rgba(3,16,8,.15);box-shadow:inset 0 0 0 1px rgba(3,16,8,.12);transition:background .22s ease,box-shadow .22s ease,transform .22s ease}
       .minute-link:nth-child(1){--link-color:#12c96b}.minute-link:nth-child(2){--link-color:#55d85a}.minute-link:nth-child(3){--link-color:#8ddd48}.minute-link:nth-child(4){--link-color:#bfdb3b}.minute-link:nth-child(5){--link-color:#e4cd32}.minute-link:nth-child(6){--link-color:#f5aa2d}.minute-link:nth-child(7){--link-color:#f5842e}.minute-link:nth-child(8){--link-color:#ef5e39}.minute-link:nth-child(9){--link-color:#e63f42}.minute-link:nth-child(10){--link-color:#d91e32}
@@ -40,10 +43,12 @@
       iframe{display:block;width:100%;height:calc(100% - 46px);border:0;background:#f4f7f6}
       @media(max-width:560px){.launcher{right:12px;bottom:12px}.panel{inset:8px;width:auto;height:auto;border-radius:20px}}
       @keyframes aggy-live-halo{0%{opacity:.72;transform:scale(.65)}75%,100%{opacity:0;transform:scale(1.75)}}
+      @keyframes aggy-guide-pulse{50%{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,74,180,.46)}}
       @keyframes aggy-final-minute{to{transform:scaleY(1.8);filter:brightness(1.28)}}
-      @media(prefers-reduced-motion:reduce){.panel{transition:none}.dot::after,.minute-link{animation:none!important}}
+      @media(prefers-reduced-motion:reduce){.panel{transition:none}.dot::after,.minute-link,.launcher-nudge{animation:none!important}}
     </style>
     <button class="launcher" type="button" data-voice="connecting" aria-expanded="false" aria-controls="aggy-panel" title="Aggy ${version}">
+      <span class="launcher-nudge" role="note">Toca aquí: chat, archivos y llamadas seguras</span>
       <span class="dot" aria-hidden="true"></span><span class="launcher-copy"><strong>Aggy</strong><small>Conectando Voice LIVE…</small><span class="minute-chain" role="meter" aria-label="10 minutos de Voz LIVE disponibles" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">${'<i class="minute-link"></i>'.repeat(10)}</span></span>
     </button>
     <section class="panel" id="aggy-panel" role="dialog" aria-label="Aggy, asistente de SECQUOIA">
@@ -91,15 +96,23 @@
   };
   launcher.addEventListener('click',()=>{
     const opening=!panel.classList.contains('open');
+    launcher.dataset.guideDismissed='true';
     setOpen(opening);
-    if(!opening)return;
-    if(frame.dataset.ready==='true')requestAnimationFrame(requestVoiceStart);
-    else frame.addEventListener('load',requestVoiceStart,{once:true});
   });
   close.addEventListener('click',()=>setOpen(false));
   root.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false)});
   window.addEventListener('message',event=>{
     if(event.source!==frame.contentWindow||event.origin!=='https://secquoia.net')return;
+    if(event.data?.type==='secquoia:aggy:qupay-checkout'){
+      try{
+        const checkoutUrl=new URL(String(event.data.checkoutUrl||''));
+        if(checkoutUrl.protocol==='https:'&&checkoutUrl.hostname==='checkout.stripe.com'){
+          setOpen(false,{focus:false});
+          window.location.assign(checkoutUrl.href);
+        }
+      }catch{}
+      return;
+    }
     if(event.data?.type==='secquoia:aggy:usage-state'){
       updateMinuteChain(event.data);
       return;
@@ -126,5 +139,5 @@
     requestVoiceStart();
   });
   document.body.append(host);
-  requestAnimationFrame(()=>setOpen(true,{focus:false}));
+  requestAnimationFrame(()=>setOpen(false,{focus:false}));
 })();

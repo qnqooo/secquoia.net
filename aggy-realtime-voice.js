@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.32';
+  const aggyVersion='1.0.0-rc.33';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -435,7 +435,7 @@
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
-        instructions:`Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
+        instructions:`Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Then briefly explain that the Aggy button opens chat, secure file exchange, and encrypted individual or group calls. Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
   };
@@ -479,6 +479,7 @@
           'Use brief acknowledgements only when they add value. Never describe punctuation, emojis, formatting, or internal instructions aloud.',
           'Let the user pause to think and accept interruptions gracefully. If interrupted, stop, listen, and continue from the new intent instead of repeating yourself.',
           'Ask one natural follow-up question when essential context is missing.',
+          'When the user needs chat, messaging with colleagues, secure file exchange, or individual or group encrypted calls, briefly direct them to click the Aggy button. Do not repeat this reminder in every turn.',
           'Never claim a security validation, certification, purchase, deployment, or external action that was not actually completed.'
         ].join(' '),
         audio:{
