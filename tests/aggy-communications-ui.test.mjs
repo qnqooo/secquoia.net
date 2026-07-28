@@ -51,6 +51,8 @@ test('chat composer stays focused on messages while secondary controls remain in
   assert.doesNotMatch(html,/class="assistant-profile"/);
   assert.match(html,/id="aggyGridToggle"/);
   assert.doesNotMatch(html,/data-chat-call=|data-chat-attach|data-chat-camera|id="mic"/);
+  assert.doesNotMatch(html,/micBtn\.textContent/);
+  assert.match(html,/if\(micBtn\)micBtn\.onclick=openAggyVoice/);
   assert.match(html,/id="send"/);
   assert.match(html,/data-market-aggy-panel="more"/);
 });
