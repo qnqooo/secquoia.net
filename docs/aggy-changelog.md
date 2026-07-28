@@ -2,6 +2,19 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.37 - 2026-07-28
+
+### Simpler chat navigation
+
+- Places Voice LIVE, protected files and encrypted calls in a single top action
+  bar.
+- Removes duplicate file, camera, voice and call controls from both chat
+  composers.
+- Keeps photo, video, document and camera intake inside the protected files
+  workspace, with the existing CDR, QuFense and QuVault fail-closed gates.
+- Moves collaboration setup, AI models, security and preferences to the app
+  grid.
+
 ## 1.0.0-rc.36 - 2026-07-28
 
 ### Independent ten-minute trial per browser

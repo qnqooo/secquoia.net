@@ -53,7 +53,8 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
 @media(max-width:1100px){.package-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.onboarding-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.value-strip,.package-grid,.estimator,.onboarding-steps{grid-template-columns:1fr}.section-intro{align-items:flex-start;flex-direction:column}.conversion-section{padding-top:28px}.package-card{min-height:0}.estimator{gap:14px}.estimator-options,.governed-route ol{grid-template-columns:1fr}.market-tour-inner{padding:22px}}
 </style>
-<link rel="stylesheet" href="aggy-marketplace.css?v=1.0.0-rc.36">
+<link rel="stylesheet" href="aggy-marketplace.css?v=1.0.0-rc.37">
+<style>@media(max-width:780px){.aggy-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}.aggy-top-trust{display:none}}</style>
 <link rel="stylesheet" href="qumarket-addons.css">
 </head>
 <body class="en">
@@ -69,7 +70,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <div class="runtime-settings" aria-hidden="true">
         <select class="nav-select" id="assistantLangTop" title="Aggy language"><option value="auto">Auto language</option><option value="en">English</option><option value="es">Español</option></select>
         <select class="nav-select" id="voiceContext" title="Aggy voice context"><option value="advisor">Advisor voice</option><option value="executive">Executive brief</option><option value="technical">Technical deep dive</option><option value="friendly">Friendly guide</option></select>
-        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.36 · Voz de SQAILE - Acento neutro</span>
+        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.0-rc.37 · Voz de SQAILE - Acento neutro</span>
         <div class="language-toggle"><button class="btn active" id="enBtn" type="button">EN</button><button class="btn" id="esBtn" type="button">ES</button></div>
       </div>
     </div>
@@ -326,9 +327,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     </div>
   </div>
   <div class="assistant-body" id="assistantBody">
-    <nav class="aggy-tabs" aria-label="Centro de comunicaciones de Aggy">
-      <button class="active aggy-home-tab" type="button" data-market-aggy-tab="chat"><span aria-hidden="true">◌</span><small>Conversaciones</small></button>
-      <div class="aggy-top-trust" aria-label="Protección de comunicaciones"><strong>E2EE/PQC</strong><small>QuVault · QuFense</small></div>
+    <nav class="aggy-tabs" aria-label="Acciones principales de Aggy">
+      <button type="button" data-open-aggy-panel="voice"><span aria-hidden="true">●</span><small>Voice LIVE</small></button>
+      <button type="button" data-open-aggy-panel="files"><span aria-hidden="true">▱</span><small>Archivos</small></button>
+      <button type="button" data-open-aggy-panel="calls"><span aria-hidden="true">☎</span><small>Llamadas</small></button>
       <button class="aggy-grid-toggle" type="button" id="aggyGridToggle" aria-controls="aggyAppGrid" aria-expanded="false"><span aria-hidden="true">▦</span><small>Menú</small></button>
     </nav>
     <section class="aggy-app-grid hidden" id="aggyAppGrid" aria-label="Todas las funciones de Aggy">
@@ -339,7 +341,6 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
         <button type="button" data-aggy-quick="chat"><span>＋</span><strong>Nuevo chat</strong><small>Invitar colega verificado</small></button>
         <button type="button" data-open-aggy-panel="contacts"><span>♙</span><strong>Contactos</strong><small>Personas verificadas</small></button>
         <button type="button" data-open-aggy-panel="groups"><span>◎</span><strong>Grupos</strong><small>Equipos gobernados</small></button>
-        <button type="button" data-open-aggy-panel="calls"><span>☎</span><strong>Llamadas</strong><small>Historial y grupos</small></button>
         <button type="button" data-open-aggy-panel="models"><span>✦</span><strong>IA Models</strong><small>SQAILE · QuHub</small></button>
         <button type="button" data-open-aggy-panel="security"><span>◇</span><strong>Seguridad</strong><small>E2EE/PQC y evidencias</small></button>
         <button type="button" data-open-aggy-panel="more"><span>☰</span><strong>Ajustes</strong><small>Perfil y preferencias</small></button>
@@ -371,18 +372,15 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
         </aside>
         <main class="aggy-chat-main">
           <section class="aggy-thread-view active" data-aggy-thread-view="assistant">
-            <div class="aggy-conversation-head"><div class="aggy-person-avatar">A</div><p><strong>Aggy</strong><small>En línea · Voz de SQAILE</small></p><div class="aggy-thread-security"><b>E2EE/PQC</b><small>Contexto protegido</small></div><div class="aggy-thread-tools"><button type="button" data-chat-call="audio" data-chat-target="assistant" aria-label="Llamada de audio">☎</button><button type="button" data-chat-call="video" data-chat-target="assistant" aria-label="Videollamada">▣</button><button type="button" data-chat-menu aria-label="Abrir menú">▦</button></div></div>
+            <div class="aggy-conversation-head"><div class="aggy-person-avatar">A</div><p><strong>Aggy</strong><small>En línea · Voz de SQAILE</small></p><div class="aggy-thread-security"><b>E2EE/PQC</b><small>Contexto protegido</small></div><div class="aggy-thread-tools"><button type="button" data-chat-menu aria-label="Abrir menú">▦</button></div></div>
             <div class="conversation" id="conversation"></div>
             <div class="assistant-input aggy-composer">
-              <button class="btn aggy-attach" type="button" data-chat-attach aria-label="Adjuntar foto o archivo">＋</button>
-              <button class="btn aggy-camera" type="button" data-chat-camera aria-label="Tomar foto">◉</button>
               <input id="agentInput" placeholder="Escribe a Aggy…">
-              <button class="btn mic" type="button" id="mic" aria-label="Hablar con Aggy Voice LIVE">Voz</button>
               <button class="btn primary" type="button" id="send">Enviar</button>
             </div>
           </section>
           <section class="aggy-thread-view" data-aggy-thread-view="secure">
-            <div class="aggy-conversation-head"><div class="aggy-person-avatar secure">◇</div><p><strong>Sala segura</strong><small id="aggySecureStatus">Sin conexión</small></p><div class="aggy-thread-security"><b id="aggySecureBadge">E2EE/PQC</b><small>Huella manual</small></div><div class="aggy-thread-tools"><button type="button" data-chat-call="audio" data-chat-target="secure" aria-label="Llamada cifrada de audio">☎</button><button type="button" data-chat-call="video" data-chat-target="secure" aria-label="Videollamada cifrada">▣</button><button type="button" data-chat-menu aria-label="Abrir menú">▦</button></div></div>
+            <div class="aggy-conversation-head"><div class="aggy-person-avatar secure">◇</div><p><strong>Sala segura</strong><small id="aggySecureStatus">Sin conexión</small></p><div class="aggy-thread-security"><b id="aggySecureBadge">E2EE/PQC</b><small>Huella manual</small></div><div class="aggy-thread-tools"><button type="button" data-chat-menu aria-label="Abrir menú">▦</button></div></div>
             <details class="aggy-secure-setup" id="aggySecureSetup">
               <summary>Conectar o crear sala segura</summary>
               <div class="aggy-secure-setup-body">
@@ -394,8 +392,6 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
             </details>
             <div class="conversation aggy-secure-conversation" id="aggySecureConversation"><p class="aggy-empty">Los mensajes aparecerán aquí después de conectar otra huella.</p></div>
             <form class="assistant-input aggy-composer" id="aggySecureComposer">
-              <button class="btn aggy-attach" type="button" id="aggyAttachmentBlocked" data-chat-attach title="Seleccionar archivo para la compuerta QuSOC">＋</button>
-              <button class="btn aggy-camera" type="button" data-chat-camera aria-label="Tomar foto protegida">◉</button>
               <input id="aggySecureInput" maxlength="4000" placeholder="Mensaje seguro">
               <button class="btn primary" type="submit" id="aggySecureSend" disabled>Enviar</button>
             </form>
@@ -442,18 +438,16 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <aside class="aggy-privacy-note"><strong>Grupos gobernados</strong><span>Cada integrante debe aprobarse antes de una conversación o llamada real.</span></aside>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="more">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.36</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.0-rc.37</span></div>
       <div class="aggy-profile-card"><div class="avatar">A</div><div><strong>Asistente inteligente</strong><small>Conversación, archivos, modelos y seguridad en un solo lugar.</small></div></div>
       <div class="aggy-more-list">
-        <button type="button" data-open-aggy-panel="voice"><span>●</span><p><strong>Aggy Voice Live</strong><small>Conversación Realtime bidireccional</small></p><i>›</i></button>
-        <button type="button" data-open-aggy-panel="files"><span>▱</span><p><strong>Archivos protegidos</strong><small>Ingreso gobernado por QuSOC</small></p><i>›</i></button>
         <button type="button" data-open-aggy-panel="models"><span>✦</span><p><strong>IA Models</strong><small>SQAILE Core y proveedores en QuHub</small></p><i>›</i></button>
         <button type="button" data-open-aggy-panel="security"><span>◇</span><p><strong>Seguridad</strong><small>Estado E2EE/PQC y motor seguro</small></p><i>›</i></button>
       </div>
       <details class="aggy-drawer"><summary>Preferencias e identidad</summary><div class="aggy-form-grid two"><label class="aggy-label">Nombre<input id="visitorName" placeholder="Nombre"></label><label class="aggy-label">Necesidad<select id="assistantNeed"><option value="auto">Need context</option><option value="protect">Protect endpoints</option><option value="soc">SOC / monitoring</option><option value="payments">Payments / fintech</option><option value="finance">Cost / pricing</option><option value="ai">AI agent / voice</option></select></label></div><p class="aggy-note">QuIdentify es requerido para comunicaciones con terceros.</p></details>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="voice">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.36 · incluida durante contratos activos; visitantes: 10 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.0-rc.37 · incluida durante contratos activos; visitantes: 10 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
       <div class="aggy-voice-stage" id="aggyVoiceStage" data-state="idle">
         <div class="aggy-orb" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <strong id="aggyVoiceHeadline">Activando Aggy Voice</strong>
@@ -477,6 +471,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     <section class="aggy-panel" data-market-aggy-panel="files">
       <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Archivos protegidos</strong><small>Enviar, recibir, descargar y conservar en QuVault</small></div><span class="aggy-state blocked">FAIL CLOSED</span></div>
       <div class="qusoc-universal-rule"><span>CDR</span><p><strong>Compuerta universal de ingreso</strong><small>Cuarentena → hash → CDR proveedor → QuFense → cifrado E2EE/PQC → encapsulado → QuVault. Sin recibo ADMITTED no hay ingreso; sin recibos verificables no hay envío, descarga ni almacenamiento.</small></p></div>
+      <button class="btn primary" id="aggyOpenAttachmentSheet" type="button">Elegir foto, video o archivo</button>
       <label class="aggy-drop">Seleccionar cualquier archivo<input id="aggyFile" type="file" multiple><small>Fotos, audios, videos, ZIP, documentos y otros formatos. Si el CDR no soporta o no puede limpiar el contenido, se bloquea y queda en cuarentena.</small></label>
       <button class="btn primary" id="aggyInspectFile" type="button">Inspeccionar entrada</button>
       <div id="aggyFileState" class="aggy-result">Sin archivo. QuSOC debe emitir CLEAN antes de cualquier envío.</div>
@@ -579,7 +574,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   function setLang(l,manual){body.classList.remove('en','es');body.classList.add(l);document.documentElement.lang=l;document.getElementById('enBtn').classList.toggle('active',l==='en');document.getElementById('esBtn').classList.toggle('active',l==='es');if(manual&&assistantLangTop){assistantLangTop.value=l;profile.langPref=l;localStorage.setItem('secquoia.qumarket.langPref',l)}renderProducts();renderPackages();renderEstimate();updateCart();renderDeployment();renderIdentityGate();syncAssistantChrome()}
   function syncAssistantChrome(){const state=assistant.dataset.state||'minimized',es=lang()==='es',expanded=state==='expanded';assistantToggle.textContent=expanded?(es?'Reducir':'Minimize'):(es?'Expandir':'Expand');assistantToggle.setAttribute('aria-expanded',String(expanded));assistantHide.setAttribute('aria-label',es?'Ocultar Aggy':'Hide Aggy');assistantHide.title=es?'Ocultar Aggy':'Hide Aggy';assistantLauncher.setAttribute('aria-label',es?'Abrir Aggy':'Open Aggy');visitorName.placeholder=es?'Tu nombre':'Your name';agentInput.placeholder=es?'Pregunta a Aggy sobre SECQUOIA, productos, precios o activación…':'Ask Aggy about SECQUOIA, products, pricing or onboarding…';document.getElementById('send').textContent=es?'Enviar':'Send';micBtn.textContent='Aggy Voice';const needs=es?['¿Qué necesitas?','Proteger endpoints','SOC y monitoreo','Pagos y fintech','Costos y precios','Agente de IA y voz']:['Need context','Protect endpoints','SOC / monitoring','Payments / fintech','Cost / pricing','AI agent / voice'];[...assistantNeed.options].forEach((option,index)=>option.textContent=needs[index]);const contexts=es?['Voz consultiva','Resumen ejecutivo','Análisis técnico','Guía cercana']:['Advisor voice','Executive brief','Technical deep dive','Friendly guide'];[...voiceContext.options].forEach((option,index)=>option.textContent=contexts[index])}
   function setAssistantState(next,{persist=true,focus=true}={}){const embedMode=document.body.classList.contains('aggy-embed-mode')||new URLSearchParams(location.search).get('embed')==='1';const requested=['minimized','expanded','hidden'].includes(next)?next:'minimized';const state=embedMode?'expanded':requested;assistant.dataset.state=state;assistant.classList.toggle('open',state==='expanded');assistant.classList.toggle('hidden',state==='hidden');assistantBody.inert=state!=='expanded';assistant.setAttribute('aria-hidden',String(state==='hidden'));assistantLauncher.hidden=embedMode;if(persist&&!embedMode)localStorage.setItem(assistantStateKey,state);syncAssistantChrome();if(focus&&state==='expanded'&&!embedMode)setTimeout(()=>agentInput.focus(),180);if(focus&&state==='hidden'&&!embedMode)setTimeout(()=>assistantLauncher.focus(),0)}
-  function openAgent(){setAssistantState('expanded');document.querySelector('[data-market-aggy-tab="chat"]')?.click()}
+  function openAgent(){setAssistantState('expanded')}
   function addMsg(text,who){const d=document.createElement('div');d.className='msg '+(who||'agent');d.textContent=text;conv.appendChild(d);conv.scrollTop=conv.scrollHeight}
   function agentSay(text){const rendered=lang()==='es'?polishSpanish(text):String(text||'');openAgent();addMsg(rendered,'agent');agentState.textContent=lang()==='es'?'Aggy disponible · usa “Leer con Aggy” para escucharlo':'Aggy ready · use “Read with Aggy” to hear it'}
   function captureName(text){const m=(text||'').match(/\b(?:my name is|i am|soy|me llamo|mi nombre es)\s+(.{2,40})/i);if(m){profile.name=m[1].trim().replace(/[.?!,;:]$/,'');visitorName.value=profile.name;localStorage.setItem('secquoia.qumarket.visitorName',profile.name);return true}return false}
@@ -669,7 +664,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   window.addEventListener('secquoia:aggy:voice-state',event=>{const state=event.detail?.state||'ready',copy=assistantLauncher.querySelector('small'),preview=assistantLauncher.dataset.accessMode==='ECOSYSTEM_PREVIEW',included=assistantLauncher.dataset.accessMode==='CONTRACT_INCLUDED';assistantLauncher.dataset.voice=state;copy.textContent=state==='connecting'?'Conectando Voice LIVE…':preview?'Preview · sin consumo':included?'Voz LIVE · incluida':state==='live'?'EN VIVO · 10 min gratis':state==='blocked'?'Toca para activar · 10 min gratis':'Voice LIVE · 10 min gratis'});
   document.getElementById('assistantHead').onclick=e=>{if(e.target.closest('button'))return;setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantToggle.onclick=e=>{e.stopPropagation();setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantHide.onclick=e=>{e.stopPropagation();setAssistantState('hidden')};assistantLauncher.onclick=()=>{assistantLauncher.dataset.guideDismissed='true';openAgent()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&assistant.dataset.state==='expanded')setAssistantState('minimized')});
   window.addEventListener('message',event=>{const trustedParents=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);if(event.source!==window.parent||!trustedParents.has(event.origin)||event.data?.type!=='secquoia:aggy:start-voice')return;openAggyVoice({focus:false,reveal:false})});
-  document.getElementById('headerSupport').onclick=()=>{setAssistantState('expanded');document.querySelector('[data-market-aggy-tab="chat"]')?.click();agentInput.focus()};
+  document.getElementById('headerSupport').onclick=()=>{setAssistantState('expanded');agentInput.focus()};
   document.getElementById('send').onclick=()=>{const q=agentInput.value.trim();if(!q)return;agentInput.value='';handleUserInput(q)};agentInput.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('send').click()});
   let qupayCheckoutPending=false;
   async function continueToQuPay(){
@@ -743,10 +738,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   const params=new URLSearchParams(location.search);if(params.get('quidentify')==='verified')setVerified(params.get('session')||params.get('state')||'verified-callback');assistantLangTop.value=profile.langPref;voiceContext.value=profile.voiceContext;visitorName.value=profile.name;setLang(profile.langPref==='auto'?inferLanguage():profile.langPref);restoreSavedEstimate();renderProducts();renderPackages();renderEstimate();updateCart();renderDeployment();renderIdentityGate();const embedded=params.get('embed')==='1';if(embedded){document.body.classList.add('aggy-embed-mode');assistantLauncher.hidden=true;assistant.classList.add('aggy-full','open')}setAssistantState(embedded?'expanded':'hidden',{persist:false,focus:false});addMsg(greeting(),'agent');agentState.textContent=lang()==='es'?'Aggy disponible':'Aggy ready';micBtn.textContent='Aggy Voice';window.addEventListener('load',()=>openAggyVoice({focus:false,reveal:false}),{once:true});if(params.get('aggy')==='voice')openAggyVoice({focus:false,reveal:false});if(params.get('bundle')==='1')bundle();else if(params.get('product'))addProduct(params.get('product').toLowerCase());
 })();
 </script>
-<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.36"></script>
-<script src="aggy-secure-chat.js?v=1.0.0-rc.36"></script>
-<script src="aggy-marketplace.js?v=1.0.0-rc.36"></script>
-<script src="aggy-realtime-voice.js?v=1.0.0-rc.36"></script>
+<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.0-rc.37"></script>
+<script src="aggy-secure-chat.js?v=1.0.0-rc.37"></script>
+<script src="aggy-marketplace.js?v=1.0.0-rc.37"></script>
+<script src="aggy-realtime-voice.js?v=1.0.0-rc.37"></script>
 <script src="qumarket-addons.js"></script>
 </body>
 </html>

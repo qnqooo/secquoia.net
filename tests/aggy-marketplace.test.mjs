@@ -22,7 +22,7 @@ test('Aggy advanced marketplace assets have valid JavaScript syntax',()=>{
 });
 
 test('Aggy exposes communication-first navigation and preserves advanced areas',()=>{
-  assert.match(html,/data-market-aggy-tab="chat"/);
+  assert.match(html,/aria-label="Acciones principales de Aggy"/);
   assert.match(html,/id="aggyGridToggle"/);
   assert.match(html,/id="aggyAppGrid"/);
   for(const name of ['chat','contacts','calls','groups','more','voice','files','models','security']){
@@ -82,15 +82,17 @@ test('Aggy markup contains no duplicate element IDs',()=>{
 test('Aggy Realtime replaces browser legacy speech and recording',()=>{
   assert.doesNotMatch(html,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder|id="voiceSelect"/);
   assert.doesNotMatch(bridge,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
-  assert.match(html,/Aggy v1\.0\.0-rc\.36 [^<]* Voz de SQAILE - Acento neutro/);
+  assert.match(html,/Aggy v1\.0\.0-rc\.37 [^<]* Voz de SQAILE - Acento neutro/);
   assert.match(html,/Voz de SQAILE - Acento neutro/);
   assert.match(html,/Leer con Aggy/);
   assert.match(bridge,/window\.AggyVoice\.start/);
 });
 
-test('Aggy chat exposes one-tap essentials and moves collaboration setup to the menu',()=>{
+test('Aggy keeps the composer clean and the three primary actions at the top',()=>{
   assert.doesNotMatch(html,/class="aggy-primary-actions"|class="aggy-chat-actions"|class="assistant-profile"/);
-  for(const control of ['data-chat-call="audio"','data-chat-call="video"','data-chat-attach','data-chat-camera','id="mic"','id="send"'])assert.match(html,new RegExp(control));
+  assert.doesNotMatch(html,/data-chat-call=|data-chat-attach|data-chat-camera|id="mic"/);
+  for(const control of ['data-open-aggy-panel="calls"','data-open-aggy-panel="files"','data-open-aggy-panel="voice"','id="send"'])assert.match(html,new RegExp(control));
+  assert.match(html,/id="aggyOpenAttachmentSheet"/);
   for(const id of ['aggyStartChat','aggySaveContact','aggyCreateGroup','aggyChatEmail','aggyGroupMembers'])assert.match(html,new RegExp(`id="${id}"`));
   assert.match(bridge,/openQuick/);
   assert.match(bridge,/contacts\.push/);

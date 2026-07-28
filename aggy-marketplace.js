@@ -3,7 +3,7 @@
   const $=selector=>document.querySelector(selector),$$=selector=>[...document.querySelectorAll(selector)];
   const assistant=$('#assistant'),full=$('#assistantFull'),agentState=$('#agentState'),conversation=$('#conversation');
   if(!assistant||!full)return;
-  if(window.parent!==window)window.parent.postMessage({type:'secquoia:aggy:frame-ready',version:'1.0.0-rc.36'},'*');
+  if(window.parent!==window)window.parent.postMessage({type:'secquoia:aggy:frame-ready',version:'1.0.0-rc.37'},'*');
   const runtimeOrigin='http://127.0.0.1:8793';
   const appGrid=$('#aggyAppGrid'),gridToggle=$('#aggyGridToggle');
   const attachmentSheet=$('#aggyAttachmentSheet'),attachmentState=$('#aggyAttachmentState');
@@ -16,16 +16,15 @@
   const setPanel=name=>{
     setGrid(false);
     $$('[data-market-aggy-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.marketAggyPanel===name));
-    $$('[data-market-aggy-tab]').forEach(button=>button.classList.toggle('active',button.dataset.marketAggyTab===name));
+    $$('.aggy-tabs [data-open-aggy-panel]').forEach(button=>button.classList.toggle('active',button.dataset.openAggyPanel===name));
   };
   gridToggle?.addEventListener('click',()=>setGrid(appGrid?.classList.contains('hidden')??false));
   $('#aggyGridClose')?.addEventListener('click',()=>setGrid(false));
   $$('[data-chat-menu]').forEach(button=>button.addEventListener('click',()=>setGrid(true)));
-  const composerInput=$('#agentInput'),composerSend=$('#send'),composerMic=$('#mic');
+  const composerInput=$('#agentInput'),composerSend=$('#send');
   const syncComposerAction=()=>{
     const hasMessage=Boolean(composerInput?.value.trim());
     if(composerSend)composerSend.hidden=!hasMessage;
-    if(composerMic)composerMic.hidden=hasMessage;
   };
   composerInput?.addEventListener('input',syncComposerAction);
   syncComposerAction();
@@ -35,7 +34,6 @@
   };
   $$('[data-close-attachment-sheet]').forEach(button=>button.addEventListener('click',()=>setAttachmentSheet(false)));
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){setGrid(false);setAttachmentSheet(false)}});
-  $$('[data-market-aggy-tab]').forEach(button=>button.addEventListener('click',()=>setPanel(button.dataset.marketAggyTab)));
   $$('[data-open-aggy-panel]').forEach(button=>button.addEventListener('click',()=>setPanel(button.dataset.openAggyPanel)));
   full.addEventListener('click',event=>{event.stopPropagation();assistant.classList.toggle('aggy-full');full.textContent=assistant.classList.contains('aggy-full')?'↙':'↗';full.setAttribute('aria-label',assistant.classList.contains('aggy-full')?'Reducir Aggy':'Expandir Aggy')});
 
@@ -76,8 +74,7 @@
   };
   $$('[data-aggy-quick]').forEach(button=>button.addEventListener('click',()=>openQuick(button.dataset.aggyQuick)));
   const openAttachmentSheet=()=>{setAttachmentSheet(true);attachmentState.className='aggy-attachment-state';attachmentState.textContent='Selecciona documento, galería o cámara. El contenido no saldrá del dispositivo sin admisión verificable.'};
-  $$('[data-chat-attach]').forEach(button=>button.addEventListener('click',openAttachmentSheet));
-  $$('[data-chat-camera]').forEach(button=>button.addEventListener('click',()=>{openAttachmentSheet();$('#aggyCameraInput')?.click()}));
+  $('#aggyOpenAttachmentSheet')?.addEventListener('click',openAttachmentSheet);
   $('#aggyAttachDocument')?.addEventListener('click',()=>$('#aggyDocumentInput')?.click());
   $('#aggyAttachGallery')?.addEventListener('click',()=>$('#aggyGalleryInput')?.click());
   $('#aggyAttachCamera')?.addEventListener('click',()=>$('#aggyCameraInput')?.click());
