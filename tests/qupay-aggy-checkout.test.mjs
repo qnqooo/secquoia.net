@@ -7,7 +7,9 @@ const source=await readFile(new URL('../workers/qupay-aggy-checkout.js',import.m
 const worker=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 
 test('QuPay exposes only governed QVit packs',()=>{
-  assert.deepEqual(Object.keys(worker.PACKS),['qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']);
+  assert.deepEqual(Object.keys(worker.PACKS),['qvit-ai-credit-1','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']);
+  assert.equal(worker.PACKS['qvit-ai-credit-1'].usdCents,100);
+  assert.equal(worker.PACKS['qvit-ai-credit-1'].qvitAmount,1_000_000);
   assert.equal(worker.PACKS['qvit-ai-credit-25'].usdCents,2500);
   assert.equal(worker.PACKS['qvit-ai-credit-25'].qvitAmount,25_000_000);
 });

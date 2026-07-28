@@ -163,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.31');
+  assert.equal(release.version,'1.0.0-rc.32');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -374,6 +374,16 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and requires explici
   assert.match(voice,/retention_ratio:\.8/);
   assert.match(worker,/AGGY_QUPAY_WEBHOOK_SECRET/);
   assert.match(worker,/QUPAY_CONFIRMED_QVIT_CREDIT/);
+});
+
+test('Time AI purchase is visible, retryable and uses the governed USD 1 starter pack',()=>{
+  assert.match(html,/\.btn\.primary\{[^}]*color:#000!important;[^}]*text-shadow:none/);
+  assert.match(html,/let qupayCheckoutPending=false/);
+  assert.match(html,/aria-busy/);
+  assert.match(html,/QuPay–QuFense no respondió/);
+  assert.match(html,/qvit-ai-credit-\(1\|25\|100\|500\)/);
+  assert.match(voice,/Comprar Tiempo IA · desde USD 1/);
+  assert.match(worker,/addon=qvit-ai-credit-1/);
 });
 
 test('QuIdentify contract entitlements are signed, expiry-bound and tamper-evident',async()=>{

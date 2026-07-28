@@ -20,7 +20,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.31';
+  const aggyVersion='1.0.0-rc.32';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -141,7 +141,7 @@
     if(continuePaidButton)continuePaidButton.hidden=true;
     if(topUp){
       if(status?.wallet?.topUpUrl)topUp.href=status.wallet.topUpUrl;
-      topUp.textContent=topUpAvailable?'Ver paquetes de Tiempo IA':'Activar Tiempo IA';
+      topUp.textContent=topUpAvailable?'Comprar Tiempo IA · desde USD 1':'Activar Tiempo IA';
       topUp.hidden=true;
     }
     if(status?.activeLease){

@@ -1,4 +1,4 @@
-const RELEASE='1.1.3';
+const RELEASE='1.1.4';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
 const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
@@ -9,6 +9,7 @@ const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
 });
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
 const PACKS=Object.freeze({
+  'qvit-ai-credit-1':Object.freeze({usdCents:100,qvitAmount:1_000_000,label:'Aggy Time AI starter · $1'}),
   'qvit-ai-credit-25':Object.freeze({usdCents:2500,qvitAmount:25_000_000,label:'QVit AI resource credit · $25'}),
   'qvit-ai-credit-100':Object.freeze({usdCents:10_000,qvitAmount:100_000_000,label:'QVit AI resource credit · $100'}),
   'qvit-ai-credit-500':Object.freeze({usdCents:50_000,qvitAmount:500_000_000,label:'QVit AI resource credit · $500'})

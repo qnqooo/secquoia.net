@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.32 - 2026-07-27
+
+### Time AI Checkout recovery and stronger action contrast
+
+- Forces black typography on green primary actions for stronger contrast.
+- Adds a governed USD 1 Time AI starter pack and routes Aggy's exhausted trial directly to it.
+- Makes QuPay Checkout visibly pending, retryable and explicit when the QuPay-QuFense channel fails closed.
+- Keeps Stripe card data outside SECQUOIA and preserves QuFense authorization before Checkout creation.
+
 ## 1.0.0-rc.31 - 2026-07-27
 
 ### Digital Voice LIVE timer and governed preview access

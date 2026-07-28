@@ -82,7 +82,7 @@ test('Aggy markup contains no duplicate element IDs',()=>{
 test('Aggy Realtime replaces browser legacy speech and recording',()=>{
   assert.doesNotMatch(html,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder|id="voiceSelect"/);
   assert.doesNotMatch(bridge,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
-  assert.match(html,/Aggy v1\.0\.0-rc\.31 [^<]* Voz de SQAILE - Acento neutro/);
+  assert.match(html,/Aggy v1\.0\.0-rc\.32 [^<]* Voz de SQAILE - Acento neutro/);
   assert.match(html,/Voz de SQAILE - Acento neutro/);
   assert.match(html,/Leer con Aggy/);
   assert.match(bridge,/window\.AggyVoice\.start/);
@@ -103,7 +103,7 @@ test('QuMarket add-ons expose the hybrid QuCFA commercial model',()=>{
   assert.match(html,/qucfa_metric_aware_catalog_and_hybrid_service_rate_card/);
   for(const model of ['per_endpoint_monthly','per_ticket','per_hour','fixed_project'])assert.ok(html.includes(model));
   for(const service of ['qufense-extra-endpoints','human-support-ticket','live-video-support','pqc-architect-hour','qudeploy-connector-project','cloud-onprem-deployment','pqc-readiness-assessment','team-security-workshop','qucfa-economics-workshop'])assert.ok(addons.includes(`id:'${service}'`));
-  for(const credit of ['qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500'])assert.ok(addons.includes(`id:'${credit}'`));
+  for(const credit of ['qvit-ai-credit-1','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500'])assert.ok(addons.includes(`id:'${credit}'`));
   assert.match(addons,/ai:\{en:'AI resources',es:'Recursos de IA'\}/);
   assert.match(html,/Included allowance first → purchased credits/);
   assert.match(html,/conserva el checkpoint durante 30 días/);
