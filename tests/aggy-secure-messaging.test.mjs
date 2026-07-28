@@ -63,7 +63,8 @@ test('Aggy creates verifiable hybrid E2EE/PQC envelopes and rejects tampering',(
     expectedSenderFingerprint:alice.publicBundle.fingerprint
   }).text,'Mensaje limpio');
   const tampered=structuredClone(envelope);
-  tampered.ciphertext=tampered.ciphertext.slice(0,-2)+'AA';
+  const replacement=tampered.ciphertext.at(-1)==='A'?'B':'A';
+  tampered.ciphertext=tampered.ciphertext.slice(0,-1)+replacement;
   assert.throws(()=>decryptMessage({roomId:room.roomId,envelope:tampered,recipient:bob}));
 });
 
