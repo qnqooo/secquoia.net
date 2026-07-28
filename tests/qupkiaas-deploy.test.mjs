@@ -33,6 +33,13 @@ test('CSR transmission is gated by verified identity and live API',()=>{
   assert.match(js,/rawStored:false/);
 });
 
+test('QuPKIaaS exposes the explicit Entrust parallel provider without silent fallback',()=>{
+  assert.match(html,/value="ENTRUST_CA_GATEWAY">Entrust CA Gateway/);
+  assert.match(js,/provider:\$\('#provider'\)\.value/);
+  assert.match(market,/Entrust CA Gateway ready/);
+  assert.doesNotMatch(market,/EndTrush|EndTrust/);
+});
+
 test('QuPKIaaS portal JavaScript parses',()=>{
   new Function(js);
 });

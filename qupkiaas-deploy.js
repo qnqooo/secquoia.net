@@ -64,6 +64,7 @@ async function submitRequest(){
   const idempotencyKey=crypto.randomUUID();
   const payload={
     schema:'secquoia.qupkiaas.certificate-request.v1',
+    provider:$('#provider').value,
     profile:$('#profile').value,
     commonName:$('#commonName').value.trim(),
     validityDays:Number($('#validity').value),
@@ -122,6 +123,7 @@ function downloadManifest(){
     schema:'secquoia.qudeploy.qupkiaas-onboarding.v1',
     createdAt:new Date().toISOString(),
     apiBase:state.apiBase,
+    provider:$('#provider').value,
     certificateRequest:state.request?{requestId:state.request.requestId,state:state.request.state}:null,
     csr:state.csr?{sha256:state.csr.sha256,bytes:state.csr.bytes,rawStored:false}:null,
     gates:{quidentify:state.identityVerified,api:state.apiReady,qufense:'REQUIRED_SERVER_SIDE',quaudit:'REQUIRED_SERVER_SIDE'},
