@@ -3,7 +3,7 @@
   const $=selector=>document.querySelector(selector),$$=selector=>[...document.querySelectorAll(selector)];
   const assistant=$('#assistant'),full=$('#assistantFull'),agentState=$('#agentState'),conversation=$('#conversation');
   if(!assistant||!full)return;
-  if(window.parent!==window)window.parent.postMessage({type:'secquoia:aggy:frame-ready',version:'1.0.0-rc.34'},'*');
+  if(window.parent!==window)window.parent.postMessage({type:'secquoia:aggy:frame-ready',version:'1.0.0-rc.35'},'*');
   const runtimeOrigin='http://127.0.0.1:8793';
   const appGrid=$('#aggyAppGrid'),gridToggle=$('#aggyGridToggle');
   const attachmentSheet=$('#aggyAttachmentSheet'),attachmentState=$('#aggyAttachmentState');

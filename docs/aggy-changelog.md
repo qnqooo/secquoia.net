@@ -2,6 +2,16 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.35 - 2026-07-27
+
+### Single launcher and clearer conversation surface
+
+- Removes the Marketplace launcher from embedded Aggy so every website exposes exactly one public entry point.
+- Forces the embedded conversation to remain expanded inside its frame while the public panel stays closed until the visitor taps Aggy.
+- Widens the desktop panel and keeps the active conversation at full width.
+- Moves colleague invitation into the grid menu to keep the message composer immediately usable.
+- Preserves the top-level QuPay handoff so Stripe Checkout cannot be covered by Aggy.
+
 ## 1.0.0-rc.34 - 2026-07-27
 
 ### Full-width chat and resilient embedded loading

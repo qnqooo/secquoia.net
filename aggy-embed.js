@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.34';
+  const version='1.0.0-rc.35';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -35,7 +35,7 @@
       .minute-chain.exhausted .minute-link{background:#d91e32;box-shadow:0 0 7px rgba(217,30,50,.66)}
       .minute-chain.exhausted .minute-link:last-child{animation:aggy-final-minute .8s ease-in-out infinite alternate}
       .minute-chain.contract{display:none}
-      .panel{position:fixed;right:18px;bottom:76px;z-index:2147483647;width:min(390px,calc(100vw - 28px));height:min(650px,calc(100vh - 100px));border:1px solid rgba(255,255,255,.24);border-radius:24px;background:#06110b;box-shadow:0 24px 80px rgba(0,0,0,.58);overflow:hidden;opacity:0;transform:translateY(18px) scale(.98);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+      .panel{position:fixed;right:18px;bottom:76px;z-index:2147483647;width:min(460px,calc(100vw - 28px));height:min(700px,calc(100vh - 100px));border:1px solid rgba(255,255,255,.24);border-radius:24px;background:#06110b;box-shadow:0 24px 80px rgba(0,0,0,.58);overflow:hidden;opacity:0;transform:translateY(18px) scale(.98);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
       .panel.open{opacity:1;transform:none;pointer-events:auto}
       .bar{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 10px 0 15px;border-bottom:1px solid rgba(255,255,255,.12);background:#07180f;color:#effff5;font:850 12px/1 Inter,Segoe UI,Arial,sans-serif}
       .bar small{color:#9fb3a6;font-weight:700}

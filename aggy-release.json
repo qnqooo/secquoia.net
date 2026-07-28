@@ -1,9 +1,9 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "1.0.0-rc.34",
-  "releaseId": "aggy-1.0.0-rc.34",
-  "releasedAt": "2026-07-27T22:10:00-05:00",
+  "version": "1.0.0-rc.35",
+  "releaseId": "aggy-1.0.0-rc.35",
+  "releasedAt": "2026-07-27T23:35:00-05:00",
   "channel": "rc",
   "lifecycle": "production-validation",
   "distribution": "ecosystem-hosted",

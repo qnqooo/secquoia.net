@@ -163,7 +163,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.34');
+  assert.equal(release.version,'1.0.0-rc.35');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -243,6 +243,14 @@ test('Marketplace keeps chat compact while Voice LIVE starts without stealing fo
   assert.equal((html.match(/<i class="assistant-minute-link"><\/i>/g)||[]).length,10);
   assert.match(html,/secquoia:aggy:usage-state/);
   assert.match(html,/updateAggyMinuteChain/);
+});
+
+test('Embedded Aggy exposes no nested launcher and keeps advanced invitation in the grid',()=>{
+  assert.match(css,/body\.aggy-embed-mode \.assistant-launcher,body\.aggy-embed-mode #assistantLauncher\{display:none!important/);
+  assert.match(html,/if\(embedded\)\{document\.body\.classList\.add\('aggy-embed-mode'\);assistantLauncher\.hidden=true/);
+  assert.match(html,/class="aggy-drawer aggy-chat-invite-drawer"/);
+  assert.match(css,/\.aggy-chat-invite-drawer\{display:none\}/);
+  assert.match(html,/data-aggy-quick="chat"><span>＋<\/span><strong>Nuevo chat<\/strong>/);
 });
 
 test('QuPay exits the embedded chat before navigating to Stripe Checkout',()=>{
