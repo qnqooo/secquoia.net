@@ -3,10 +3,9 @@
   const $=selector=>document.querySelector(selector),$$=selector=>[...document.querySelectorAll(selector)];
   const assistant=$('#assistant'),full=$('#assistantFull'),agentState=$('#agentState'),conversation=$('#conversation');
   if(!assistant||!full)return;
-  if(window.parent!==window)window.parent.postMessage({type:'secquoia:aggy:frame-ready',version:'1.0.0-rc.37'},'*');
+  if(window.parent!==window)window.parent.postMessage({type:'secquoia:aggy:frame-ready',version:'1.0.0-rc.38'},'*');
   const runtimeOrigin='http://127.0.0.1:8793';
   const appGrid=$('#aggyAppGrid'),gridToggle=$('#aggyGridToggle');
-  const attachmentSheet=$('#aggyAttachmentSheet'),attachmentState=$('#aggyAttachmentState');
   const setGrid=open=>{
     if(!appGrid||!gridToggle)return;
     appGrid.classList.toggle('hidden',!open);
@@ -28,12 +27,7 @@
   };
   composerInput?.addEventListener('input',syncComposerAction);
   syncComposerAction();
-  const setAttachmentSheet=open=>{
-    attachmentSheet?.classList.toggle('hidden',!open);
-    if(open)setGrid(false);
-  };
-  $$('[data-close-attachment-sheet]').forEach(button=>button.addEventListener('click',()=>setAttachmentSheet(false)));
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'){setGrid(false);setAttachmentSheet(false)}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape')setGrid(false)});
   $$('[data-open-aggy-panel]').forEach(button=>button.addEventListener('click',()=>setPanel(button.dataset.openAggyPanel)));
   full.addEventListener('click',event=>{event.stopPropagation();assistant.classList.toggle('aggy-full');full.textContent=assistant.classList.contains('aggy-full')?'↙':'↗';full.setAttribute('aria-label',assistant.classList.contains('aggy-full')?'Reducir Aggy':'Expandir Aggy')});
 
@@ -73,23 +67,6 @@
     const titles={chat:'Iniciar chat con un colega',contact:'Crear contacto',group:'Crear grupo'};quickSheet.classList.remove('hidden');$('#aggyQuickTitle').textContent=titles[action]||'Aggy';$$('[data-aggy-quick-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.aggyQuickPanel===action));assistant.classList.add('aggy-full');full.textContent='↙';
   };
   $$('[data-aggy-quick]').forEach(button=>button.addEventListener('click',()=>openQuick(button.dataset.aggyQuick)));
-  const openAttachmentSheet=()=>{setAttachmentSheet(true);attachmentState.className='aggy-attachment-state';attachmentState.textContent='Selecciona documento, galería o cámara. El contenido no saldrá del dispositivo sin admisión verificable.'};
-  $('#aggyOpenAttachmentSheet')?.addEventListener('click',openAttachmentSheet);
-  $('#aggyAttachDocument')?.addEventListener('click',()=>$('#aggyDocumentInput')?.click());
-  $('#aggyAttachGallery')?.addEventListener('click',()=>$('#aggyGalleryInput')?.click());
-  $('#aggyAttachCamera')?.addEventListener('click',()=>$('#aggyCameraInput')?.click());
-  const preflightChatAttachment=async(file,count=1)=>{
-    if(!file){attachmentState.className='aggy-attachment-state blocked';attachmentState.textContent='No se seleccionó contenido.';return}
-    attachmentState.className='aggy-attachment-state';attachmentState.textContent=`CUARENTENA · verificando ${count>1?`${count} elementos; primero: `:''}${file.name}…`;
-    if(!window.QuSOCIntake){attachmentState.className='aggy-attachment-state blocked';attachmentState.textContent='BLOQUEADO · la compuerta QuSOC no está disponible. No se envió contenido.';return}
-    const receipt=await window.QuSOCIntake.preflight(file),hash=receipt.originalSha256||'no calculado';
-    attachmentState.className='aggy-attachment-state blocked';
-    if(receipt.verdict==='BLOCKED'){attachmentState.textContent=`BLOQUEADO Y EN CUARENTENA · ${receipt.reason} · SHA-256 ${hash} · no se envió`;return}
-    attachmentState.textContent=`CUARENTENA ACTIVA · ${file.name} · SHA-256 ${hash} · PENDIENTE: Glasswall + QuSOC + QuFense + E2EE/PQC + QuVault · no enviado`;
-  };
-  for(const input of [$('#aggyDocumentInput'),$('#aggyGalleryInput'),$('#aggyCameraInput')]){
-    input?.addEventListener('change',()=>preflightChatAttachment(input.files?.[0],input.files?.length||0).catch(()=>{attachmentState.className='aggy-attachment-state blocked';attachmentState.textContent='BLOQUEADO · no fue posible inspeccionar el contenido. No se envió.'}));
-  }
   $('#aggyQuickClose')?.addEventListener('click',()=>quickSheet.classList.add('hidden'));
   $('#aggyStartChat')?.addEventListener('click',()=>{const email=$('#aggyChatEmail').value.trim().toLowerCase(),state=$('#aggyChatState');if(!emailPattern.test(email)){state.textContent='× Introduce un correo válido.';state.className='aggy-note blocked';return}if(!identityVerified()){state.textContent='× Debes verificar tu identidad con QuIdentify/Okta antes de iniciar el chat.';state.className='aggy-note blocked';return}pendingPeerEmail=email;state.textContent=`Validación solicitada para ${email}. El motor seguro confirmará si pertenece al ecosistema.`;state.className='aggy-note ready';setTimeout(openSecure,250)});
   $('#aggySaveContact')?.addEventListener('click',()=>{const name=$('#aggyContactName').value.trim(),email=$('#aggyContactEmail').value.trim().toLowerCase(),state=$('#aggyContactState');if(!identityVerified()){state.textContent='× QuIdentify/Okta debe estar verificado.';state.className='aggy-note blocked';return}if(!name||!emailPattern.test(email)){state.textContent='× Nombre o correo inválido.';state.className='aggy-note blocked';return}if(!contacts.some(contact=>contact.email===email))contacts.push({name,email});renderMemoryList($('#aggyContactList'),contacts,contact=>`${contact.name} · ${contact.email}`);renderCommunicationData();state.textContent='✓ Contacto creado en memoria. La habilitación de chat exige validación del backend.';state.className='aggy-note ready'});

@@ -2,6 +2,17 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.38 - 2026-07-28
+
+### One contextual file entry point
+
+- Places Voice LIVE, protected files and encrypted calls together in the active
+  conversation header.
+- Removes the redundant document, gallery and camera selection sheet.
+- Uses one governed file input for photos, audio, video, ZIP, documents and
+  other formats before CDR, QuFense and QuVault processing.
+- Keeps the text composer limited to message and send.
+
 ## 1.0.0-rc.37 - 2026-07-28
 
 ### Simpler chat navigation

@@ -27,7 +27,7 @@ test('Aggy assets and UI identifiers use the current namespace',()=>{
   const [index,market,bridge,css]=sources;
   assert.match(market,/href="aggy-marketplace\.css(?:\?[^"]+)?"/);
   assert.match(market,/src="aggy-marketplace\.js(?:\?[^"]+)?"/);
-  assert.match(market,/aria-label="Acciones principales de Aggy"/);
+  assert.match(market,/aria-label="Centro de comunicaciones de Aggy"/);
   assert.match(bridge,/dataset\.openAggyPanel/);
   assert.match(css,/\.assistant\.aggy-full/);
   assert.match(index,/aggy:'aggy',quchat:'aggy',quvoice:'aggy',quagent:'aggy'/);

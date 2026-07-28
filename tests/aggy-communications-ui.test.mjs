@@ -9,7 +9,7 @@ test('communication-first navigation preserves existing Aggy capabilities',async
   for(const panel of ['chat','contacts','calls','groups','more','voice','files','models','security']){
     assert.match(html,new RegExp(`data-market-aggy-panel="${panel}"`));
   }
-  assert.match(html,/aria-label="Acciones principales de Aggy"/);
+  assert.match(html,/aria-label="Centro de comunicaciones de Aggy"/);
   assert.match(html,/id="aggyGridToggle"/);
   assert.match(html,/id="aggyAppGrid"/);
   for(const secondary of ['contacts','groups','models','security','more']){
@@ -17,15 +17,14 @@ test('communication-first navigation preserves existing Aggy capabilities',async
   }
 });
 
-test('top navigation keeps Voice LIVE files and calls within immediate reach',async()=>{
+test('conversation header keeps Voice LIVE files and calls within immediate reach',async()=>{
   const [html,client,css]=await Promise.all([read('qu-market.html'),read('aggy-marketplace.js'),read('aggy-marketplace.css')]);
   assert.match(html,/class="assistant-input aggy-composer"/);
   for(const panel of ['voice','files','calls']){
-    assert.equal((html.match(new RegExp(`<button[^>]+data-open-aggy-panel="${panel}"`,'g'))||[]).length,1);
+    assert.equal((html.match(new RegExp(`<button[^>]+data-open-aggy-panel="${panel}"`,'g'))||[]).length,2);
   }
-  assert.match(html,/id="aggyAttachmentSheet"/);
-  assert.match(html,/id="aggyCameraInput"[^>]*accept="image\/\*"[^>]*capture="environment"/);
-  assert.match(html,/id="aggyGalleryInput"[^>]*accept="image\/\*,video\/\*"[^>]*multiple/);
+  assert.doesNotMatch(html,/id="aggyAttachmentSheet"|id="aggyAttachDocument"|id="aggyAttachGallery"|id="aggyAttachCamera"/);
+  assert.match(html,/id="aggyFile" type="file" multiple/);
   assert.doesNotMatch(html,/data-chat-attach|data-chat-camera|data-chat-call=/);
   assert.match(html,/E2EE\/PQC/);
   assert.match(css,/\.assistant\.open:not\(\.aggy-full\)\{width:min\(720px,calc\(100% - 28px\)\)/);
@@ -35,10 +34,10 @@ test('top navigation keeps Voice LIVE files and calls within immediate reach',as
   assert.match(html,/data-open-aggy-panel="chat" data-aggy-thread="secure"/);
   assert.match(html,/<details class="aggy-secure-setup" id="aggySecureSetup">/);
   assert.match(css,/\.aggy-composer button\[hidden\]\{display:none!important\}/);
-  assert.match(client,/preflightChatAttachment/);
+  assert.doesNotMatch(client,/preflightChatAttachment|openAttachmentSheet/);
   assert.match(client,/syncComposerAction/);
   assert.match(client,/composerSend\.hidden=!hasMessage/);
-  assert.match(client,/PENDIENTE: Glasswall \+ QuSOC \+ QuFense \+ E2EE\/PQC \+ QuVault/);
+  assert.match(client,/PENDIENTE: antimalware \+ sandbox \+ CDR/);
   assert.match(client,/Aggy verificará E2EE\/PQC antes de solicitar permisos/);
   assert.match(css,/@media\(max-width:780px\)/);
   assert.match(css,/\.assistant-profile,\.aggy-chat-actions\{display:none\}/);
@@ -86,10 +85,10 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.37');
-  assert.match(html,/v1\.0\.0-rc\.37/);
+  assert.equal(release.version,'1.0.0-rc.38');
+  assert.match(html,/v1\.0\.0-rc\.38/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.37'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.38'/);
 });
 
 test('contracted customers bypass the visitor trial without bypassing governance',async()=>{
