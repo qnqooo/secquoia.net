@@ -29,7 +29,11 @@ test('chat keeps messages files and encrypted calls within immediate reach',asyn
   assert.match(html,/data-chat-call="video"/);
   assert.match(html,/E2EE\/PQC/);
   assert.match(css,/\.assistant\.open:not\(\.aggy-full\)\{width:min\(720px,calc\(100% - 28px\)\)/);
-  assert.match(css,/\.aggy-chat-shell\{display:grid;grid-template-columns:210px minmax\(0,1fr\);width:100%;min-width:0/);
+  assert.match(css,/\.aggy-chat-shell\{display:grid;grid-template-columns:minmax\(0,1fr\);width:100%;min-width:0/);
+  assert.match(css,/\.aggy-chat-list\{display:none\}/);
+  assert.match(html,/data-open-aggy-panel="chat" data-aggy-thread="assistant"/);
+  assert.match(html,/data-open-aggy-panel="chat" data-aggy-thread="secure"/);
+  assert.match(html,/<details class="aggy-secure-setup" id="aggySecureSetup">/);
   assert.match(css,/\.aggy-composer button\[hidden\]\{display:none!important\}/);
   assert.match(client,/preflightChatAttachment/);
   assert.match(client,/syncComposerAction/);
@@ -85,10 +89,10 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.0.0-rc.33');
-  assert.match(html,/v1\.0\.0-rc\.33/);
+  assert.equal(release.version,'1.0.0-rc.34');
+  assert.match(html,/v1\.0\.0-rc\.34/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.0\.0-rc\.33'/);
+  assert.match(worker,/version:'1\.0\.0-rc\.34'/);
 });
 
 test('contracted customers bypass the visitor trial without bypassing governance',async()=>{

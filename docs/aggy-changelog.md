@@ -2,6 +2,16 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.34 - 2026-07-27
+
+### Full-width chat and resilient embedded loading
+
+- Gives the active conversation the complete panel width on desktop and mobile.
+- Moves conversation switching for Aggy and secure rooms into the grid menu.
+- Collapses secure-room setup until the user needs to create or join a room.
+- Adds an explicit loading state, bounded automatic retries and a manual retry action when the embedded experience does not become ready.
+- Refreshes all public asset versions so browsers do not retain the previous narrow layout.
+
 ## 1.0.0-rc.33 - 2026-07-27
 
 ### Compact-by-default communications and unobstructed QuPay

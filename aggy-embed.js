@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0-rc.33';
+  const version='1.0.0-rc.34';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -41,10 +41,16 @@
       .bar small{color:#9fb3a6;font-weight:700}
       .close{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font:900 18px/1 Arial;cursor:pointer}
       iframe{display:block;width:100%;height:calc(100% - 46px);border:0;background:#f4f7f6}
+      .frame-state{position:absolute;inset:46px 0 0;z-index:2;display:grid;place-items:center;background:linear-gradient(180deg,#f7faf9,#eaf1ee);color:#17352a;text-align:center;padding:24px;font:750 12px/1.5 Inter,Segoe UI,Arial,sans-serif}
+      .frame-state[hidden]{display:none}
+      .frame-state div{display:grid;justify-items:center;gap:10px}
+      .frame-state i{width:34px;height:34px;border:3px solid #b7d6c9;border-top-color:#0e9b67;border-radius:50%;animation:aggy-frame-spin .85s linear infinite}
+      .frame-state button{border:1px solid #1ca975;border-radius:999px;background:#e8faf2;color:#07583c;padding:8px 12px;font:850 11px Inter,Segoe UI,Arial,sans-serif;cursor:pointer}
       @media(max-width:560px){.launcher{right:12px;bottom:12px}.panel{inset:8px;width:auto;height:auto;border-radius:20px}}
       @keyframes aggy-live-halo{0%{opacity:.72;transform:scale(.65)}75%,100%{opacity:0;transform:scale(1.75)}}
       @keyframes aggy-guide-pulse{50%{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,74,180,.46)}}
       @keyframes aggy-final-minute{to{transform:scaleY(1.8);filter:brightness(1.28)}}
+      @keyframes aggy-frame-spin{to{transform:rotate(360deg)}}
       @media(prefers-reduced-motion:reduce){.panel{transition:none}.dot::after,.minute-link,.launcher-nudge{animation:none!important}}
     </style>
     <button class="launcher" type="button" data-voice="connecting" aria-expanded="false" aria-controls="aggy-panel" title="Aggy ${version}">
@@ -53,7 +59,8 @@
     </button>
     <section class="panel" id="aggy-panel" role="dialog" aria-label="Aggy, asistente de SECQUOIA">
       <div class="bar"><span>Aggy <small>${version}</small></span><button class="close" type="button" aria-label="Cerrar Aggy">×</button></div>
-      <iframe title="Aggy Communications" src="${frameUrl}" allow="microphone; autoplay" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"></iframe>
+      <div class="frame-state" role="status"><div><i aria-hidden="true"></i><span>Conectando la experiencia segura de Aggy…</span><button type="button" hidden>Reintentar</button></div></div>
+      <iframe title="Aggy Communications" src="${frameUrl}" allow="microphone; autoplay" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"></iframe>
     </section>
   `;
 
@@ -61,6 +68,9 @@
   const panel=root.querySelector('.panel');
   const close=root.querySelector('.close');
   const frame=root.querySelector('iframe');
+  const frameState=root.querySelector('.frame-state');
+  const frameStateCopy=frameState.querySelector('span');
+  const frameRetry=frameState.querySelector('button');
   const launcherStatus=launcher.querySelector('small');
   const minuteChain=launcher.querySelector('.minute-chain');
   const minuteLinks=[...launcher.querySelectorAll('.minute-link')];
@@ -87,6 +97,34 @@
     type:'secquoia:aggy:start-voice',
     version
   },'https://secquoia.net');
+  let frameReady=false,frameAttempts=0,frameWatchdog=0;
+  const showFrameState=(message,{retry=false}={})=>{
+    frameStateCopy.textContent=message;
+    frameRetry.hidden=!retry;
+    frameState.querySelector('i').hidden=retry;
+    frameState.hidden=false;
+  };
+  const markFrameReady=()=>{
+    frameReady=true;
+    clearTimeout(frameWatchdog);
+    frameState.hidden=true;
+  };
+  const loadFrame=()=>{
+    frameReady=false;
+    frameAttempts+=1;
+    showFrameState('Conectando la experiencia segura de Aggy…');
+    const url=new URL(frameUrl);
+    url.searchParams.set('load',String(frameAttempts));
+    frame.src=url.href;
+  };
+  const watchFrame=()=>{
+    clearTimeout(frameWatchdog);
+    frameWatchdog=setTimeout(()=>{
+      if(frameReady)return;
+      if(frameAttempts<3)loadFrame();
+      else showFrameState('No fue posible cargar Aggy. Revisa tu conexión y vuelve a intentarlo.',{retry:true});
+    },8000);
+  };
   const setOpen=(open,{focus=true}={})=>{
     panel.classList.toggle('open',open);
     launcher.setAttribute('aria-expanded',String(open));
@@ -103,6 +141,11 @@
   root.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false)});
   window.addEventListener('message',event=>{
     if(event.source!==frame.contentWindow||event.origin!=='https://secquoia.net')return;
+    if(event.data?.type==='secquoia:aggy:frame-ready'){
+      markFrameReady();
+      requestVoiceStart();
+      return;
+    }
     if(event.data?.type==='secquoia:aggy:qupay-checkout'){
       try{
         const checkoutUrl=new URL(String(event.data.checkoutUrl||''));
@@ -137,7 +180,11 @@
   frame.addEventListener('load',()=>{
     frame.dataset.ready='true';
     requestVoiceStart();
+    watchFrame();
   });
+  frameRetry.addEventListener('click',()=>{frameAttempts=0;loadFrame()});
   document.body.append(host);
+  frameAttempts=1;
+  watchFrame();
   requestAnimationFrame(()=>setOpen(false,{focus:false}));
 })();
