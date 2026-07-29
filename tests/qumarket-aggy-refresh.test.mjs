@@ -184,7 +184,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.39');
+  assert.equal(release.version,'1.0.0-rc.40');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -372,11 +372,11 @@ test('Usage API forwards paid continuation only after an explicit user confirmat
   assert.match(forwarded[0].capabilityHash,/^[a-f0-9]{64}$/);
 });
 
-test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one contextual continuation action',()=>{
-  for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageAction']){
+test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one visible continuation action',()=>{
+  for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageContinue','aggyUsageMarketplace']){
     assert.match(html,new RegExp(`id="${id}"`));
   }
-  assert.doesNotMatch(html,/id="aggyUsageContinue"|id="aggyUsageTopUp"/);
+  assert.doesNotMatch(html,/id="aggyUsageAction"|id="aggyUsageTopUp"/);
   assert.match(voice,/\/api\/aggy\/usage/);
   assert.match(voice,/acquireUsageLease/);
   assert.match(voice,/X-Aggy-Lease-Capability/);
@@ -388,7 +388,7 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one contex
   assert.match(voice,/cancelUsage\('SESSION_START_FAILED'\)/);
   assert.match(worker,/api\/aggy\/usage\/cancel/);
   assert.match(voice,/endVoice\('CLIENT_HARD_STOP'\)/);
-  assert.match(voice,/Ver paquetes de Tiempo IA/);
+  assert.match(html,/Ver paquetes de Tiempo IA/);
   assert.match(worker,/qupay_credit_not_configured/);
   assert.match(worker,/ASSISTED_ACTIVATION_REQUIRED/);
   assert.match(worker,/AGGY_MAX_PAID_BLOCKS_DAY=15/);
@@ -416,17 +416,17 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one contex
   assert.match(worker,/QUPAY_CONFIRMED_QVIT_CREDIT/);
 });
 
-test('Time AI purchase uses one button and opens the Marketplace with all AI time options',()=>{
+test('Time AI purchase uses one native top-level link and opens all Marketplace time options',()=>{
   assert.match(html,/\.btn\.primary\{[^}]*color:#000!important;[^}]*text-shadow:none/);
   assert.match(html,/let qupayCheckoutPending=false/);
   assert.match(html,/aria-busy/);
   assert.match(html,/QuPay–QuFense no respondió/);
   assert.match(html,/qvit-ai-credit-\(1\|25\|100\|500\)/);
   assert.match(html,/id="ai-services"/);
-  assert.match(voice,/secquoia:aggy:open-time-ai/);
-  assert.match(voice,/Ver paquetes de Tiempo IA/);
-  assert.match(embed,/secquoia:aggy:open-time-ai/);
-  assert.match(embed,/marketplaceUrl\.pathname==='\/qu-market\.html'/);
+  assert.match(html,/id="aggyUsageMarketplace"[^>]+target="_top"[^>]+rel="noopener"/);
+  assert.match(voice,/usageMarketplaceLink\.href=usageMarketplaceUrl/);
+  assert.match(html,/Ver paquetes de Tiempo IA/);
+  assert.doesNotMatch(voice,/postMessage\(\{type:'secquoia:aggy:open-time-ai'/);
   assert.match(addons,/activationParams\.get\('time_ai'\)==='1'\?'ai':'all'/);
   assert.match(addons,/getElementById\('ai-services'\)\?\.scrollIntoView/);
   assert.match(worker,/time_ai=1&wallet_ref=/);

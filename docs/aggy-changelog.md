@@ -2,6 +2,16 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.40 - 2026-07-29
+
+### Native Time AI Marketplace handoff
+
+- Replaces the iframe-dependent purchase action with one native top-level link.
+- Shows exactly one continuation control at a time: prepaid QVit continuation
+  or package purchase.
+- Opens the Marketplace already filtered to the available Time AI packages
+  when the complimentary Voice LIVE allowance ends.
+
 ## 1.0.0-rc.39 - 2026-07-28
 
 ### One-step Time AI purchase entry

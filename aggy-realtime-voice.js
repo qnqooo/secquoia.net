@@ -11,7 +11,8 @@
   const caption=$('#aggyVoiceCaption');
   const muteButton=$('#aggyVoiceMute');
   const endButton=$('#aggyVoiceEnd');
-  const usageActionButton=$('#aggyUsageAction');
+  const usageContinueButton=$('#aggyUsageContinue');
+  const usageMarketplaceLink=$('#aggyUsageMarketplace');
   const sessionEndpoint='https://aggy.secquoia.group/api/aggy/realtime/session';
   const healthEndpoint='https://aggy.secquoia.group/api/aggy/realtime/health';
   const usageEndpoint='https://aggy.secquoia.group/api/aggy/usage';
@@ -20,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0-rc.39';
+  const aggyVersion='1.0.0-rc.40';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -84,7 +85,6 @@
   let usageHardStop=null;
   let lastUsageStatus=null;
   let previousFreeRemainingSeconds=null;
-  let usageActionMode='none';
   let usageMarketplaceUrl='https://secquoia.net/qu-market.html?time_ai=1#ai-services';
   const freeTimeNoticesSent=new Set();
   let connectionOpenTimeout=null;
@@ -157,24 +157,18 @@
     const topUpAvailable=status?.wallet?.topUpAvailable===true;
     const topUpUrl=String(status?.wallet?.topUpUrl||'');
     publishUsageState(free,accessMode);
-    usageActionMode='none';
-    if(usageActionButton){
-      usageActionButton.hidden=true;
-      usageActionButton.removeAttribute('aria-busy');
-      usageActionButton.disabled=false;
+    if(usageContinueButton){
+      usageContinueButton.hidden=true;
+      usageContinueButton.removeAttribute('aria-busy');
+      usageContinueButton.disabled=false;
     }
+    if(usageMarketplaceLink)usageMarketplaceLink.hidden=true;
     try{
       const candidate=new URL(topUpUrl);
       if(candidate.protocol==='https:'&&candidate.hostname==='secquoia.net'&&candidate.pathname==='/qu-market.html'){
         usageMarketplaceUrl=candidate.href;
       }
     }catch{}
-    const showUsageAction=(mode,label)=>{
-      usageActionMode=mode;
-      if(!usageActionButton)return;
-      usageActionButton.textContent=label;
-      usageActionButton.hidden=false;
-    }
     if(status?.activeLease){
       usageUi(
         previewAccess?'Ecosystem Preview activo':contractIncluded?'Aggy incluida en tu servicio':'Sesión medida en curso',
@@ -190,13 +184,22 @@
         'ready'
       );
     }else if(!topUpAvailable){
-      showUsageAction('marketplace','Ver paquetes de Tiempo IA');
+      if(usageMarketplaceLink){
+        usageMarketplaceLink.href=usageMarketplaceUrl;
+        usageMarketplaceLink.hidden=false;
+      }
       usageUi('Tus 10 minutos gratis finalizaron','Para seguir con Voz LIVE, elige el paquete de Tiempo IA que mejor se ajuste a ti. El pago es único y no activamos cargos automáticos.','blocked');
     }else if(balance>=price&&price>0){
-      showUsageAction('continue',`Continuar con mi saldo · ${price.toLocaleString('es-CO')} QVit`);
+      if(usageContinueButton){
+        usageContinueButton.textContent=`Continuar con mi saldo · ${price.toLocaleString('es-CO')} QVit`;
+        usageContinueButton.hidden=false;
+      }
       usageUi('Tu Tiempo IA está disponible','Toca el botón para continuar Voz LIVE por 1 minuto. Solo se descontará el saldo indicado y nunca realizaremos cargos automáticos.','checking');
     }else{
-      showUsageAction('marketplace','Ver paquetes de Tiempo IA');
+      if(usageMarketplaceLink){
+        usageMarketplaceLink.href=usageMarketplaceUrl;
+        usageMarketplaceLink.hidden=false;
+      }
       usageUi('Tus 10 minutos gratis finalizaron','Para seguir con Voz LIVE, elige el paquete de Tiempo IA que mejor se ajuste a ti. También puedes continuar por chat sin costo de voz.','blocked');
     }
   };
@@ -779,20 +782,7 @@
   };
 
   startButton.addEventListener('click',()=>startRealtime(false,{userInitiated:true}));
-  usageActionButton?.addEventListener('click',()=>{
-    if(usageActionMode==='continue'){
-      startRealtime(true,{userInitiated:true});
-      return;
-    }
-    if(usageActionMode!=='marketplace')return;
-    usageActionButton.disabled=true;
-    usageActionButton.setAttribute('aria-busy','true');
-    if(window.parent!==window&&parentOrigin){
-      window.parent.postMessage({type:'secquoia:aggy:open-time-ai',marketplaceUrl:usageMarketplaceUrl},parentOrigin);
-      return;
-    }
-    window.location.assign(usageMarketplaceUrl);
-  });
+  usageContinueButton?.addEventListener('click',()=>startRealtime(true,{userInitiated:true}));
   endButton.addEventListener('click',()=>endVoice('CLIENT_END'));
   muteButton.addEventListener('click',()=>{
     const track=microphone?.getAudioTracks()[0];
