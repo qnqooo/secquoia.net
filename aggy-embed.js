@@ -6,8 +6,27 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.2.5';
-  const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
+  const version='1.2.6';
+  const paymentReturn=(()=>{
+    try{
+      const values=new URLSearchParams(location.hash.replace(/^#/,''));
+      const sessionId=String(values.get('session_id')||'');
+      if(values.get('aggy_payment')!=='success'||!/^cs_live_[A-Za-z0-9_]{16,200}$/.test(sessionId))return '';
+      const sanitized=new URL(location.href);
+      sanitized.hash='';
+      history.replaceState(history.state,'',sanitized.href);
+      return sessionId;
+    }catch{return ''}
+  })();
+  const frameUrl=(()=>{
+    const url=new URL('https://secquoia.net/qu-market.html');
+    url.searchParams.set('embed','1');
+    url.searchParams.set('aggy','1');
+    url.searchParams.set('site',site);
+    url.searchParams.set('v',version);
+    if(paymentReturn)url.hash=new URLSearchParams({payment:'success',session_id:paymentReturn}).toString();
+    return url.href;
+  })();
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
   const root=host.attachShadow({mode:'open'});
@@ -179,7 +198,9 @@
     launcher.dataset.paidMinutes=String(minutes);
     launcherStatus.textContent=`${minutes} min disponibles · Voice LIVE`;
     launcherNudge.textContent='Pago confirmado · toca para continuar';
+    setOpen(true,{focus:false});
     setPaymentMomentOpen(true);
+    requestVoiceStart();
   };
   const updateMinuteChain=detail=>{
     const contractIncluded=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode);

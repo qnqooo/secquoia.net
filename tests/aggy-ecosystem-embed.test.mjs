@@ -66,7 +66,7 @@ test('Aggy exhausted state is yellow, preserves readable copy and offers explici
   assert.match(embed,/frame\.contentWindow\?\.postMessage\(\{type:'secquoia:aggy:open-chat'/);
 });
 
-test('Aggy embed presents a compact post-payment moment and keeps expansion user initiated',()=>{
+test('Aggy opens only for a certified post-payment moment and resumes Voice LIVE',()=>{
   assert.match(embed,/class="payment-moment"/);
   assert.match(embed,/Tu conversación continúa\./);
   assert.match(embed,/data-payment-amount/);
@@ -76,7 +76,11 @@ test('Aggy embed presents a compact post-payment moment and keeps expansion user
   assert.match(embed,/launcher\.dataset\.paidMinutes=String\(minutes\)/);
   assert.match(embed,/paymentPrimary\.addEventListener\('click'/);
   assert.match(embed,/setPaymentMomentOpen\(true\)/);
-  assert.doesNotMatch(embed,/showPaymentMoment=[\s\S]{0,1200}setOpen\(true\)/);
+  assert.match(embed,/showPaymentMoment=[\s\S]{0,1200}setOpen\(true,\{focus:false\}\)/);
+  assert.match(embed,/showPaymentMoment=[\s\S]{0,1400}requestVoiceStart\(\)/);
+  assert.match(embed,/aggy_payment/);
+  assert.match(embed,/session_id/);
+  assert.match(embed,/location\.hash\.replace/);
 });
 
 test('Aggy compact widget uses the governed Realtime voice client only',()=>{
@@ -84,13 +88,15 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.2\.5"/);
-  assert.match(embed,/qu-market\.html\?embed=1&aggy=1/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.2\.6"/);
+  assert.match(embed,/new URL\('https:\/\/secquoia\.net\/qu-market\.html'\)/);
+  assert.match(embed,/url\.searchParams\.set\('embed','1'\)/);
+  assert.match(embed,/url\.searchParams\.set\('aggy','1'\)/);
   assert.match(embed,/title="Aggy Communications"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.2\.5"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.2\.5"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.2\.6"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.2\.6"[^>]*data-aggy-site="secquoia\.net"/);
 });

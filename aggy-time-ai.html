@@ -40,7 +40,7 @@
 <script>
 (()=>{
   'use strict';
-  const RELEASE='1.2.5';
+  const RELEASE='1.2.6';
   const PACKS=Object.freeze({
     'qvit-ai-credit-1':Object.freeze({amountUsd:1,minutes:4,label:'Tiempo IA · Inicio'}),
     'qvit-ai-credit-5':Object.freeze({amountUsd:5,minutes:20,label:'Tiempo IA · Conversación'}),
@@ -110,7 +110,7 @@
     localStorage.removeItem(PENDING_KEY);
     setStatus('¡Pago confirmado!',`Aggy recibió la confirmación de USD ${confirmation.amountUsd.toFixed(2)}. Voice LIVE continuará durante ${Math.round(confirmation.voiceLiveMinutes)} minutos adicionales.`,{tone:'success'});
     const destination=new URL(safeReturn(pending?.returnTo));
-    destination.searchParams.set('aggy_payment','success');
+    destination.hash=new URLSearchParams({aggy_payment:'success',session_id:sessionId}).toString();
     setTimeout(()=>location.replace(destination.href),1500);
   };
   const showFailure=(title,copy,retry)=>{setStatus(title,copy,{tone:'error',retry});returnAction.href=safeReturn(readPending()?.returnTo)};

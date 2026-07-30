@@ -1,9 +1,9 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "1.2.5",
-  "releaseId": "aggy-1.2.5-direct-time-ai-checkout",
-  "releasedAt": "2026-07-30T08:54:24-05:00",
+  "version": "1.2.6",
+  "releaseId": "aggy-1.2.6-post-payment-voice-resume",
+  "releasedAt": "2026-07-30T10:24:28-05:00",
   "channel": "stable",
   "lifecycle": "general-availability",
   "distribution": "ecosystem-hosted",

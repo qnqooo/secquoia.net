@@ -2,6 +2,20 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.6 - 2026-07-30
+
+### Certified post-payment Voice LIVE resume
+
+- Carries the paid Stripe session back to Aggy's embedded origin through a
+  transient URL fragment so browser storage partitioning cannot lose the
+  confirmation between `secquoia.net`, `secquoia.group` and `qnq.ooo`.
+- Removes the fragment immediately, reconfirms the LIVE Checkout server-side,
+  installs the signed QVit wallet binding and waits for credited minutes.
+- Opens Aggy only for this confirmed post-payment event and resumes Voice LIVE
+  without requiring the customer to find another control.
+- Gives a concise spoken acknowledgment with the exact amount and minutes,
+  thanks the customer and begins a prioritized cybersecurity consultation.
+
 ## 1.2.5 - 2026-07-30
 
 ### Direct Time AI checkout

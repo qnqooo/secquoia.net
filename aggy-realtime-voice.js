@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.2.5';
+  const aggyVersion='1.2.6';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -155,8 +155,10 @@
   if(postPaymentGreeting)setTimeout(()=>publishPaymentConfirmation(postPaymentGreeting),0);
   const recoverPaidCheckout=async()=>{
     const params=new URLSearchParams(location.search);
-    const sessionId=String(params.get('session_id')||'');
-    if(params.get('payment')!=='success'||!/^cs_live_[A-Za-z0-9_]{16,200}$/.test(sessionId))return null;
+    const paymentFragment=new URLSearchParams(location.hash.replace(/^#/,''));
+    const sessionId=String(params.get('session_id')||paymentFragment.get('session_id')||'');
+    const paymentState=params.get('payment')||paymentFragment.get('payment');
+    if(paymentState!=='success'||!/^cs_live_[A-Za-z0-9_]{16,200}$/.test(sessionId))return null;
     const response=await fetchWithTimeout(`https://pay.secquoia.group/v1/qupay/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`,{
       method:'GET',
       credentials:'omit',
@@ -172,7 +174,8 @@
     walletBindingToken=confirmation.walletBinding;
     localStorage.setItem('secquoia.aggy.qupay.wallet-binding.v1',walletBindingToken);
     params.delete('session_id');
-    const sanitized=`${location.pathname}${params.size?`?${params}`:''}${location.hash}`;
+    params.delete('payment');
+    const sanitized=`${location.pathname}${params.size?`?${params}`:''}`;
     history.replaceState(history.state,'',sanitized);
     const paidConfirmation=Object.freeze({
       amountUsd:Number(confirmation.amountUsd||0),
@@ -536,7 +539,7 @@
       type:'response.create',
       response:{
         instructions:paid
-          ? `Start speaking immediately in ${language}. This is a server-confirmed post-payment continuation. State the exact confirmed amount, USD ${paidAmount}, and the exact purchased Voice LIVE allowance, ${paidMinutes} additional minutes; never infer or change either value. If speaking Spanish, begin with this natural message: "¡Gracias! He recibido la confirmación segura de tu pago de USD ${paidAmount}. Este paquete nos permitirá continuar conversando por Voice LIVE durante ${paidMinutes} minutos adicionales. Es un placer poder atenderte y seguir hablando contigo." If speaking another language, give a faithful, natural equivalent with the same amount and minutes. Then ask one brief, context-aware question offering either to resume the previous conversation or help with something new. Keep the entire turn warm, compact, direct, and conversational. Do not mention Stripe, QuPay, QVit, wallet, token, webhook, billing mechanics, or internal validation. Speak it aloud through Realtime audio.`
+          ? `Start speaking immediately in ${language}. This is a server-confirmed post-payment continuation. State the exact confirmed amount, USD ${paidAmount}, and the exact purchased Voice LIVE allowance, ${paidMinutes} additional minutes; never infer or change either value. If speaking Spanish, begin with this natural message: "¡Pago confirmado! Muchas gracias por continuar conectado conmigo. He recibido la confirmación segura de USD ${paidAmount} y ahora contamos con ${paidMinutes} minutos adicionales de conversación Voice LIVE. Aprovechemos muy bien este tiempo." Then immediately act as an elite cybersecurity consultant and commercially skilled advisor: invite the customer to name the single most important risk, business objective or decision so you can prioritize, diagnose and recommend the clearest next step. Be credible, consultative and persuasive without pressure, exaggeration or unsupported claims. If speaking another language, give a faithful, natural equivalent with the same amount and minutes. Keep this opening warm, compact, direct and conversational. Do not mention Stripe, QuPay, QVit, wallet, token, webhook, billing mechanics or internal validation. Speak it aloud through Realtime audio.`
           : `Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Then briefly explain that the Aggy button opens chat, secure file exchange, and encrypted individual or group calls. Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
@@ -849,7 +852,7 @@
       const permissionState=await microphonePermissionState();
       if(paidConfirmation){
         let paidStatus=usageResult.status==='fulfilled'?usageResult.value:null;
-        for(let attempt=0;attempt<8&&Number(paidStatus?.wallet?.balance||0)<Number(paidStatus?.continuation?.customerQVit||1);attempt++){
+        for(let attempt=0;attempt<16&&Number(paidStatus?.wallet?.balance||0)<Number(paidStatus?.continuation?.customerQVit||1);attempt++){
           await new Promise(resolve=>setTimeout(resolve,750));
           paidStatus=await fetchUsageStatus().catch(()=>paidStatus);
         }

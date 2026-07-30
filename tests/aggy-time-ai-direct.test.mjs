@@ -41,7 +41,7 @@ test('direct flow runs package, QuIdentify, QuPay Stripe and certified Aggy cont
   assert.match(script,/body\.status!=='PAID'/);
   assert.match(script,/localStorage\.setItem\(WALLET_KEY,body\.walletBinding\)/);
   assert.match(script,/localStorage\.setItem\(PAYMENT_KEY,JSON\.stringify\(confirmation\)\)/);
-  assert.match(script,/destination\.searchParams\.set\('aggy_payment','success'\)/);
+  assert.match(script,/destination\.hash=new URLSearchParams\(\{aggy_payment:'success',session_id:sessionId\}\)\.toString\(\)/);
 });
 
 test('package selection bypasses Marketplace from both ecosystem and SECQUOIA.net launchers',()=>{
@@ -58,6 +58,10 @@ test('post-payment confirmation crosses the Stripe return and is consumed once b
   assert.match(voice,/server-confirmed post-payment continuation/);
   assert.match(voice,/exact confirmed amount/);
   assert.match(voice,/exact purchased Voice LIVE allowance/);
+  assert.match(voice,/paymentFragment=new URLSearchParams\(location\.hash\.replace/);
+  assert.match(voice,/params\.get\('session_id'\)\|\|paymentFragment\.get\('session_id'\)/);
+  assert.match(embed,/url\.hash=new URLSearchParams\(\{payment:'success',session_id:paymentReturn\}\)\.toString\(\)/);
+  assert.match(embed,/history\.replaceState\(history\.state,'',sanitized\.href\)/);
 });
 
 test('the direct flow never charges automatically',()=>{
