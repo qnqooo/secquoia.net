@@ -208,7 +208,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.3');
+  assert.equal(release.version,'1.2.4');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -524,6 +524,9 @@ test('Time AI purchase uses one native top-level link and opens all Marketplace 
 
 test('Time AI package selection resumes through QuIdentify before QuPay Checkout',()=>{
   assert.match(html,/function timeAiIdentityReturnUrl\(packId,walletReference\)/);
+  assert.match(html,/async function resolveTimeAiWalletReference\(candidate\)/);
+  assert.match(html,/fetch\('https:\/\/aggy\.secquoia\.group\/api\/aggy\/usage\/status'/);
+  assert.match(html,/const walletReference=await resolveTimeAiWalletReference\(params\.get\('wallet_ref'\)\)/);
   assert.match(html,/url\.searchParams\.set\('checkout','time_ai'\)/);
   assert.match(html,/quIdentifyStartUrl\(timeAiIdentityReturnUrl\(pack\.id,walletReference\),'time_ai_checkout'\)/);
   assert.match(html,/confirmes en Stripe/);
@@ -531,6 +534,7 @@ test('Time AI package selection resumes through QuIdentify before QuPay Checkout
   assert.match(addons,/resumeTimeAiCheckout=activationParams\.get\('checkout'\)==='time_ai'&&activationParams\.get\('quidentify'\)==='verified'/);
   assert.match(addons,/cleanUrl\.searchParams\.delete\('checkout'\)/);
   assert.match(addons,/setTimeout\(\(\)=>checkoutButton\(\)\?\.click\(\),0\)/);
+  assert.doesNotMatch(addons,/button\.disabled=true/);
 });
 
 test('QuIdentify contract entitlements are signed, expiry-bound and tamper-evident',async()=>{

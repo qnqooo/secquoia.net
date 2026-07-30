@@ -2,6 +2,17 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.4 - 2026-07-30
+
+### Direct-purchase QVit wallet bootstrap
+
+- Fixes Time AI purchases opened directly from the Marketplace without an
+  existing `wallet_ref`.
+- Obtains the visitor's pseudonymous QVit reference from Aggy's governed usage
+  endpoint before sending the customer through QuIdentify/Okta.
+- Keeps the package button available when wallet preparation fails and displays
+  a clear, retryable status without creating a charge.
+
 ## 1.2.3 - 2026-07-30
 
 ### QuIdentify checkout continuity
