@@ -184,7 +184,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.40');
+  assert.equal(release.version,'1.0.0-rc.41');
   assert.equal(release.channel,'rc');
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
@@ -421,7 +421,7 @@ test('Time AI purchase uses one native top-level link and opens all Marketplace 
   assert.match(html,/let qupayCheckoutPending=false/);
   assert.match(html,/aria-busy/);
   assert.match(html,/QuPay–QuFense no respondió/);
-  assert.match(html,/qvit-ai-credit-\(1\|25\|100\|500\)/);
+  assert.match(html,/qvit-ai-credit-\(1\|10\|25\|100\|500\)/);
   assert.match(html,/id="ai-services"/);
   assert.match(html,/id="aggyUsageMarketplace"[^>]+target="_top"[^>]+rel="noopener"/);
   assert.match(voice,/usageMarketplaceLink\.href=usageMarketplaceUrl/);
