@@ -1,9 +1,9 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "1.2.8",
-  "releaseId": "aggy-1.2.8-marketplace-voice-launcher-fix",
-  "releasedAt": "2026-07-30T11:49:17-05:00",
+  "version": "1.2.9",
+  "releaseId": "aggy-1.2.9-mobile-post-payment-resume",
+  "releasedAt": "2026-07-30T15:35:00-05:00",
   "channel": "stable",
   "lifecycle": "general-availability",
   "distribution": "ecosystem-hosted",

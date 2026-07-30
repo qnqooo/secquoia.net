@@ -88,7 +88,7 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.2\.8"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.2\.9"/);
   assert.match(embed,/new URL\('https:\/\/secquoia\.net\/qu-market\.html'\)/);
   assert.match(embed,/url\.searchParams\.set\('embed','1'\)/);
   assert.match(embed,/url\.searchParams\.set\('aggy','1'\)/);
@@ -97,6 +97,6 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.2\.8"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.2\.8"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.2\.9"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.2\.9"[^>]*data-aggy-site="secquoia\.net"/);
 });

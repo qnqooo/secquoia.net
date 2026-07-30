@@ -2,6 +2,19 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.9 - 2026-07-30
+
+### Mobile post-payment Voice LIVE recovery
+
+- Accepts both the native Marketplace `aggy_payment=success` return and the
+  universal loader `payment=success` return after certified Stripe payment.
+- Preserves the server-confirmed payment context across mobile tab changes and
+  reloads, then opens the Voice LIVE view instead of the generic chat.
+- Waits visibly for QVit accreditation for up to 60 seconds and never asks the
+  customer to pay again while reconciliation is still in progress.
+- Adds an explicit **Continue with Aggy** fallback action before the automatic
+  return to the originating SECQUOIA website.
+
 ## 1.2.8 - 2026-07-30
 
 ### Marketplace Voice LIVE launcher recovery
