@@ -208,7 +208,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.6');
+  assert.equal(release.version,'1.2.7');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);

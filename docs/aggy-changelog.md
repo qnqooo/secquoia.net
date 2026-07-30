@@ -2,6 +2,20 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.7 - 2026-07-30
+
+### Guided Marketplace purchase
+
+- Replaces the catalog-first entry with three customer goals, a team-size
+  selector and one Aggy recommendation.
+- Adds the complete recommended solution to a grouped summary with one
+  continuation action; QuIdentify and payment confirmation remain explicit.
+- Keeps the estimator, individual modules, onboarding, evidence and deployment
+  controls behind `Explore and customize` instead of removing capabilities.
+- Groups the advanced catalog into protection, operation and optimization
+  families, and lets Aggy explain the recommendation without silently starting
+  a paid model request.
+
 ## 1.2.6 - 2026-07-30
 
 ### Certified post-payment Voice LIVE resume
