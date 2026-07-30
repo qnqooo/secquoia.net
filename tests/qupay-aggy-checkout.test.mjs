@@ -153,7 +153,8 @@ test('Authorized Checkout carries QuFense evidence into Stripe metadata',async()
   assert.equal(form.get('metadata[qufense_evidence_id]'),'QFP-checkout-test');
   assert.equal(form.get('metadata[qufense_authority_fingerprint]'),authorityFingerprint);
   assert.equal(form.get('metadata[qufense_payload_digest]'),result.payloadDigest);
-  assert.match(form.get('success_url'),/payment=success&session_id=\{CHECKOUT_SESSION_ID\}/);
+  assert.equal(form.get('success_url'),'https://secquoia.net/aggy-time-ai.html?payment=success&session_id={CHECKOUT_SESSION_ID}');
+  assert.equal(form.get('cancel_url'),'https://secquoia.net/aggy-time-ai.html?payment=cancelled');
 });
 
 test('Paid Checkout confirmation returns a signed wallet binding and 20-minute USD 5 pack',async()=>{
