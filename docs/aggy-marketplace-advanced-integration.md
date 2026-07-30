@@ -4,7 +4,7 @@ Cryptographic terminology follows [`E2EE-PQC-NAMING-STANDARD.md`](E2EE-PQC-NAMIN
 
 Requirement: restore the approved advanced Aggy interface in the persistent floating QuMarket widget.
 
-Current release: `1.2.2` (`stable`, ecosystem hosted). Aggy Core is approved for general availability and third-party integration for Voice LIVE, assistant chat, visitor trials, contract entitlements, Time AI QVit and QuPay LIVE. Its consultant playbook adds evidence-aware commercial and technical guidance. External secure messaging, CDR-protected attachments and E2EE/PQC calls remain preview capabilities and fail closed until their documented infrastructure gates pass. See `aggy-release.json`, `aggy-ga-evidence.json`, `docs/aggy-ga-operations.md`, `docs/aggy-changelog.md`, `docs/aggy-commercial-consultant-playbook.md` and `docs/aggy-versioning-policy.md`.
+Current release: `1.2.3` (`stable`, ecosystem hosted). Aggy Core is approved for general availability and third-party integration for Voice LIVE, assistant chat, visitor trials, contract entitlements, Time AI QVit and QuPay LIVE. Its consultant playbook adds evidence-aware commercial and technical guidance. External secure messaging, CDR-protected attachments and E2EE/PQC calls remain preview capabilities and fail closed until their documented infrastructure gates pass. See `aggy-release.json`, `aggy-ga-evidence.json`, `docs/aggy-ga-operations.md`, `docs/aggy-changelog.md`, `docs/aggy-commercial-consultant-playbook.md` and `docs/aggy-versioning-policy.md`.
 
 ## Contract and membership access
 

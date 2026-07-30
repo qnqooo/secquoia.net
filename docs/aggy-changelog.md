@@ -2,6 +2,20 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.3 - 2026-07-30
+
+### QuIdentify checkout continuity
+
+- Changes each Time AI package action to **Choose and continue**, eliminating
+  the ambiguous add-to-cart step after the visitor allowance ends.
+- Sends unverified customers directly through QuIdentify/Okta while preserving
+  the selected package and QVit wallet reference.
+- Resumes the same purchase after the verified callback and opens QuPay/Stripe
+  without requiring the customer to find or press another checkout control.
+- Keeps payment consent explicit: selecting a package starts the governed
+  identity and checkout journey, while the charge still requires confirmation
+  inside Stripe.
+
 ## 1.2.2 - 2026-07-30
 
 ### Stripe idempotency hardening

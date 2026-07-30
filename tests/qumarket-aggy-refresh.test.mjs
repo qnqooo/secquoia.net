@@ -208,7 +208,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.2');
+  assert.equal(release.version,'1.2.3');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -520,6 +520,17 @@ test('Time AI purchase uses one native top-level link and opens all Marketplace 
   assert.match(addons,/getElementById\('ai-services'\)\?\.scrollIntoView/);
   assert.match(worker,/time_ai=1&wallet_ref=/);
   assert.doesNotMatch(worker,/addon=qvit-ai-credit-1&wallet_ref=/);
+});
+
+test('Time AI package selection resumes through QuIdentify before QuPay Checkout',()=>{
+  assert.match(html,/function timeAiIdentityReturnUrl\(packId,walletReference\)/);
+  assert.match(html,/url\.searchParams\.set\('checkout','time_ai'\)/);
+  assert.match(html,/quIdentifyStartUrl\(timeAiIdentityReturnUrl\(pack\.id,walletReference\),'time_ai_checkout'\)/);
+  assert.match(html,/confirmes en Stripe/);
+  assert.match(addons,/Elegir y continuar/);
+  assert.match(addons,/resumeTimeAiCheckout=activationParams\.get\('checkout'\)==='time_ai'&&activationParams\.get\('quidentify'\)==='verified'/);
+  assert.match(addons,/cleanUrl\.searchParams\.delete\('checkout'\)/);
+  assert.match(addons,/setTimeout\(\(\)=>checkoutButton\(\)\?\.click\(\),0\)/);
 });
 
 test('QuIdentify contract entitlements are signed, expiry-bound and tamper-evident',async()=>{
