@@ -2,6 +2,22 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0 - 2026-07-29
+
+### General Availability
+
+- Promotes Aggy Core to stable GA with explicit approval by Eddie Velasquez Ortiz.
+- GA scope: Voice LIVE, assistant chat, the ten-minute visitor trial, signed
+  contract entitlements, prepaid Time AI QVit and QuPay LIVE.
+- Keeps `gpt-realtime-2.1` and the published OpenAI rate card under QuOptio's
+  fail-closed freshness policy.
+- Records production evidence, operational ownership, rollback, security,
+  billing and compatibility controls in `aggy-ga-evidence.json` and
+  `docs/aggy-ga-operations.md`.
+- External secure messaging, CDR-protected attachments and E2EE/PQC calls stay
+  preview-only and fail closed. This GA release makes no claim that Glasswall,
+  managed call media or NIAP certification is active.
+
 ## 1.0.0-rc.41 - 2026-07-29
 
 ### USD 10 Time AI package

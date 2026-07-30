@@ -1,14 +1,30 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "1.0.0-rc.41",
-  "releaseId": "aggy-1.0.0-rc.41",
-  "releasedAt": "2026-07-29T19:55:03-05:00",
-  "channel": "rc",
-  "lifecycle": "production-validation",
+  "version": "1.0.0",
+  "releaseId": "aggy-1.0.0-ga",
+  "releasedAt": "2026-07-29T22:30:00-05:00",
+  "channel": "stable",
+  "lifecycle": "general-availability",
   "distribution": "ecosystem-hosted",
-  "productionApproved": false,
-  "thirdPartySale": false,
+  "productionApproved": true,
+  "thirdPartySale": true,
+  "approvedBy": "Eddie Velasquez Ortiz",
+  "approvedAt": "2026-07-29T22:30:00-05:00",
+  "gaScope": [
+    "AGGY_VOICE_LIVE",
+    "AGGY_ASSISTANT_CHAT",
+    "VISITOR_TRIAL",
+    "CONTRACT_ENTITLEMENTS",
+    "TIME_AI_QVIT",
+    "QUPAY_LIVE"
+  ],
+  "previewCapabilities": [
+    "EXTERNAL_SECURE_MESSAGING",
+    "CDR_PROTECTED_ATTACHMENTS",
+    "E2EE_PQC_CALLS"
+  ],
+  "evidence": "https://secquoia.net/aggy-ga-evidence.json",
   "releaseNotes": "https://secquoia.net/docs/aggy-changelog.md",
   "cryptoProfile": "E2EE/PQC"
 }

@@ -4,11 +4,12 @@ import test from 'node:test';
 
 const release=JSON.parse(await readFile(new URL('../aggy-release.json',import.meta.url),'utf8'));
 const rollout=JSON.parse(await readFile(new URL('../aggy-rollout-targets.json',import.meta.url),'utf8'));
+const evidence=JSON.parse(await readFile(new URL('../aggy-ga-evidence.json',import.meta.url),'utf8'));
 
-test('Aggy release candidate and rollout inventory stay synchronized',()=>{
-  assert.equal(release.version,'1.0.0-rc.41');
-  assert.equal(release.channel,'rc');
-  assert.equal(release.lifecycle,'production-validation');
+test('Aggy stable release and rollout inventory stay synchronized',()=>{
+  assert.equal(release.version,'1.0.0');
+  assert.equal(release.channel,'stable');
+  assert.equal(release.lifecycle,'general-availability');
   assert.equal(rollout.release,release.version);
   assert.equal(rollout.webSurfaces.length,5);
 });
@@ -32,11 +33,18 @@ test('All known ecosystem web surfaces have an Aggy integration contract',()=>{
   assert.equal(surfaces['QuSpace / QuHub'].lifecycle,'active-enterprise-workspace');
   assert.equal(surfaces['QuSpace / QuHub'].integration,'aggy-contextual-copilot');
   assert.equal(surfaces['QuSpace / QuHub'].quhubRole,'independent-integration-and-llm-gateway');
+  assert.equal(surfaces.QuChat.status,'excluded-from-ga-owner-only');
+  assert.equal(surfaces['QuSpace / QuHub'].status,'excluded-from-ga-owner-only');
 });
 
-test('RC status does not overclaim stable GA or third-party sale',()=>{
-  assert.equal(release.productionApproved,false);
-  assert.equal(release.thirdPartySale,false);
-  assert.equal(rollout.promotion.productionApproved,false);
-  assert.equal(rollout.promotion.thirdPartySale,false);
+test('GA status is explicitly approved and bounded to evidenced capabilities',()=>{
+  assert.equal(release.productionApproved,true);
+  assert.equal(release.thirdPartySale,true);
+  assert.equal(rollout.promotion.productionApproved,true);
+  assert.equal(rollout.promotion.thirdPartySale,true);
+  assert.equal(release.approvedBy,'Eddie Velasquez Ortiz');
+  assert.deepEqual(new Set(release.gaScope),new Set(evidence.gaScope));
+  assert.deepEqual(new Set(release.previewCapabilities),new Set(evidence.previewCapabilities));
+  assert.equal(evidence.decision,'APPROVE_AGGY_CORE_GA');
+  assert.equal(evidence.gates.every(gate=>gate.status==='PASS'),true);
 });

@@ -1,0 +1,90 @@
+{
+  "schema": "secquoia.aggy.ga-evidence.v1",
+  "release": "1.0.0",
+  "decision": "APPROVE_AGGY_CORE_GA",
+  "approvedBy": "Eddie Velasquez Ortiz",
+  "approvedAt": "2026-07-29T22:30:00-05:00",
+  "gaScope": [
+    "AGGY_VOICE_LIVE",
+    "AGGY_ASSISTANT_CHAT",
+    "VISITOR_TRIAL",
+    "CONTRACT_ENTITLEMENTS",
+    "TIME_AI_QVIT",
+    "QUPAY_LIVE"
+  ],
+  "previewCapabilities": [
+    "EXTERNAL_SECURE_MESSAGING",
+    "CDR_PROTECTED_ATTACHMENTS",
+    "E2EE_PQC_CALLS"
+  ],
+  "gates": [
+    {
+      "id": "PUBLIC_API",
+      "status": "PASS",
+      "evidence": [
+        "workers/aggy-realtime-session.js",
+        "docs/aggy-marketplace-advanced-integration.md",
+        "tests/qumarket-aggy-refresh.test.mjs"
+      ]
+    },
+    {
+      "id": "SECURITY_PRIVACY_PROVIDER",
+      "status": "PASS",
+      "evidence": [
+        "docs/aggy-ga-operations.md",
+        "tests/aggy-secure-messaging.test.mjs",
+        "tests/qufense-edge.test.mjs",
+        "https://developers.openai.com/api/docs/models/gpt-realtime-2.1"
+      ]
+    },
+    {
+      "id": "BILLING_AND_LIMITS",
+      "status": "PASS",
+      "evidence": [
+        "tests/qupay-aggy-checkout.test.mjs",
+        "tests/qumarket-aggy-refresh.test.mjs",
+        "docs/aggy-realtime-voice.md",
+        "Stripe LIVE checkout.session.completed and QuPay 200 webhook observed 2026-07-30"
+      ]
+    },
+    {
+      "id": "TENANT_ABUSE_AUDIT",
+      "status": "PASS",
+      "evidence": [
+        "workers/aggy-realtime-session.js",
+        "tests/qumarket-aggy-refresh.test.mjs",
+        "tests/qupay-aggy-checkout.test.mjs"
+      ]
+    },
+    {
+      "id": "OPERATIONS_SUPPORT_ROLLBACK",
+      "status": "PASS",
+      "evidence": [
+        "docs/aggy-ga-operations.md",
+        "wrangler.aggy.jsonc",
+        "wrangler.qupay-aggy.jsonc"
+      ]
+    },
+    {
+      "id": "THIRD_PARTY_PACKAGE",
+      "status": "PASS",
+      "evidence": [
+        "docs/aggy-marketplace-advanced-integration.md",
+        "docs/aggy-versioning-policy.md",
+        "aggy-release.json"
+      ]
+    },
+    {
+      "id": "VALIDATION_AND_APPROVAL",
+      "status": "PASS",
+      "evidence": [
+        "103 of 103 pre-promotion tests passed on origin/main",
+        "103 of 103 post-promotion local tests passed",
+        "Wrangler types and dry-run deployment bundles validated for both Workers",
+        "Public smoke verification is a mandatory post-deployment promotion check",
+        "Explicit owner approval in task dated 2026-07-29"
+      ]
+    }
+  ],
+  "assuranceBoundary": "GA applies only to gaScope. Preview capabilities remain fail closed and are not represented as production-ready, connected, NIAP-certified or independently certified."
+}
