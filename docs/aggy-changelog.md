@@ -2,6 +2,15 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.0-rc.41 - 2026-07-29
+
+### USD 10 Time AI package
+
+- Adds a governed USD 10 prepaid package between the starter and USD 25 options.
+- Credits 10,000,000 QVit only after a confirmed QuPay webhook.
+- Estimates approximately forty additional Voice LIVE minutes using the
+  current rate card, without automatic renewal or silent overdraft.
+
 ## 1.0.0-rc.40 - 2026-07-29
 
 ### Native Time AI Marketplace handoff
