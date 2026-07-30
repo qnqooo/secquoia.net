@@ -2,6 +2,21 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.1 - 2026-07-29
+
+### Clear continuity after the visitor trial
+
+- Changes the compact launcher to a persistent yellow exhausted state when the
+  ten complimentary Voice LIVE minutes reach zero.
+- Replaces the obsolete “10 min gratis” prompt with two explicit routes:
+  continue through secure assistant chat, or choose a prepaid Time AI package.
+- Adds a compact, mobile-first selector for the governed USD 1, 10, 25, 100
+  and 500 packs before handing the customer to the Marketplace.
+- Keeps checkout user-initiated: selecting a pack prepares the Marketplace
+  review; it does not charge, renew or start a paid voice minute automatically.
+- Carries the opaque QVit wallet reference from the server-governed usage state
+  and preserves top-level navigation so Aggy cannot cover Stripe Checkout.
+
 ## 1.0.0 - 2026-07-29
 
 ### General Availability

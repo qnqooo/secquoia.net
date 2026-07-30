@@ -184,7 +184,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.0.0');
+  assert.equal(release.version,'1.0.1');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -253,7 +253,7 @@ test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
 test('Marketplace keeps chat compact while Voice LIVE starts without stealing focus',()=>{
   assert.match(html,/setAssistantState\(embedded\?'expanded':'hidden',\{persist:false,focus:false\}\)/);
   assert.match(html,/window\.addEventListener\('load',\(\)=>openAggyVoice\(\{focus:false,reveal:false\}\)/);
-  assert.match(html,/assistantLauncher\.onclick=\(\)=>\{assistantLauncher\.dataset\.guideDismissed='true';openAgent\(\)\}/);
+  assert.match(html,/assistantLauncher\.onclick=\(\)=>\{assistantLauncher\.dataset\.guideDismissed='true';if\(assistantLauncher\.dataset\.expired==='true'\)\{openAggyContinuity\(\);return\}openAgent\(\)\}/);
   assert.match(html,/secquoia:aggy:start-voice/);
   assert.match(html,/openAggyVoice\(\{focus:false,reveal:false\}\)/);
   assert.match(html,/secquoia:aggy:voice-state/);
@@ -377,6 +377,23 @@ test('Usage API forwards paid continuation only after an explicit user confirmat
   assert.match(forwarded[0].capabilityHash,/^[a-f0-9]{64}$/);
 });
 
+test('Marketplace exhausted state opens a focused continuity dialog before any purchase',()=>{
+  for(const id of ['aggyContinuityDialog','aggyContinuityClose','aggyContinuityChat']){
+    assert.match(html,new RegExp(`id="${id}"`));
+  }
+  assert.match(html,/Tiempo gratis agotado · continuar/);
+  assert.match(html,/Chat seguro o paquetes de Tiempo IA/);
+  assert.match(html,/assistant-launcher\[data-expired="true"\]/);
+  assert.match(html,/aggyContinuityDialog\.showModal\(\)/);
+  assert.match(html,/openAgent\(\);document\.querySelector\('\[data-open-aggy-panel="chat"\]'\)\?\.click\(\)/);
+  assert.match(html,/url\.searchParams\.set\('addon',packId\)/);
+  assert.match(html,/window\.location\.assign\(timeAiUrl\(pack\)\)/);
+  assert.match(html,/Sin renovación automática/);
+  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
+    assert.match(html,new RegExp(`data-time-ai-pack="${pack}"`));
+  }
+});
+
 test('A stale usage heartbeat cannot overwrite a deliberate Voice LIVE close',()=>{
   assert.match(voice,/const heartbeatLeaseId=usageLease\?\.leaseId/);
   assert.match(voice,/if\(!connected\|\|!heartbeatLeaseId\|\|usageLease\?\.leaseId!==heartbeatLeaseId\)return/);
@@ -436,6 +453,7 @@ test('Time AI purchase uses one native top-level link and opens all Marketplace 
   assert.match(html,/id="ai-services"/);
   assert.match(html,/id="aggyUsageMarketplace"[^>]+target="_top"[^>]+rel="noopener"/);
   assert.match(voice,/usageMarketplaceLink\.href=usageMarketplaceUrl/);
+  assert.match(voice,/marketplaceUrl:usageMarketplaceUrl/);
   assert.match(html,/Ver paquetes de Tiempo IA/);
   assert.doesNotMatch(voice,/postMessage\(\{type:'secquoia:aggy:open-time-ai'/);
   assert.match(addons,/activationParams\.get\('time_ai'\)==='1'\?'ai':'all'/);

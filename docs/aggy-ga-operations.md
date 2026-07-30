@@ -1,4 +1,4 @@
-# Aggy Core 1.0.0 GA operations
+# Aggy Core 1.0.1 GA operations
 
 ## Supported scope
 

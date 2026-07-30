@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.0';
+  const version='1.0.1';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -23,6 +23,9 @@
       .launcher[data-voice="connecting"] .dot::after,.launcher[data-voice="live"] .dot::after{animation:aggy-live-halo 1.35s ease-out infinite}
       .launcher[data-voice="live"]{box-shadow:0 0 0 5px rgba(53,255,140,.18),0 14px 46px rgba(0,0,0,.38)}
       .launcher[data-voice="blocked"]{background:linear-gradient(135deg,#ffe39a,#ffb84f)}
+      .launcher[data-expired="true"]{background:linear-gradient(135deg,#ffe9a8,#ffc24f);color:#161000;border-color:rgba(78,52,0,.2)}
+      .launcher[data-expired="true"] .launcher-nudge{display:block;background:linear-gradient(135deg,#fff3c9,#ffd979);color:#261900;border-color:#fff6d8;animation:none}
+      .launcher[data-expired="true"] .launcher-nudge::after{border-top-color:#ffd979}
       .launcher-copy{display:grid;gap:2px;text-align:left}
       .launcher-copy small{font:750 9px/1.1 Inter,Segoe UI,Arial,sans-serif;opacity:.72}
       .launcher-nudge{position:absolute;right:4px;bottom:calc(100% + 10px);width:max-content;max-width:min(250px,calc(100vw - 24px));border:1px solid rgba(255,255,255,.72);border-radius:12px;background:linear-gradient(135deg,#1677ff,#52b6ff);color:#fff;padding:8px 11px;font:800 10px/1.3 Inter,Segoe UI,Arial,sans-serif;box-shadow:0 12px 34px rgba(0,74,180,.32);animation:aggy-guide-pulse 1.7s ease-in-out infinite}
@@ -46,7 +49,20 @@
       .frame-state div{display:grid;justify-items:center;gap:10px}
       .frame-state i{width:34px;height:34px;border:3px solid #b7d6c9;border-top-color:#0e9b67;border-radius:50%;animation:aggy-frame-spin .85s linear infinite}
       .frame-state button{border:1px solid #1ca975;border-radius:999px;background:#e8faf2;color:#07583c;padding:8px 12px;font:850 11px Inter,Segoe UI,Arial,sans-serif;cursor:pointer}
-      @media(max-width:560px){.launcher{right:12px;bottom:12px}.panel{inset:8px;width:auto;height:auto;border-radius:20px}}
+      .continuity{position:fixed;right:18px;bottom:76px;z-index:2147483647;width:min(390px,calc(100vw - 28px));border:1px solid rgba(93,64,0,.2);border-radius:22px;background:#fffaf0;color:#172019;box-shadow:0 24px 80px rgba(0,0,0,.5);padding:20px;font:700 12px/1.45 Inter,Segoe UI,Arial,sans-serif}
+      .continuity[hidden]{display:none}
+      .continuity-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+      .continuity h2{margin:0;font:900 20px/1.15 Inter,Segoe UI,Arial,sans-serif;color:#171000}
+      .continuity p{margin:8px 0 16px;color:#59635d;font-weight:650}
+      .continuity-close{display:grid;place-items:center;flex:0 0 auto;width:32px;height:32px;border:0;border-radius:50%;background:#efe7d5;color:#171000;font:900 18px/1 Arial;cursor:pointer}
+      .continuity-chat{width:100%;min-height:46px;border:0;border-radius:13px;background:#093f2d;color:#fff;font:850 12px Inter,Segoe UI,Arial,sans-serif;cursor:pointer}
+      .continuity-label{display:block;margin:16px 0 8px;color:#56430b;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+      .continuity-packs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+      .continuity-pack{display:grid;gap:2px;min-height:58px;padding:9px;border:1px solid #e0c777;border-radius:12px;background:#fff;color:#151008;text-align:left;font:850 12px Inter,Segoe UI,Arial,sans-serif;cursor:pointer}
+      .continuity-pack small{color:#6c6450;font-size:9px;font-weight:700}
+      .continuity-pack.recommended{background:#fff1bd;border-color:#dcaa19}
+      .continuity-note{display:block;margin-top:11px;color:#726950;font-size:9px;font-weight:650}
+      @media(max-width:560px){.launcher{right:12px;bottom:12px}.panel{inset:8px;width:auto;height:auto;border-radius:20px}.continuity{right:8px;bottom:78px;width:calc(100vw - 16px)}.continuity-packs{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @keyframes aggy-live-halo{0%{opacity:.72;transform:scale(.65)}75%,100%{opacity:0;transform:scale(1.75)}}
       @keyframes aggy-guide-pulse{50%{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,74,180,.46)}}
       @keyframes aggy-final-minute{to{transform:scaleY(1.8);filter:brightness(1.28)}}
@@ -62,6 +78,19 @@
       <div class="frame-state" role="status"><div><i aria-hidden="true"></i><span>Conectando la experiencia segura de Aggy…</span><button type="button" hidden>Reintentar</button></div></div>
       <iframe title="Aggy Communications" src="${frameUrl}" allow="microphone; autoplay" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"></iframe>
     </section>
+    <section class="continuity" role="dialog" aria-modal="true" aria-labelledby="aggy-continuity-title" hidden>
+      <div class="continuity-head"><div><h2 id="aggy-continuity-title">Tu tiempo gratis finalizó</h2><p>Continúa por Chat seguro o elige Tiempo IA para seguir conversando por voz.</p></div><button class="continuity-close" type="button" aria-label="Cerrar">×</button></div>
+      <button class="continuity-chat" type="button">Continuar por Chat seguro</button>
+      <strong class="continuity-label">Tiempo IA · pago único</strong>
+      <div class="continuity-packs">
+        <button class="continuity-pack recommended" type="button" data-pack="qvit-ai-credit-1"><strong>USD 1</strong><small>≈ 4 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-10"><strong>USD 10</strong><small>≈ 40 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-25"><strong>USD 25</strong><small>Crédito IA flexible</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-100"><strong>USD 100</strong><small>Uso ampliado</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-500"><strong>USD 500</strong><small>Equipos y proyectos</small></button>
+      </div>
+      <small class="continuity-note">Sin renovación automática. El Marketplace mostrará el detalle antes del pago.</small>
+    </section>
   `;
 
   const launcher=root.querySelector('.launcher');
@@ -71,15 +100,33 @@
   const frameState=root.querySelector('.frame-state');
   const frameStateCopy=frameState.querySelector('span');
   const frameRetry=frameState.querySelector('button');
+  const continuity=root.querySelector('.continuity');
+  const continuityClose=root.querySelector('.continuity-close');
+  const continuityChat=root.querySelector('.continuity-chat');
   const launcherStatus=launcher.querySelector('small');
+  const launcherNudge=launcher.querySelector('.launcher-nudge');
   const minuteChain=launcher.querySelector('.minute-chain');
   const minuteLinks=[...launcher.querySelectorAll('.minute-link')];
+  let usageMarketplaceUrl='https://secquoia.net/qu-market.html?time_ai=1#ai-services';
+  const setContinuityOpen=open=>{
+    continuity.hidden=!open;
+    launcher.setAttribute('aria-expanded',String(open||panel.classList.contains('open')));
+    if(open)continuityClose.focus();
+  };
+  const marketplaceUrlFor=packId=>{
+    const url=new URL(usageMarketplaceUrl);
+    url.searchParams.set('time_ai','1');
+    url.searchParams.set('addon',packId);
+    url.hash='ai-services';
+    return url.href;
+  };
   const updateMinuteChain=detail=>{
     const contractIncluded=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode);
     launcher.dataset.accessMode=String(detail.accessMode||'VISITOR_TRIAL');
     minuteChain.classList.toggle('contract',contractIncluded);
     if(contractIncluded){
       const preview=detail.accessMode==='ECOSYSTEM_PREVIEW';
+      launcher.dataset.expired='false';
       minuteChain.setAttribute('aria-label',preview?'Acceso Ecosystem Preview sin consumo':'Voz LIVE incluida durante el contrato');
       launcherStatus.textContent=preview?'Preview · sin consumo':'Voz LIVE · incluida';
       return;
@@ -92,6 +139,18 @@
     minuteChain.setAttribute('aria-valuenow',String(elapsed));
     minuteChain.setAttribute('aria-label',remaining===0?'Tiempo gratuito de Voz LIVE finalizado':`${Math.ceil(remaining/60)} minutos de Voz LIVE disponibles`);
     launcher.dataset.remainingMinutes=String(Math.ceil(remaining/60));
+    launcher.dataset.expired=String(remaining===0);
+    if(remaining===0){
+      launcher.dataset.voice='blocked';
+      launcherStatus.textContent='Tiempo gratis agotado · continuar';
+      launcherNudge.textContent='Chat seguro o paquetes de Tiempo IA';
+    }else{
+      launcherNudge.textContent='Toca aquí: chat, archivos y llamadas seguras';
+    }
+    try{
+      const candidate=new URL(String(detail.marketplaceUrl||''));
+      if(candidate.protocol==='https:'&&candidate.hostname==='secquoia.net'&&candidate.pathname==='/qu-market.html')usageMarketplaceUrl=candidate.href;
+    }catch{}
   };
   const requestVoiceStart=()=>frame.contentWindow?.postMessage({
     type:'secquoia:aggy:start-voice',
@@ -126,6 +185,7 @@
     },8000);
   };
   const setOpen=(open,{focus=true}={})=>{
+    if(open)setContinuityOpen(false);
     panel.classList.toggle('open',open);
     launcher.setAttribute('aria-expanded',String(open));
     if(!focus)return;
@@ -133,12 +193,29 @@
     else launcher.focus();
   };
   launcher.addEventListener('click',()=>{
-    const opening=!panel.classList.contains('open');
     launcher.dataset.guideDismissed='true';
+    if(launcher.dataset.expired==='true'){
+      setOpen(false,{focus:false});
+      setContinuityOpen(continuity.hidden);
+      return;
+    }
+    const opening=!panel.classList.contains('open');
     setOpen(opening);
   });
   close.addEventListener('click',()=>setOpen(false));
-  root.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false)});
+  continuityClose.addEventListener('click',()=>{setContinuityOpen(false);launcher.focus()});
+  continuityChat.addEventListener('click',()=>{
+    setContinuityOpen(false);
+    setOpen(true);
+    frame.contentWindow?.postMessage({type:'secquoia:aggy:open-chat',version},'https://secquoia.net');
+  });
+  continuity.addEventListener('click',event=>{
+    const pack=event.target.closest('[data-pack]')?.dataset.pack;
+    if(!/^qvit-ai-credit-(1|10|25|100|500)$/.test(pack||''))return;
+    setContinuityOpen(false);
+    window.location.assign(marketplaceUrlFor(pack));
+  });
+  root.addEventListener('keydown',event=>{if(event.key==='Escape'){setContinuityOpen(false);setOpen(false)}});
   window.addEventListener('message',event=>{
     if(event.source!==frame.contentWindow||event.origin!=='https://secquoia.net')return;
     if(event.data?.type==='secquoia:aggy:frame-ready'){
@@ -175,7 +252,11 @@
     launcher.dataset.voice=state;
     const preview=launcher.dataset.accessMode==='ECOSYSTEM_PREVIEW';
     const included=launcher.dataset.accessMode==='CONTRACT_INCLUDED';
-    launcherStatus.textContent=state==='connecting'
+    const expired=launcher.dataset.expired==='true';
+    launcher.dataset.voice=expired?'blocked':state;
+    launcherStatus.textContent=expired
+      ?'Tiempo gratis agotado · continuar'
+      :state==='connecting'
       ?'Conectando Voice LIVE…'
       :preview
         ?'Preview · sin consumo'
