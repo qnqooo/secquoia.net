@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.0';
+  const aggyVersion='1.0.1';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -113,6 +113,7 @@
       totalSeconds:freeVoiceSeconds,
       remainingSeconds:remaining,
       elapsedMinutes:contractIncluded?null:Math.min(10,Math.floor((freeVoiceSeconds-remaining)/60)),
+      marketplaceUrl:usageMarketplaceUrl,
       version:aggyVersion
     });
     window.dispatchEvent(new CustomEvent('secquoia:aggy:usage-state',{detail}));
@@ -156,7 +157,6 @@
     const price=Number(status?.continuation?.customerQVit||0);
     const topUpAvailable=status?.wallet?.topUpAvailable===true;
     const topUpUrl=String(status?.wallet?.topUpUrl||'');
-    publishUsageState(free,accessMode);
     if(usageContinueButton){
       usageContinueButton.hidden=true;
       usageContinueButton.removeAttribute('aria-busy');
@@ -169,6 +169,7 @@
         usageMarketplaceUrl=candidate.href;
       }
     }catch{}
+    publishUsageState(free,accessMode);
     if(status?.activeLease){
       usageUi(
         previewAccess?'Ecosystem Preview activo':contractIncluded?'Aggy incluida en tu servicio':'Sesión medida en curso',

@@ -49,18 +49,32 @@ test('Aggy compact launcher exposes a ten-link server-synchronized digital timer
   assert.match(embed,/ECOSYSTEM_PREVIEW/);
 });
 
+test('Aggy exhausted state is yellow, preserves readable copy and offers explicit continuity choices',()=>{
+  assert.match(embed,/launcher\[data-expired="true"\]/);
+  assert.match(embed,/Tiempo gratis agotado · continuar/);
+  assert.match(embed,/Chat seguro o paquetes de Tiempo IA/);
+  assert.match(embed,/class="continuity"/);
+  assert.match(embed,/Continuar por Chat seguro/);
+  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
+    assert.match(embed,new RegExp(`data-pack="${pack}"`));
+  }
+  assert.match(embed,/url\.searchParams\.set\('addon',packId\)/);
+  assert.match(embed,/launcher\.dataset\.expired==='true'/);
+  assert.match(embed,/frame\.contentWindow\?\.postMessage\(\{type:'secquoia:aggy:open-chat'/);
+});
+
 test('Aggy compact widget uses the governed Realtime voice client only',()=>{
   for(const id of ['aggyVoiceStage','aggyVoiceBadge','aggyVoiceHeadline','aggyVoiceCaption','aggyLanguage','aggyLiveVoice','aggyVoiceMute','aggyVoiceEnd']){
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.0"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.1"/);
   assert.match(embed,/qu-market\.html\?embed=1&aggy=1/);
   assert.match(embed,/title="Aggy Communications"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.0"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.0"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.1"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.1"[^>]*data-aggy-site="secquoia\.net"/);
 });
