@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.3';
+  const aggyVersion='1.0.4';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -514,12 +514,14 @@
     greetingSent=true;
     const language=selectedLanguage();
     const paid=postPaymentGreeting;
+    const paidAmount=Number(paid?.amountUsd||0).toFixed(2);
+    const paidMinutes=Math.max(1,Math.round(Number(paid?.voiceLiveMinutes||0)));
     postPaymentGreeting=null;
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
         instructions:paid
-          ? `Start speaking immediately in ${language}. Warmly thank the user for their confirmed USD ${paid.amountUsd.toFixed(2)} Time AI payment, say that Aggy Voice LIVE is available again, invite them to continue the previous conversation, and ask what support they would like now. Keep it natural, compact, and friendly. Do not mention internal wallet, token, webhook, or billing mechanics. Speak it aloud through Realtime audio.`
+          ? `Start speaking immediately in ${language}. This is a server-confirmed post-payment continuation. State the exact confirmed amount, USD ${paidAmount}, and the exact purchased Voice LIVE allowance, ${paidMinutes} additional minutes; never infer or change either value. If speaking Spanish, begin with this natural message: "¡Gracias! He recibido la confirmación segura de tu pago de USD ${paidAmount}. Este paquete nos permitirá continuar conversando por Voice LIVE durante ${paidMinutes} minutos adicionales. Es un placer poder atenderte y seguir hablando contigo." If speaking another language, give a faithful, natural equivalent with the same amount and minutes. Then ask one brief, context-aware question offering either to resume the previous conversation or help with something new. Keep the entire turn warm, compact, direct, and conversational. Do not mention Stripe, QuPay, QVit, wallet, token, webhook, billing mechanics, or internal validation. Speak it aloud through Realtime audio.`
           : `Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Then briefly explain that the Aggy button opens chat, secure file exchange, and encrypted individual or group calls. Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
