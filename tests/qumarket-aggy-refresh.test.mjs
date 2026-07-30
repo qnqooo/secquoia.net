@@ -74,10 +74,10 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/X-Aggy-Wallet-Binding/);
   assert.match(voice,/\/v1\/qupay\/checkout\/confirm\?session_id=/);
   assert.match(voice,/secquoia\.aggy\.qupay\.wallet-binding\.v1/);
-  assert.match(voice,/He recibido la confirmación segura de tu pago de USD/);
+  assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conectado conmigo/);
   assert.match(voice,/voiceLiveMinutes/);
-  assert.match(voice,/durante \$\{paidMinutes\} minutos adicionales/);
-  assert.match(voice,/resume the previous conversation or help with something new/);
+  assert.match(voice,/\$\{paidMinutes\} minutos adicionales de conversación Voice LIVE/);
+  assert.match(voice,/single most important risk, business objective or decision/);
   assert.match(voice,/secquoia:aggy:payment-confirmed/);
   assert.match(voice,/publishPaymentConfirmation\(paidConfirmation\)/);
   assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
@@ -208,7 +208,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.5');
+  assert.equal(release.version,'1.2.6');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -521,6 +521,15 @@ test('Time AI purchase preserves one explicit continuation action and all govern
   assert.match(addons,/getElementById\('ai-services'\)\?\.scrollIntoView/);
   assert.match(worker,/time_ai=1&wallet_ref=/);
   assert.doesNotMatch(worker,/addon=qvit-ai-credit-1&wallet_ref=/);
+});
+
+test('Cross-site paid return resumes Voice LIVE with exact commercial-consultative acknowledgment',()=>{
+  assert.match(voice,/paymentFragment=new URLSearchParams\(location\.hash\.replace/);
+  assert.match(voice,/paymentState=params\.get\('payment'\)\|\|paymentFragment\.get\('payment'\)/);
+  assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
+  assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conectado conmigo/);
+  assert.match(voice,/single most important risk, business objective or decision/);
+  assert.match(voice,/for\(let attempt=0;attempt<16/);
 });
 
 test('Time AI package selection resumes through QuIdentify before QuPay Checkout',()=>{
