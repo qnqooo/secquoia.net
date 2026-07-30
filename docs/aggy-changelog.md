@@ -2,6 +2,17 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.2 - 2026-07-30
+
+### Stripe idempotency hardening
+
+- Sends one QuPay Checkout request per user action and leaves any subsequent
+  retry under explicit user control.
+- Avoids replaying a newly issued QuFense authorization receipt under the same
+  Stripe idempotency key, which Stripe correctly rejects when request metadata
+  differs.
+- Retains the compact, deduplicated payment status introduced in 1.2.1.
+
 ## 1.2.1 - 2026-07-30
 
 ### QuPay checkout continuity
@@ -10,8 +21,9 @@ All notable Aggy releases are recorded here. Versions follow [Semantic Versionin
   expands the conversation panel automatically.
 - Reuses one keyed status message so retries replace the prior state instead of
   filling the chat with duplicated opening and failure notices.
-- Retries one transient network or server failure with the original
-  idempotency key, preventing duplicate Stripe Checkout sessions.
+- Originally added one transient retry with the original idempotency key; this
+  behavior was superseded by 1.2.2 after production validation showed that a
+  renewed QuFense receipt changes the Stripe request metadata.
 - Preserves fail-closed validation, hides Aggy before top-level navigation and
   keeps card data entirely within Stripe Checkout.
 
