@@ -208,7 +208,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.0');
+  assert.equal(release.version,'1.2.1');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -308,6 +308,17 @@ test('QuPay exits the embedded chat before navigating to Stripe Checkout',()=>{
   assert.match(html,/secquoia:aggy:qupay-checkout/);
   assert.match(html,/window\.parent\.postMessage\(\{type:'secquoia:aggy:qupay-checkout',checkoutUrl:result\.checkoutUrl\}/);
   assert.match(html,/window\.location\.assign\(result\.checkoutUrl\)/);
+});
+
+test('QuPay status is non-invasive, deduplicated and retry-safe',()=>{
+  assert.match(html,/function agentSay\(text,reveal=true,messageKey=''\)/);
+  assert.match(html,/if\(reveal\)openAgent\(\)/);
+  assert.match(html,/data-message-key/);
+  assert.match(html,/false,'qupay-checkout'/);
+  assert.match(html,/async function requestTimeAiCheckout/);
+  assert.match(html,/for\(let attempt=0;attempt<2;attempt\+\+\)/);
+  assert.match(html,/'Idempotency-Key':orderRef/);
+  assert.match(html,/if\(response\.status<500\|\|attempt===1\)return response/);
 });
 
 test('QuCFA prices one prepaid Aggy Minute without overdraft',()=>{

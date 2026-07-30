@@ -2,6 +2,19 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.1 - 2026-07-30
+
+### QuPay checkout continuity
+
+- Keeps Aggy compact while QuPay prepares Checkout; payment status no longer
+  expands the conversation panel automatically.
+- Reuses one keyed status message so retries replace the prior state instead of
+  filling the chat with duplicated opening and failure notices.
+- Retries one transient network or server failure with the original
+  idempotency key, preventing duplicate Stripe Checkout sessions.
+- Preserves fail-closed validation, hides Aggy before top-level navigation and
+  keeps card data entirely within Stripe Checkout.
+
 ## 1.2.0 - 2026-07-30
 
 ### Commercial and technical consultant
