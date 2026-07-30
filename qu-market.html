@@ -677,8 +677,9 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   productRoot.addEventListener('click',e=>{const card=e.target.closest('[data-id]');if(card&&!e.target.closest('button')){const p=products.find(x=>x.id===card.dataset.id);if(p&&p.id==='qucfa'){agentSay(lang()==='es'?'El análisis interno de costos y procesos comerciales se consulta exclusivamente en el dashboard autenticado de QuCFA. En el Marketplace solo se publica el precio para el cliente.':'Internal cost and commercial-process analysis is available only in the authenticated QuCFA dashboard. The Marketplace publishes customer pricing only.');return}if(p)agentSay(technicalSheet(p))}});
   productRoot.addEventListener('dragstart',e=>{const item=e.target.closest('[data-id]');if(item)e.dataTransfer.setData('text/plain',item.dataset.id)});cart.addEventListener('dragover',e=>{e.preventDefault();cart.classList.add('drop-ready')});cart.addEventListener('dragleave',()=>cart.classList.remove('drop-ready'));cart.addEventListener('drop',e=>{e.preventDefault();cart.classList.remove('drop-ready');addProduct(e.dataTransfer.getData('text/plain'))});
   function updateAggyMinuteChain(detail={}){
-    const chain=assistantLauncher.querySelector('.assistant-minute-chain'),links=[...assistantLauncher.querySelectorAll('.assistant-minute-link')],included=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode),copy=assistantLauncher.querySelector('small'),nudge=assistantLauncher.querySelector('.assistant-launcher-nudge');
+    const chain=assistantLauncher.querySelector('.assistant-minute-chain'),links=[...assistantLauncher.querySelectorAll('.assistant-minute-link')],included=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode),paidAvailable=detail.paidAvailable===true,copy=assistantLauncher.querySelector('small'),nudge=assistantLauncher.querySelector('.assistant-launcher-nudge');
     assistantLauncher.dataset.accessMode=detail.accessMode||'VISITOR_TRIAL';
+    assistantLauncher.dataset.paidAvailable=String(paidAvailable);
     chain.classList.toggle('contract',included);
     try{const candidate=new URL(String(detail.marketplaceUrl||''));if(candidate.protocol==='https:'&&candidate.hostname==='secquoia.net'&&candidate.pathname==='/qu-market.html')aggyMarketplaceUrl=candidate.href}catch{}
     if(included){
@@ -686,6 +687,15 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       assistantLauncher.dataset.expired='false';
       chain.setAttribute('aria-label',preview?'Acceso Ecosystem Preview sin consumo':'Voz LIVE incluida durante el contrato');
       copy.textContent=preview?'Preview · sin consumo':'Voz LIVE · incluida';
+      return;
+    }
+    if(paidAvailable){
+      assistantLauncher.dataset.expired='false';
+      links.forEach(link=>link.classList.remove('lit'));
+      chain.classList.remove('exhausted');
+      chain.setAttribute('aria-label','Tiempo IA pagado disponible');
+      copy.textContent='Tiempo IA disponible · continuar';
+      nudge.textContent='Toca aquí para continuar Voice LIVE';
       return;
     }
     const total=Math.max(1,Number(detail.totalSeconds||600)),remaining=Math.max(0,Math.min(total,Number(detail.remainingSeconds??total))),elapsed=Math.min(10,Math.floor((total-remaining)/60)),expired=remaining===0;
@@ -707,7 +717,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   function openAggyContinuity(){if(typeof aggyContinuityDialog.showModal==='function'&&!aggyContinuityDialog.open)aggyContinuityDialog.showModal()}
   function openAggyVoice(options={}){const focus=options?.focus!==false,reveal=options?.reveal!==false;if(reveal){setAssistantState('expanded',{focus});document.querySelector('[data-open-aggy-panel="voice"]')?.click()}document.getElementById('aggyLiveVoice')?.click();agentState.textContent=lang()==='es'?'Abriendo Aggy Voice Realtime…':'Opening Aggy Voice Realtime…'}
   window.addEventListener('secquoia:aggy:usage-state',event=>updateAggyMinuteChain(event.detail));
-  window.addEventListener('secquoia:aggy:voice-state',event=>{const state=event.detail?.state||'ready',copy=assistantLauncher.querySelector('small'),preview=assistantLauncher.dataset.accessMode==='ECOSYSTEM_PREVIEW',included=assistantLauncher.dataset.accessMode==='CONTRACT_INCLUDED',expired=assistantLauncher.dataset.expired==='true';assistantLauncher.dataset.voice=expired?'blocked':state;copy.textContent=expired?'Tiempo gratis agotado · continuar':state==='connecting'?'Conectando Voice LIVE…':preview?'Preview · sin consumo':included?'Voz LIVE · incluida':state==='live'?'EN VIVO · 10 min gratis':state==='blocked'?'Toca para activar · 10 min gratis':'Voice LIVE · 10 min gratis'});
+  window.addEventListener('secquoia:aggy:voice-state',event=>{const state=event.detail?.state||'ready',copy=assistantLauncher.querySelector('small'),preview=assistantLauncher.dataset.accessMode==='ECOSYSTEM_PREVIEW',included=assistantLauncher.dataset.accessMode==='CONTRACT_INCLUDED',paidAvailable=assistantLauncher.dataset.paidAvailable==='true',expired=assistantLauncher.dataset.expired==='true';assistantLauncher.dataset.voice=expired?'blocked':state;copy.textContent=expired?'Tiempo gratis agotado · continuar':state==='connecting'?'Conectando Voice LIVE…':paidAvailable?(state==='live'?'EN VIVO · Tiempo IA':'Tiempo IA disponible · continuar'):preview?'Preview · sin consumo':included?'Voz LIVE · incluida':state==='live'?'EN VIVO · 10 min gratis':state==='blocked'?'Toca para activar · 10 min gratis':'Voice LIVE · 10 min gratis'});
   document.getElementById('assistantHead').onclick=e=>{if(e.target.closest('button'))return;setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantToggle.onclick=e=>{e.stopPropagation();setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantHide.onclick=e=>{e.stopPropagation();setAssistantState('hidden')};assistantLauncher.onclick=()=>{assistantLauncher.dataset.guideDismissed='true';if(assistantLauncher.dataset.expired==='true'){openAggyContinuity();return}openAgent()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&assistant.dataset.state==='expanded')setAssistantState('minimized')});
   aggyContinuityClose.onclick=()=>aggyContinuityDialog.close();
   aggyContinuityChat.onclick=()=>{aggyContinuityDialog.close();openAgent();document.querySelector('[data-open-aggy-panel="chat"]')?.click()};
