@@ -79,12 +79,56 @@
       "status": "PASS",
       "evidence": [
         "103 of 103 pre-promotion tests passed on origin/main",
-        "103 of 103 post-promotion local tests passed",
+        "104 of 104 post-promotion tests passed after Marketplace GA alignment",
         "Wrangler types and dry-run deployment bundles validated for both Workers",
-        "Public smoke verification is a mandatory post-deployment promotion check",
+        "GitHub Actions build passed on promotion and catalog-alignment pull requests",
+        "Public post-deployment smoke verification passed",
         "Explicit owner approval in task dated 2026-07-29"
       ]
     }
   ],
-  "assuranceBoundary": "GA applies only to gaScope. Preview capabilities remain fail closed and are not represented as production-ready, connected, NIAP-certified or independently certified."
+  "assuranceBoundary": "GA applies only to gaScope. Preview capabilities remain fail closed and are not represented as production-ready, connected, NIAP-certified or independently certified.",
+  "deployment": {
+    "verifiedAt": "2026-07-30T03:27:00Z",
+    "source": {
+      "repository": "qnqooo/secquoia.net",
+      "gaPromotionCommit": "07d4b74847deecbf6945aca1b21aef0cf3cf6810",
+      "catalogAlignmentCommit": "5f6931f61d847ac8f929bde632ef6695f47813ea",
+      "releaseTag": "v1.0.0"
+    },
+    "cloudflare": {
+      "aggyWorkerVersion": "ec8dcf06-77a3-4de3-9ba5-bec006427d96",
+      "qupayWorkerVersion": "6f7087e5-4adf-4ea2-a9fd-4deb65355432",
+      "aggyHealth": "READY",
+      "qupayHealth": "READY"
+    },
+    "webSurfaces": [
+      {
+        "url": "https://secquoia.net/",
+        "loader": "1.0.0",
+        "status": "PASS"
+      },
+      {
+        "url": "https://secquoia.group/",
+        "loader": "1.0.0",
+        "status": "PASS",
+        "commit": "c92cf8e3df1059e6153f2c1e7fafa2a027cf20c1"
+      },
+      {
+        "url": "https://qnq.ooo/",
+        "loader": "1.0.0",
+        "status": "PASS",
+        "commit": "967cb6c96a328140d78d3478794bea48b74de76b"
+      }
+    ],
+    "liveCheckoutSmoke": {
+      "pack": "qvit-ai-credit-1",
+      "amountUsd": 1,
+      "qufenseAuthorized": true,
+      "stripeCheckoutHost": "checkout.stripe.com",
+      "paymentCompleted": false,
+      "automaticChargeCreated": false,
+      "orderReference": "ga-1785381062368-70facae5"
+    }
+  }
 }
