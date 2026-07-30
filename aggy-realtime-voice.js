@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.1';
+  const aggyVersion='1.0.2';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -61,9 +61,13 @@
       return String(window.SECQUOIA_AGGY_ENTITLEMENT_TOKEN||document.querySelector('meta[name="secquoia-aggy-entitlement"]')?.content||sessionStorage.getItem('secquoia.aggy.entitlement')||'').trim();
     }catch{return ''}
   })();
+  let walletBindingToken=(()=>{
+    try{return String(localStorage.getItem('secquoia.aggy.qupay.wallet-binding.v1')||'').trim()}catch{return ''}
+  })();
   const authorizedHeaders=headers=>({
     ...headers,
     ...(visitorId?{'X-Aggy-Visitor-ID':visitorId}:{}),
+    ...(walletBindingToken?{'X-Aggy-Wallet-Binding':walletBindingToken}:{}),
     ...(entitlementToken?{Authorization:`Bearer ${entitlementToken}`}:{})
   });
   const isUnmeteredAccess=mode=>['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(mode);
@@ -79,6 +83,7 @@
   let qugeoContext=null;
   let webKnowledgeContext=null;
   let greetingSent=false;
+  let postPaymentGreeting=null;
   let pendingReadAloud='';
   let usageLease=null;
   let usageHeartbeat=null;
@@ -126,6 +131,38 @@
     return fetch(url,{...options,signal:controller.signal})
       .finally(()=>clearTimeout(timeoutId));
   };
+  const recoverPaidCheckout=async()=>{
+    const params=new URLSearchParams(location.search);
+    const sessionId=String(params.get('session_id')||'');
+    if(params.get('payment')!=='success'||!/^cs_live_[A-Za-z0-9_]{16,200}$/.test(sessionId))return null;
+    const response=await fetchWithTimeout(`https://pay.secquoia.group/v1/qupay/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`,{
+      method:'GET',
+      credentials:'omit',
+      cache:'no-store'
+    },8000);
+    const confirmation=await response.json().catch(()=>({}));
+    if(
+      !response.ok||
+      confirmation.schema!=='secquoia.qupay.aggy-payment-confirmation.v1'||
+      confirmation.status!=='PAID'||
+      !/^[A-Za-z0-9_-]{80,900}\.[0-9a-f]{64}$/i.test(String(confirmation.walletBinding||''))
+    )throw new Error(confirmation.error||'payment_confirmation_unavailable');
+    walletBindingToken=confirmation.walletBinding;
+    localStorage.setItem('secquoia.aggy.qupay.wallet-binding.v1',walletBindingToken);
+    params.delete('session_id');
+    const sanitized=`${location.pathname}${params.size?`?${params}`:''}${location.hash}`;
+    history.replaceState(history.state,'',sanitized);
+    return Object.freeze({
+      amountUsd:Number(confirmation.amountUsd||0),
+      qvitAmount:Number(confirmation.qvitAmount||0),
+      voiceLiveMinutes:Number(confirmation.voiceLiveMinutes||0),
+      packId:String(confirmation.packId||'')
+    });
+  };
+  const paymentReturnPromise=recoverPaidCheckout().catch(error=>{
+    console.warn('Aggy payment confirmation unavailable',String(error?.message||'unknown'));
+    return null;
+  });
 
   const setState=(state,title,detail,label)=>{
     stage.dataset.state=state;
@@ -466,10 +503,14 @@
     if(greetingSent||channel?.readyState!=='open')return;
     greetingSent=true;
     const language=selectedLanguage();
+    const paid=postPaymentGreeting;
+    postPaymentGreeting=null;
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
-        instructions:`Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Then briefly explain that the Aggy button opens chat, secure file exchange, and encrypted individual or group calls. Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
+        instructions:paid
+          ? `Start speaking immediately in ${language}. Warmly thank the user for their confirmed USD ${paid.amountUsd.toFixed(2)} Time AI payment, say that Aggy Voice LIVE is available again, invite them to continue the previous conversation, and ask what support they would like now. Keep it natural, compact, and friendly. Do not mention internal wallet, token, webhook, or billing mechanics. Speak it aloud through Realtime audio.`
+          : `Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Then briefly explain that the Aggy button opens chat, secure file exchange, and encrypted individual or group calls. Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
   };
@@ -558,7 +599,7 @@
     }
   };
 
-  const startRealtime=async(paidContinuationConfirmed=false,{userInitiated=false}={})=>{
+  const startRealtime=async(paidContinuationConfirmed=false,{userInitiated=false,postPayment=null}={})=>{
     if(connecting||connected)return;
     if(!window.RTCPeerConnection||!navigator.mediaDevices?.getUserMedia){
       setState('error','Aggy Voice no es compatible','Este navegador no ofrece WebRTC y micrófono seguros. La voz legacy no se utilizará.','NO COMPATIBLE');
@@ -567,6 +608,7 @@
 
     connecting=true;
     greetingSent=false;
+    postPaymentGreeting=postPayment;
     startButton.disabled=true;
     setState('connecting','Conectando con Aggy','Solicitando una sesión WebRTC efímera al backend seguro.','CONECTANDO');
     try{
@@ -733,6 +775,7 @@
   const prewarmVoice=async()=>{
     setState('connecting','Aggy Voice se está preparando','Verificando el servicio seguro sin abrir el micrófono ni consumir una sesión del proveedor.','ACTIVANDO');
     try{
+      const paidConfirmation=await paymentReturnPromise;
       const [voiceResult,qugeoResult,knowledgeResult,usageResult]=await Promise.allSettled([
         fetchVoiceHealth(),
         fetchWithTimeout(qugeoEndpoint,{method:'GET',credentials:'omit',cache:'no-store'},4500),
@@ -767,6 +810,19 @@
       if(qugeoContext)sessionStorage.setItem('secquoia.qugeo.context',JSON.stringify(qugeoContext));
       const place=qugeoContext?.location?.countryName||qugeoLocale;
       const permissionState=await microphonePermissionState();
+      if(paidConfirmation){
+        let paidStatus=usageResult.status==='fulfilled'?usageResult.value:null;
+        for(let attempt=0;attempt<8&&Number(paidStatus?.wallet?.balance||0)<Number(paidStatus?.continuation?.customerQVit||1);attempt++){
+          await new Promise(resolve=>setTimeout(resolve,750));
+          paidStatus=await fetchUsageStatus().catch(()=>paidStatus);
+        }
+        if(Number(paidStatus?.wallet?.balance||0)>=Number(paidStatus?.continuation?.customerQVit||1)){
+          setState('connecting','¡Gracias por tu pago!','Tu Tiempo IA está acreditado. Aggy Voice LIVE se reactivará para continuar la conversación.','PAGO CONFIRMADO');
+          await startRealtime(true,{userInitiated:permissionState!=='granted',postPayment:paidConfirmation});
+          return;
+        }
+        usageUi('Pago confirmado · acreditación en curso','QuPay confirmó el pago. Estamos terminando de acreditar tu Tiempo IA; toca Reintentar en unos segundos.','checking');
+      }
       if(permissionState!=='denied'){
         startButton.textContent='Iniciando voz';
         setState('connecting','Aggy está iniciando',`QuGEO detectó ${place} · ${qugeoLocale}. Abriendo el micrófono y la voz en vivo para saludarte.`,'INICIANDO');

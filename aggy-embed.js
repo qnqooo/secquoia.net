@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.1';
+  const version='1.0.2';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -84,6 +84,7 @@
       <strong class="continuity-label">Tiempo IA · pago único</strong>
       <div class="continuity-packs">
         <button class="continuity-pack recommended" type="button" data-pack="qvit-ai-credit-1"><strong>USD 1</strong><small>≈ 4 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-5"><strong>USD 5</strong><small>20 min Voice LIVE</small></button>
         <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-10"><strong>USD 10</strong><small>≈ 40 min Voice LIVE</small></button>
         <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-25"><strong>USD 25</strong><small>Crédito IA flexible</small></button>
         <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-100"><strong>USD 100</strong><small>Uso ampliado</small></button>
@@ -211,7 +212,7 @@
   });
   continuity.addEventListener('click',event=>{
     const pack=event.target.closest('[data-pack]')?.dataset.pack;
-    if(!/^qvit-ai-credit-(1|10|25|100|500)$/.test(pack||''))return;
+    if(!/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(pack||''))return;
     setContinuityOpen(false);
     window.location.assign(marketplaceUrlFor(pack));
   });

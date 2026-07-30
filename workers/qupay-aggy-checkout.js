@@ -1,4 +1,4 @@
-const RELEASE='1.1.6';
+const RELEASE='1.2.0';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
 const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
@@ -10,6 +10,7 @@ const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
 const PACKS=Object.freeze({
   'qvit-ai-credit-1':Object.freeze({usdCents:100,qvitAmount:1_000_000,label:'Aggy Time AI starter · $1'}),
+  'qvit-ai-credit-5':Object.freeze({usdCents:500,qvitAmount:5_000_000,label:'Aggy Time AI · $5'}),
   'qvit-ai-credit-10':Object.freeze({usdCents:1000,qvitAmount:10_000_000,label:'Aggy Time AI · $10'}),
   'qvit-ai-credit-25':Object.freeze({usdCents:2500,qvitAmount:25_000_000,label:'QVit AI resource credit · $25'}),
   'qvit-ai-credit-100':Object.freeze({usdCents:10_000,qvitAmount:100_000_000,label:'QVit AI resource credit · $100'}),
@@ -42,6 +43,36 @@ const hex=bytes=>[...new Uint8Array(bytes)].map(byte=>byte.toString(16).padStart
 const hmacHex=async(secret,value)=>{
   const key=await crypto.subtle.importKey('raw',encoder.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
   return hex(await crypto.subtle.sign('HMAC',key,encoder.encode(value)));
+};
+const base64Url=value=>{
+  const bytes=encoder.encode(String(value));
+  let binary='';
+  bytes.forEach(byte=>binary+=String.fromCharCode(byte));
+  return btoa(binary).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+};
+const issueWalletBinding=async(object,env,now=Date.now())=>{
+  const metadata=object?.metadata||{};
+  const packId=String(metadata.pack_id||'');
+  const pack=PACKS[packId];
+  const walletReference=String(metadata.wallet_reference||'');
+  if(
+    object?.livemode!==true||
+    object?.payment_status!=='paid'||
+    !pack||
+    !validWallet(walletReference)||
+    Number(object.amount_total)!==pack.usdCents||
+    String(object.currency||'').toLowerCase()!=='usd'||
+    Number(metadata.qvit_amount)!==pack.qvitAmount
+  )throw new Error('checkout_not_confirmed');
+  const payload=base64Url(JSON.stringify({
+    schema:'secquoia.qupay.aggy-wallet-binding.v1',
+    walletReference,
+    packId,
+    providerSessionId:String(object.id||''),
+    issuedAt:now,
+    expiresAt:now+180*24*60*60*1000
+  }));
+  return `${payload}.${await hmacHex(env.AGGY_QUPAY_WEBHOOK_SECRET,payload)}`;
 };
 const sha256Hex=async value=>hex(await crypto.subtle.digest('SHA-256',encoder.encode(value)));
 const checkoutDigestInput=({packId,pack,walletReference,orderRef})=>JSON.stringify({
@@ -134,7 +165,7 @@ const verifyStripeSignature=async(raw,header,secret,now=Math.floor(Date.now()/10
 const stripeForm=(body,qufense)=>{
   const form=new URLSearchParams();
   form.set('mode','payment');
-  form.set('success_url','https://secquoia.net/qu-market.html?payment=success#ai-services');
+  form.set('success_url','https://secquoia.net/qu-market.html?payment=success&session_id={CHECKOUT_SESSION_ID}#ai-services');
   form.set('cancel_url','https://secquoia.net/qu-market.html?payment=cancelled#ai-services');
   form.set('client_reference_id',body.orderRef);
   form.set('line_items[0][price_data][currency]','usd');
@@ -151,6 +182,39 @@ const stripeForm=(body,qufense)=>{
   form.set('metadata[qufense_authority_fingerprint]',qufense.authorityFingerprint);
   form.set('metadata[qufense_payload_digest]',qufense.receipt.payloadDigest);
   return form;
+};
+const confirmCheckout=async(request,env)=>{
+  if(!env.STRIPE_RESTRICTED_KEY||!env.AGGY_QUPAY_WEBHOOK_SECRET){
+    return json({error:'qupay_confirmation_not_configured',failClosed:true},503,request);
+  }
+  const sessionId=String(new URL(request.url).searchParams.get('session_id')||'');
+  if(!/^cs_live_[A-Za-z0-9_]{16,200}$/.test(sessionId)){
+    return json({error:'invalid_checkout_session'},422,request);
+  }
+  const response=await fetch(`${STRIPE_API}/checkout/sessions/${encodeURIComponent(sessionId)}`,{
+    method:'GET',
+    headers:{Authorization:`Bearer ${env.STRIPE_RESTRICTED_KEY}`}
+  });
+  const object=await response.json().catch(()=>({}));
+  if(!response.ok){
+    return json({error:'stripe_confirmation_rejected',providerStatus:response.status},502,request);
+  }
+  try{
+    const walletBinding=await issueWalletBinding(object,env);
+    const packId=String(object.metadata?.pack_id||'');
+    const pack=PACKS[packId];
+    return json({
+      schema:'secquoia.qupay.aggy-payment-confirmation.v1',
+      status:'PAID',
+      packId,
+      amountUsd:pack.usdCents/100,
+      qvitAmount:pack.qvitAmount,
+      voiceLiveMinutes:Math.floor(pack.qvitAmount/240_000),
+      walletBinding
+    },200,request);
+  }catch{
+    return json({error:'checkout_not_confirmed',failClosed:true},409,request);
+  }
 };
 const createCheckout=async(request,env)=>{
   if(!env.STRIPE_RESTRICTED_KEY||!env.STRIPE_WEBHOOK_SECRET||!env.AGGY_QUPAY_WEBHOOK_SECRET||!env.QUFENSE||!env.QUFENSE_AUTHORITY_FINGERPRINT){
@@ -307,9 +371,10 @@ export default {
       },ready?200:503,request);
     }
     if(url.pathname==='/v1/qupay/checkout'&&request.method==='POST')return createCheckout(request,env);
+    if(url.pathname==='/v1/qupay/checkout/confirm'&&request.method==='GET')return confirmCheckout(request,env);
     if(url.pathname==='/v1/qupay/webhooks/stripe'&&request.method==='POST')return stripeWebhook(request,env);
     return json({error:'not_found'},404,request);
   }
 };
 
-export {PACKS,STRIPE_TRANSPORT_BOUNDARY,authorizeCheckoutWithQuFense,checkoutDigestInput,hmacHex,stripeForm,validQuFenseReceipt,verifyStripeSignature};
+export {PACKS,STRIPE_TRANSPORT_BOUNDARY,authorizeCheckoutWithQuFense,checkoutDigestInput,confirmCheckout,hmacHex,issueWalletBinding,stripeForm,validQuFenseReceipt,verifyStripeSignature};

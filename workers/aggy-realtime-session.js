@@ -62,7 +62,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.1',
+  version:'1.0.2',
   channel:'stable',
   lifecycle:'general-availability',
   distribution:'ecosystem-hosted',
@@ -123,7 +123,7 @@ const corsHeaders=request=>{
   return {
     'Access-Control-Allow-Origin':origin,
     'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
-    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Visitor-ID, X-Aggy-Lease, X-Aggy-Lease-Capability, X-QuPay-Signature',
+    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Visitor-ID, X-Aggy-Wallet-Binding, X-Aggy-Lease, X-Aggy-Lease-Capability, X-QuPay-Signature',
     'Access-Control-Expose-Headers':'X-Aggy-Lease-Expires-At',
     'Access-Control-Max-Age':'86400',
     'Vary':'Origin'
@@ -831,14 +831,56 @@ const verifyQuPaySignature=async(request,secret,raw)=>{
   for(let i=0;i<actual.length;i++)mismatch|=actual[i]^expected[i];
   return mismatch===0;
 };
+const verifyAggyWalletBinding=async(request,secret)=>{
+  const token=String(request.headers.get('X-Aggy-Wallet-Binding')||'');
+  if(!token)return null;
+  if(!secret)throw new Error('wallet_binding_verifier_not_configured');
+  const match=token.match(/^([A-Za-z0-9_-]{80,900})\.([0-9a-f]{64})$/i);
+  if(!match)throw new Error('invalid_wallet_binding');
+  const [,encodedPayload,signature]=match;
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const actual=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(encodedPayload)));
+  const expected=Uint8Array.from(signature.match(/../g).map(byte=>Number.parseInt(byte,16)));
+  if(actual.length!==expected.length)throw new Error('invalid_wallet_binding');
+  let mismatch=0;
+  for(let index=0;index<actual.length;index++)mismatch|=actual[index]^expected[index];
+  if(mismatch)throw new Error('invalid_wallet_binding');
+  let payload;
+  try{payload=JSON.parse(new TextDecoder().decode(decodeBase64Url(encodedPayload)))}catch{throw new Error('invalid_wallet_binding')}
+  const now=Date.now();
+  if(
+    payload.schema!=='secquoia.qupay.aggy-wallet-binding.v1'||
+    !validRoomId(payload.walletReference)||
+    !/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(String(payload.packId||''))||
+    !/^cs_live_[A-Za-z0-9_]{16,200}$/.test(String(payload.providerSessionId||''))||
+    !Number.isFinite(Number(payload.issuedAt))||
+    !Number.isFinite(Number(payload.expiresAt))||
+    Number(payload.issuedAt)>now+30_000||
+    Number(payload.expiresAt)<=now
+  )throw new Error('inactive_or_expired_wallet_binding');
+  return Object.freeze({
+    walletReference:String(payload.walletReference),
+    packId:String(payload.packId),
+    providerSessionId:String(payload.providerSessionId),
+    expiresAt:Number(payload.expiresAt)
+  });
+};
 
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
     let entitlement=null;
+    let walletBinding=null;
     if(request.headers.has('Authorization')){
       try{
         entitlement=await verifyAggyEntitlement(request,env.AGGY_ENTITLEMENT_SIGNING_SECRET,env.AGGY_PREVIEW_POLICY_EPOCH||'v1');
+      }catch(error){
+        return json({error:error.message,accessMode:'FAIL_CLOSED'},401,request);
+      }
+    }
+    if(request.headers.has('X-Aggy-Wallet-Binding')){
+      try{
+        walletBinding=await verifyAggyWalletBinding(request,env.AGGY_QUPAY_WEBHOOK_SECRET);
       }catch(error){
         return json({error:error.message,accessMode:'FAIL_CLOSED'},401,request);
       }
@@ -1024,7 +1066,7 @@ export default {
         if(!meter)return json({error:'invalid_wallet_reference'},400,request);
         return roomResponse(await meterRequest(meter.stub,'/credit','POST',body),request);
       }
-      const meter=await meterStub(env,request,undefined,entitlement);
+      const meter=await meterStub(env,request,walletBinding?.walletReference,entitlement);
       if(!meter)return json({error:'invalid_usage_subject'},400,request);
       if(url.pathname==='/api/aggy/usage/status'&&request.method==='GET'){
         const response=await meterRequest(meter.stub,'/status','POST',{entitlement});
@@ -1147,7 +1189,7 @@ export default {
     if(!/^[0-9a-f-]{36}$/i.test(leaseId)||!validToken(leaseCapability)){
       return json({error:'usage_lease_required',failClosed:true},402,request);
     }
-    const meter=await meterStub(env,request,undefined,entitlement);
+    const meter=await meterStub(env,request,walletBinding?.walletReference,entitlement);
     if(!meter)return json({error:'invalid_usage_subject'},400,request);
     const capabilityHash=await sha256Hex(leaseCapability);
 
@@ -1246,6 +1288,7 @@ export {
   rateCardIsCurrent,
   sanitizeChatText,
   usageSubject,
+  verifyAggyWalletBinding,
   verifyAggyEntitlement,
   validateEnvelope,
   validatePublicBundle

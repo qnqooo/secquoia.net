@@ -55,7 +55,7 @@ test('Aggy exhausted state is yellow, preserves readable copy and offers explici
   assert.match(embed,/Chat seguro o paquetes de Tiempo IA/);
   assert.match(embed,/class="continuity"/);
   assert.match(embed,/Continuar por Chat seguro/);
-  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
+  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
     assert.match(embed,new RegExp(`data-pack="${pack}"`));
   }
   assert.match(embed,/url\.searchParams\.set\('addon',packId\)/);
@@ -68,13 +68,13 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.1"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.2"/);
   assert.match(embed,/qu-market\.html\?embed=1&aggy=1/);
   assert.match(embed,/title="Aggy Communications"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.1"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.1"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.2"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.2"[^>]*data-aggy-site="secquoia\.net"/);
 });
