@@ -123,13 +123,24 @@
   };
   const updateMinuteChain=detail=>{
     const contractIncluded=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode);
+    const paidAvailable=detail.paidAvailable===true;
     launcher.dataset.accessMode=String(detail.accessMode||'VISITOR_TRIAL');
+    launcher.dataset.paidAvailable=String(paidAvailable);
     minuteChain.classList.toggle('contract',contractIncluded);
     if(contractIncluded){
       const preview=detail.accessMode==='ECOSYSTEM_PREVIEW';
       launcher.dataset.expired='false';
       minuteChain.setAttribute('aria-label',preview?'Acceso Ecosystem Preview sin consumo':'Voz LIVE incluida durante el contrato');
       launcherStatus.textContent=preview?'Preview · sin consumo':'Voz LIVE · incluida';
+      return;
+    }
+    if(paidAvailable){
+      launcher.dataset.expired='false';
+      minuteLinks.forEach(link=>link.classList.remove('lit'));
+      minuteChain.classList.remove('exhausted');
+      minuteChain.setAttribute('aria-label','Tiempo IA pagado disponible');
+      launcherStatus.textContent='Tiempo IA disponible · continuar';
+      launcherNudge.textContent='Toca aquí para continuar Voice LIVE';
       return;
     }
     const total=Math.max(1,Number(detail.totalSeconds||600));
@@ -253,12 +264,15 @@
     launcher.dataset.voice=state;
     const preview=launcher.dataset.accessMode==='ECOSYSTEM_PREVIEW';
     const included=launcher.dataset.accessMode==='CONTRACT_INCLUDED';
+    const paidAvailable=launcher.dataset.paidAvailable==='true';
     const expired=launcher.dataset.expired==='true';
     launcher.dataset.voice=expired?'blocked':state;
     launcherStatus.textContent=expired
       ?'Tiempo gratis agotado · continuar'
       :state==='connecting'
       ?'Conectando Voice LIVE…'
+      :paidAvailable
+        ?state==='live'?'EN VIVO · Tiempo IA':'Tiempo IA disponible · continuar'
       :preview
         ?'Preview · sin consumo'
         :included

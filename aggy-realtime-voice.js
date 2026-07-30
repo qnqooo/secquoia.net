@@ -64,6 +64,13 @@
   let walletBindingToken=(()=>{
     try{return String(localStorage.getItem('secquoia.aggy.qupay.wallet-binding.v1')||'').trim()}catch{return ''}
   })();
+  const paymentThankYouKey='secquoia.aggy.payment-thank-you.v1';
+  const storedPaymentGreeting=()=>{
+    try{
+      const value=JSON.parse(sessionStorage.getItem(paymentThankYouKey)||'null');
+      return value&&Number(value.amountUsd)>0&&Number(value.voiceLiveMinutes)>0?value:null;
+    }catch{return null}
+  };
   const authorizedHeaders=headers=>({
     ...headers,
     ...(visitorId?{'X-Aggy-Visitor-ID':visitorId}:{}),
@@ -83,7 +90,7 @@
   let qugeoContext=null;
   let webKnowledgeContext=null;
   let greetingSent=false;
-  let postPaymentGreeting=null;
+  let postPaymentGreeting=storedPaymentGreeting();
   let pendingReadAloud='';
   let usageLease=null;
   let usageHeartbeat=null;
@@ -109,7 +116,7 @@
     if(window.parent!==window&&parentOrigin)window.parent.postMessage(detail,parentOrigin);
   };
 
-  const publishUsageState=(remainingSeconds,accessMode='VISITOR_TRIAL')=>{
+  const publishUsageState=(remainingSeconds,accessMode='VISITOR_TRIAL',options={})=>{
     const contractIncluded=isUnmeteredAccess(accessMode);
     const remaining=contractIncluded?null:Math.max(0,Math.min(freeVoiceSeconds,Number(remainingSeconds||0)));
     const detail=Object.freeze({
@@ -118,6 +125,7 @@
       totalSeconds:freeVoiceSeconds,
       remainingSeconds:remaining,
       elapsedMinutes:contractIncluded?null:Math.min(10,Math.floor((freeVoiceSeconds-remaining)/60)),
+      paidAvailable:options.paidAvailable===true,
       marketplaceUrl:usageMarketplaceUrl,
       version:aggyVersion
     });
@@ -152,12 +160,14 @@
     params.delete('session_id');
     const sanitized=`${location.pathname}${params.size?`?${params}`:''}${location.hash}`;
     history.replaceState(history.state,'',sanitized);
-    return Object.freeze({
+    const paidConfirmation=Object.freeze({
       amountUsd:Number(confirmation.amountUsd||0),
       qvitAmount:Number(confirmation.qvitAmount||0),
       voiceLiveMinutes:Number(confirmation.voiceLiveMinutes||0),
       packId:String(confirmation.packId||'')
     });
+    sessionStorage.setItem(paymentThankYouKey,JSON.stringify(paidConfirmation));
+    return paidConfirmation;
   };
   const paymentReturnPromise=recoverPaidCheckout().catch(error=>{
     console.warn('Aggy payment confirmation unavailable',String(error?.message||'unknown'));
@@ -206,7 +216,7 @@
         usageMarketplaceUrl=candidate.href;
       }
     }catch{}
-    publishUsageState(free,accessMode);
+    publishUsageState(free,accessMode,{paidAvailable:balance>=price&&price>0});
     if(status?.activeLease){
       usageUi(
         previewAccess?'Ecosystem Preview activo':contractIncluded?'Aggy incluida en tu servicio':'Sesión medida en curso',
@@ -513,6 +523,7 @@
           : `Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Then briefly explain that the Aggy button opens chat, secure file exchange, and encrypted individual or group calls. Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
+    if(paid)sessionStorage.removeItem(paymentThankYouKey);
   };
 
   const sendPendingReadAloud=()=>{
@@ -608,7 +619,7 @@
 
     connecting=true;
     greetingSent=false;
-    postPaymentGreeting=postPayment;
+    postPaymentGreeting=postPayment||postPaymentGreeting||storedPaymentGreeting();
     startButton.disabled=true;
     setState('connecting','Conectando con Aggy','Solicitando una sesión WebRTC efímera al backend seguro.','CONECTANDO');
     try{
