@@ -62,12 +62,25 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.0.0-rc.41',
-  channel:'rc',
-  lifecycle:'production-validation',
+  version:'1.0.0',
+  channel:'stable',
+  lifecycle:'general-availability',
   distribution:'ecosystem-hosted',
-  productionApproved:false,
-  thirdPartySale:false
+  productionApproved:true,
+  thirdPartySale:true,
+  gaScope:Object.freeze([
+    'AGGY_VOICE_LIVE',
+    'AGGY_ASSISTANT_CHAT',
+    'VISITOR_TRIAL',
+    'CONTRACT_ENTITLEMENTS',
+    'TIME_AI_QVIT',
+    'QUPAY_LIVE'
+  ]),
+  previewCapabilities:Object.freeze([
+    'EXTERNAL_SECURE_MESSAGING',
+    'CDR_PROTECTED_ATTACHMENTS',
+    'E2EE_PQC_CALLS'
+  ])
 });
 const MAX_SDP_BYTES=64*1024;
 const MAX_CHAT_TEXT_BYTES=4*1024;

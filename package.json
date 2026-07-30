@@ -11,6 +11,8 @@
 		"@noble/post-quantum": "0.6.1"
 	},
 	"devDependencies": {
-		"esbuild": "0.25.10"
+		"@types/node": "24.13.3",
+		"esbuild": "0.25.10",
+		"wrangler": "4.115.0"
 	}
 }

@@ -182,12 +182,15 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
   }
 });
 
-test('Aggy publishes one consistent prerelease version and honest commercial status',async()=>{
-  assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9A-Za-z.-]+$/);
-  assert.equal(release.version,'1.0.0-rc.41');
-  assert.equal(release.channel,'rc');
-  assert.equal(release.productionApproved,false);
-  assert.equal(release.thirdPartySale,false);
+test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
+  assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
+  assert.equal(release.version,'1.0.0');
+  assert.equal(release.channel,'stable');
+  assert.equal(release.lifecycle,'general-availability');
+  assert.equal(release.productionApproved,true);
+  assert.equal(release.thirdPartySale,true);
+  assert.ok(release.gaScope.includes('AGGY_VOICE_LIVE'));
+  assert.ok(release.previewCapabilities.includes('CDR_PROTECTED_ATTACHMENTS'));
   assert.match(voice,new RegExp(`const aggyVersion='${release.version.replaceAll('.','\\.')}';`));
   assert.equal(workerModule.AGGY_RELEASE.version,release.version);
   assert.match(html,new RegExp(`Aggy v${release.version.replaceAll('.','\\.')}`));
@@ -197,8 +200,10 @@ test('Aggy publishes one consistent prerelease version and honest commercial sta
   const body=await response.json();
   assert.equal(body.version,release.version);
   assert.equal(body.channel,release.channel);
-  assert.equal(body.productionApproved,false);
-  assert.equal(body.thirdPartySale,false);
+  assert.equal(body.productionApproved,true);
+  assert.equal(body.thirdPartySale,true);
+  assert.deepEqual(body.gaScope,release.gaScope);
+  assert.deepEqual(body.previewCapabilities,release.previewCapabilities);
 });
 
 test('Aggy Voice health probe activates without opening a paid provider session',async()=>{
@@ -218,9 +223,9 @@ test('Aggy Voice health probe activates without opening a paid provider session'
     assert.equal(body.voiceIdentity,'feminine');
     assert.equal(body.defaultLocale,'es-CO');
     assert.equal(body.release.version,release.version);
-    assert.equal(body.release.channel,'rc');
-    assert.equal(body.release.productionApproved,false);
-    assert.equal(body.release.thirdPartySale,false);
+    assert.equal(body.release.channel,'stable');
+    assert.equal(body.release.productionApproved,true);
+    assert.equal(body.release.thirdPartySale,true);
     assert.equal(body.qugeo.language,'es');
     assert.equal(body.qugeo.locale,'es-CO');
     assert.equal(body.qugeo.source,'BROWSER_LANGUAGE_FALLBACK');

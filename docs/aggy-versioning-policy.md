@@ -30,3 +30,7 @@ The version number alone never authorizes production or resale. `productionAppro
 7. Successful release validation and explicit promotion approval.
 
 The first commercial third-party release should be `1.0.0` or later and must publish its release manifest and changelog before activation.
+
+## Scoped GA
+
+A stable Aggy release may contain clearly identified preview capabilities. Preview capabilities must be excluded from the GA scope, visibly described as preview and fail closed when their external or security dependencies are unavailable. The release manifest and promotion evidence are authoritative for the exact GA scope.
