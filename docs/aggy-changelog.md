@@ -2,6 +2,18 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.8 - 2026-07-30
+
+### Marketplace Voice LIVE launcher recovery
+
+- Restores the visible compact Aggy launcher when the Marketplace opens while
+  keeping the full conversation panel collapsed until the customer selects it.
+- Preserves the automatic Voice LIVE prewarm and connection attempt without
+  stealing focus or covering the purchase journey.
+- Adds regression coverage for the payment-status card mounted between the
+  hidden panel and launcher.
+- Keeps microphone consent under the browser's secure permission controls.
+
 ## 1.2.7 - 2026-07-30
 
 ### Guided Marketplace purchase
