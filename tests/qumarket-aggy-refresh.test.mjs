@@ -377,6 +377,12 @@ test('Usage API forwards paid continuation only after an explicit user confirmat
   assert.match(forwarded[0].capabilityHash,/^[a-f0-9]{64}$/);
 });
 
+test('A stale usage heartbeat cannot overwrite a deliberate Voice LIVE close',()=>{
+  assert.match(voice,/const heartbeatLeaseId=usageLease\?\.leaseId/);
+  assert.match(voice,/if\(!connected\|\|!heartbeatLeaseId\|\|usageLease\?\.leaseId!==heartbeatLeaseId\)return/);
+  assert.match(voice,/usageUi\('Sesión finalizada','Aggy cerró la sesión de voz y está actualizando tu acceso y saldo\.'/);
+});
+
 test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one visible continuation action',()=>{
   for(const id of ['aggyUsageMeter','aggyUsageLabel','aggyUsageDetail','aggyUsageContinue','aggyUsageMarketplace']){
     assert.match(html,new RegExp(`id="${id}"`));
