@@ -208,7 +208,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.7');
+  assert.equal(release.version,'1.2.8');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -276,6 +276,12 @@ test('Aggy Voice UI exposes live, mute and end controls with honest state',()=>{
 
 test('Marketplace keeps chat compact while Voice LIVE starts without stealing focus',()=>{
   assert.match(html,/setAssistantState\(embedded\?'expanded':'hidden',\{persist:false,focus:false\}\)/);
+  assert.match(html,/\.assistant\.hidden~\.assistant-launcher\{opacity:1;visibility:visible;pointer-events:auto;transform:none\}/);
+  assert.doesNotMatch(html,/\.assistant\.hidden\+\.assistant-launcher/);
+  assert.ok(
+    html.indexOf('<aside class="aggy-payment-moment"') < html.indexOf('<button class="assistant-launcher"'),
+    'the compact launcher must remain visible when the payment moment is mounted before it'
+  );
   assert.match(html,/window\.addEventListener\('load',\(\)=>openAggyVoice\(\{focus:false,reveal:false\}\)/);
   assert.match(html,/assistantLauncher\.onclick=\(\)=>\{assistantLauncher\.dataset\.guideDismissed='true';if\(assistantLauncher\.dataset\.expired==='true'\)\{openAggyContinuity\(\);return\}openAgent\(\)\}/);
   assert.match(html,/secquoia:aggy:start-voice/);

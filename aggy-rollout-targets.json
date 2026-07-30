@@ -1,7 +1,7 @@
 {
   "schema": "secquoia.aggy.rollout.v1",
-  "release": "1.2.7",
-  "generatedAt": "2026-07-30T15:24:28Z",
+  "release": "1.2.8",
+  "generatedAt": "2026-07-30T16:49:17Z",
   "webSurfaces": [
     {
       "name": "SECQUOIA Marketplace and corporate site",
@@ -33,7 +33,7 @@
       "canonicalDestination": "https://secquoia.net/qu-market.html?aggy=chat",
       "siteVersion": 25,
       "observedLoaderRelease": "1.0.0-rc.8",
-      "targetLoaderRelease": "1.2.7",
+      "targetLoaderRelease": "1.2.8",
       "status": "excluded-from-ga-owner-only"
     },
     {
@@ -45,7 +45,7 @@
       "quhubRole": "independent-integration-and-llm-gateway",
       "siteVersion": 4,
       "observedLoaderRelease": "1.0.0-rc.8",
-      "targetLoaderRelease": "1.2.7",
+      "targetLoaderRelease": "1.2.8",
       "status": "excluded-from-ga-owner-only"
     }
   ],
