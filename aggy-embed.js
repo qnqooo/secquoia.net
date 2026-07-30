@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.2.10';
+  const version='1.2.11';
   const paymentReturn=(()=>{
     try{
       const values=new URLSearchParams(location.hash.replace(/^#/,''));
@@ -194,6 +194,7 @@
     paymentAmount.textContent=`USD ${amount.toFixed(2)}`;
     paymentMinutes.textContent=`${minutes} minutos`;
     launcher.dataset.expired='false';
+    launcher.dataset.continuityRequired='false';
     launcher.dataset.paidAvailable='true';
     launcher.dataset.paidMinutes=String(minutes);
     launcherStatus.textContent=`${minutes} min disponibles · Voice LIVE`;
@@ -211,6 +212,7 @@
     if(contractIncluded){
       const preview=detail.accessMode==='ECOSYSTEM_PREVIEW';
       launcher.dataset.expired='false';
+      launcher.dataset.continuityRequired='false';
       minuteChain.setAttribute('aria-label',preview?'Acceso Ecosystem Preview sin consumo':'Voz LIVE incluida durante el contrato');
       launcherStatus.textContent=preview?'Preview · sin consumo':'Voz LIVE · incluida';
       return;
@@ -218,6 +220,7 @@
     if(paidAvailable){
       const paidMinutes=Number(launcher.dataset.paidMinutes||0);
       launcher.dataset.expired='false';
+      launcher.dataset.continuityRequired='false';
       minuteLinks.forEach(link=>link.classList.remove('lit'));
       minuteChain.classList.remove('exhausted');
       minuteChain.setAttribute('aria-label','Tiempo IA pagado disponible');
@@ -234,6 +237,7 @@
     minuteChain.setAttribute('aria-label',remaining===0?'Tiempo gratuito de Voz LIVE finalizado':`${Math.ceil(remaining/60)} minutos de Voz LIVE disponibles`);
     launcher.dataset.remainingMinutes=String(Math.ceil(remaining/60));
     launcher.dataset.expired=String(remaining===0);
+    launcher.dataset.continuityRequired=String(remaining===0);
     if(remaining===0){
       launcher.dataset.voice='blocked';
       launcherStatus.textContent='Tiempo gratis agotado · continuar';
@@ -288,9 +292,13 @@
   };
   launcher.addEventListener('click',()=>{
     launcher.dataset.guideDismissed='true';
-    if(launcher.dataset.expired==='true'){
+    const continuityRequired=
+      launcher.dataset.continuityRequired==='true'||
+      launcher.dataset.expired==='true'||
+      /agotado|finaliz/i.test(launcherStatus.textContent||'');
+    if(continuityRequired){
       setOpen(false,{focus:false});
-      setContinuityOpen(continuity.hidden);
+      setContinuityOpen(true);
       return;
     }
     if(launcher.dataset.paidAvailable==='true'){
