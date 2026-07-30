@@ -74,7 +74,10 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/X-Aggy-Wallet-Binding/);
   assert.match(voice,/\/v1\/qupay\/checkout\/confirm\?session_id=/);
   assert.match(voice,/secquoia\.aggy\.qupay\.wallet-binding\.v1/);
-  assert.match(voice,/Warmly thank the user for their confirmed USD/);
+  assert.match(voice,/He recibido la confirmación segura de tu pago de USD/);
+  assert.match(voice,/voiceLiveMinutes/);
+  assert.match(voice,/durante \$\{paidMinutes\} minutos adicionales/);
+  assert.match(voice,/resume the previous conversation or help with something new/);
   assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
   assert.match(voice,/turn_detection:\{type:'semantic_vad',eagerness:'high',create_response:true,interrupt_response:true\}/);
   assert.match(voice,/const speechSpeed=1\.08/);
@@ -190,7 +193,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.0.3');
+  assert.equal(release.version,'1.0.4');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);

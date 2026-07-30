@@ -2,6 +2,19 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.4 - 2026-07-30
+
+### Contextual post-payment voice greeting
+
+- States the exact server-confirmed payment amount and purchased Voice LIVE
+  minutes in Aggy's first post-payment spoken response.
+- Thanks the customer naturally and offers either to resume the previous topic
+  or start a new support request.
+- Preserves the one-time greeting through a transient WebRTC retry while
+  excluding Stripe, QuPay, QVit, wallet and webhook mechanics from speech.
+- Advances all public client assets to `1.0.4` so the improved prompt is loaded
+  without a forced browser cache clear.
+
 ## 1.0.3 - 2026-07-30
 
 ### Paid Time AI continuity and deterministic client refresh
