@@ -2,6 +2,17 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.11 - 2026-07-30
+
+### Exhausted-time continuity action
+
+- Separates the commercial continuity state from transient Voice LIVE connection
+  states so an audio event cannot turn an exhausted launcher into a chat action.
+- Makes every visibly exhausted launcher open the package and secure-chat
+  continuity chooser, both in the native Marketplace and universal embed.
+- Keeps paid QVit availability authoritative: a customer with remaining paid
+  balance continues directly through Voice LIVE.
+
 ## 1.2.10 - 2026-07-30
 
 ### Paid launcher opens Voice LIVE
