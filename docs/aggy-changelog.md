@@ -2,6 +2,19 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.3 - 2026-07-30
+
+### Paid Time AI continuity and deterministic client refresh
+
+- Makes the compact launcher recognize an available paid QVit balance after the
+  complimentary Voice LIVE period ends.
+- Opens Aggy to continue the paid conversation instead of reopening the package
+  selector.
+- Preserves the one-time payment thank-you greeting across a transient WebRTC
+  retry without storing card data or Stripe secrets.
+- Advances every public client asset URL to `1.0.3` so browsers receive the
+  corrected continuity flow without requiring a forced cache clear.
+
 ## 1.0.2 - 2026-07-30
 
 ### Verified payment return and Voice LIVE resume
