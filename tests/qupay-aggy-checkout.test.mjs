@@ -159,9 +159,13 @@ test('Health reports each secret gate without exposing values',async()=>{
     STRIPE_WEBHOOK_SECRET:'unit-test-webhook-key',
     AGGY_QUPAY_WEBHOOK_SECRET:'shared_test',
     QUFENSE:{fetch:async(_url,init)=>{
-      assert.equal(init.method,'POST');
-      assert.equal(init.body,'{}');
-      return new Response(JSON.stringify({error:'invalid_checkout_authorization'}),{status:422});
+      assert.equal(_url,'https://qufense.internal/readyz');
+      assert.equal(init.method,'GET');
+      return new Response(JSON.stringify({
+        ready:true,
+        productionReady:true,
+        flowReceiptAuthority:{fingerprint:'e17334292df7d6f72b3395109e401b11'}
+      }),{status:200});
     }},
     QUFENSE_AUTHORITY_FINGERPRINT:'e17334292df7d6f72b3395109e401b11'
   });
