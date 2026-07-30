@@ -7,9 +7,11 @@ const source=await readFile(new URL('../workers/qupay-aggy-checkout.js',import.m
 const worker=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 
 test('QuPay exposes only governed QVit packs',()=>{
-  assert.deepEqual(Object.keys(worker.PACKS),['qvit-ai-credit-1','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']);
+  assert.deepEqual(Object.keys(worker.PACKS),['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']);
   assert.equal(worker.PACKS['qvit-ai-credit-1'].usdCents,100);
   assert.equal(worker.PACKS['qvit-ai-credit-1'].qvitAmount,1_000_000);
+  assert.equal(worker.PACKS['qvit-ai-credit-5'].usdCents,500);
+  assert.equal(worker.PACKS['qvit-ai-credit-5'].qvitAmount,5_000_000);
   assert.equal(worker.PACKS['qvit-ai-credit-10'].usdCents,1000);
   assert.equal(worker.PACKS['qvit-ai-credit-10'].qvitAmount,10_000_000);
   assert.equal(worker.PACKS['qvit-ai-credit-25'].usdCents,2500);
@@ -151,6 +153,43 @@ test('Authorized Checkout carries QuFense evidence into Stripe metadata',async()
   assert.equal(form.get('metadata[qufense_evidence_id]'),'QFP-checkout-test');
   assert.equal(form.get('metadata[qufense_authority_fingerprint]'),authorityFingerprint);
   assert.equal(form.get('metadata[qufense_payload_digest]'),result.payloadDigest);
+  assert.match(form.get('success_url'),/payment=success&session_id=\{CHECKOUT_SESSION_ID\}/);
+});
+
+test('Paid Checkout confirmation returns a signed wallet binding and 20-minute USD 5 pack',async()=>{
+  const originalFetch=globalThis.fetch;
+  globalThis.fetch=async url=>{
+    assert.match(String(url),/api\.stripe\.com\/v1\/checkout\/sessions\/cs_live_/);
+    return new Response(JSON.stringify({
+      id:'cs_live_paid_confirmation_123456',
+      livemode:true,
+      payment_status:'paid',
+      amount_total:500,
+      currency:'usd',
+      metadata:{
+        pack_id:'qvit-ai-credit-5',
+        wallet_reference:'w'.repeat(43),
+        qvit_amount:'5000000'
+      }
+    }),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  try{
+    const response=await worker.default.fetch(new Request('https://pay.secquoia.group/v1/qupay/checkout/confirm?session_id=cs_live_paid_confirmation_123456',{
+      headers:{Origin:'https://secquoia.net'}
+    }),{
+      STRIPE_RESTRICTED_KEY:'rk_live_test',
+      AGGY_QUPAY_WEBHOOK_SECRET:'shared-test-secret'
+    });
+    const body=await response.json();
+    assert.equal(response.status,200);
+    assert.equal(body.status,'PAID');
+    assert.equal(body.amountUsd,5);
+    assert.equal(body.qvitAmount,5_000_000);
+    assert.equal(body.voiceLiveMinutes,20);
+    assert.match(body.walletBinding,/^[A-Za-z0-9_-]+\.[0-9a-f]{64}$/);
+  }finally{
+    globalThis.fetch=originalFetch;
+  }
 });
 
 test('Health reports each secret gate without exposing values',async()=>{

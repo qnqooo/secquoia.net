@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {createHmac} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 
@@ -70,6 +71,11 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/Content-Type':'application\/sdp'/);
   assert.match(voice,/credentials:'omit'/);
   assert.match(voice,/X-Aggy-Visitor-ID/);
+  assert.match(voice,/X-Aggy-Wallet-Binding/);
+  assert.match(voice,/\/v1\/qupay\/checkout\/confirm\?session_id=/);
+  assert.match(voice,/secquoia\.aggy\.qupay\.wallet-binding\.v1/);
+  assert.match(voice,/Warmly thank the user for their confirmed USD/);
+  assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
   assert.match(voice,/turn_detection:\{type:'semantic_vad',eagerness:'high',create_response:true,interrupt_response:true\}/);
   assert.match(voice,/const speechSpeed=1\.08/);
   assert.match(voice,/output:\{voice:naturalVoice,speed:speechSpeed\}/);
@@ -184,7 +190,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.0.1');
+  assert.equal(release.version,'1.0.2');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -377,6 +383,31 @@ test('Usage API forwards paid continuation only after an explicit user confirmat
   assert.match(forwarded[0].capabilityHash,/^[a-f0-9]{64}$/);
 });
 
+test('Aggy accepts only a valid signed QuPay wallet binding',async()=>{
+  const secret='shared-wallet-binding-secret';
+  const now=Date.now();
+  const encodedPayload=Buffer.from(JSON.stringify({
+    schema:'secquoia.qupay.aggy-wallet-binding.v1',
+    walletReference:'w'.repeat(43),
+    packId:'qvit-ai-credit-5',
+    providerSessionId:'cs_live_paid_confirmation_123456',
+    issuedAt:now,
+    expiresAt:now+60_000
+  })).toString('base64url');
+  const signature=createHmac('sha256',secret).update(encodedPayload).digest('hex');
+  const binding=await workerModule.verifyAggyWalletBinding(new Request('https://aggy.secquoia.group/api/aggy/usage/status',{
+    headers:{'X-Aggy-Wallet-Binding':`${encodedPayload}.${signature}`}
+  }),secret);
+  assert.equal(binding.walletReference,'w'.repeat(43));
+  assert.equal(binding.packId,'qvit-ai-credit-5');
+  await assert.rejects(
+    workerModule.verifyAggyWalletBinding(new Request('https://aggy.secquoia.group/api/aggy/usage/status',{
+      headers:{'X-Aggy-Wallet-Binding':`${encodedPayload}.${'0'.repeat(64)}`}
+    }),secret),
+    /invalid_wallet_binding/
+  );
+});
+
 test('Marketplace exhausted state opens a focused continuity dialog before any purchase',()=>{
   for(const id of ['aggyContinuityDialog','aggyContinuityClose','aggyContinuityChat']){
     assert.match(html,new RegExp(`id="${id}"`));
@@ -389,7 +420,7 @@ test('Marketplace exhausted state opens a focused continuity dialog before any p
   assert.match(html,/url\.searchParams\.set\('addon',packId\)/);
   assert.match(html,/window\.location\.assign\(timeAiUrl\(pack\)\)/);
   assert.match(html,/Sin renovación automática/);
-  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
+  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
     assert.match(html,new RegExp(`data-time-ai-pack="${pack}"`));
   }
 });
@@ -449,7 +480,7 @@ test('Time AI purchase uses one native top-level link and opens all Marketplace 
   assert.match(html,/let qupayCheckoutPending=false/);
   assert.match(html,/aria-busy/);
   assert.match(html,/QuPay–QuFense no respondió/);
-  assert.match(html,/qvit-ai-credit-\(1\|10\|25\|100\|500\)/);
+  assert.match(html,/qvit-ai-credit-\(1\|5\|10\|25\|100\|500\)/);
   assert.match(html,/id="ai-services"/);
   assert.match(html,/id="aggyUsageMarketplace"[^>]+target="_top"[^>]+rel="noopener"/);
   assert.match(voice,/usageMarketplaceLink\.href=usageMarketplaceUrl/);

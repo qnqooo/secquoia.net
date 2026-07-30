@@ -2,6 +2,21 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.0.2 - 2026-07-30
+
+### Verified payment return and Voice LIVE resume
+
+- Adds a server-verified Stripe Checkout confirmation route. A browser return
+  parameter alone can no longer claim a paid continuation.
+- Rebinds the paid QVit wallet through a time-bound HMAC capability verified by
+  Aggy, including across the Stripe top-level return.
+- Waits briefly for the signed webhook credit, then resumes Voice LIVE and asks
+  Aggy to thank the customer and invite them to continue the conversation.
+- Adds the USD 5 Time AI package with 5,000,000 QVit and a commercial allowance
+  of 20 additional Voice LIVE minutes.
+- Keeps payment, credit and voice consumption fail closed: no browser-side
+  amount, package or success flag can create QVit.
+
 ## 1.0.1 - 2026-07-29
 
 ### Clear continuity after the visitor trial
