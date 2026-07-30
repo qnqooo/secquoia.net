@@ -1,9 +1,9 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "1.1.0",
-  "releaseId": "aggy-1.1.0-experiential-payment-journey",
-  "releasedAt": "2026-07-30T02:00:00-05:00",
+  "version": "1.2.0",
+  "releaseId": "aggy-1.2.0-commercial-technical-consultant",
+  "releasedAt": "2026-07-30T03:00:00-05:00",
   "channel": "stable",
   "lifecycle": "general-availability",
   "distribution": "ecosystem-hosted",

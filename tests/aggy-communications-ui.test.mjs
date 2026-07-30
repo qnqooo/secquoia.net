@@ -85,10 +85,10 @@ test('Aggy communications release is versioned consistently',async()=>{
     read('aggy-marketplace.js'),
     read('workers/aggy-realtime-session.js')
   ]);
-  assert.equal(release.version,'1.1.0');
-  assert.match(html,/v1\.1\.0(?: GA)?/);
+  assert.equal(release.version,'1.2.0');
+  assert.match(html,/v1\.2\.0(?: GA)?/);
   assert.match(client,/api\/aggy\/calls\/preflight/);
-  assert.match(worker,/version:'1\.1\.0'/);
+  assert.match(worker,/version:'1\.2\.0'/);
 });
 
 test('contracted customers bypass the visitor trial without bypassing governance',async()=>{

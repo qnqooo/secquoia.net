@@ -1,3 +1,5 @@
+import {AGGY_CONSULTANT_PLAYBOOK,consultantSystemMessage} from './aggy-consultant-playbook.js';
+
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
 const MAX_BODY_BYTES=64*1024;
 const MAX_MESSAGE_CHARS=24_000;
@@ -382,6 +384,7 @@ export default {
       return json(request,{
         schema:'secquoia.quhub.web_knowledge.v1',
         policy:'AUTHORIZED_SECQUOIA_WEBSITES_DATA_ONLY',
+        consultantBrief:AGGY_CONSULTANT_PLAYBOOK,
         sources:sources.map(({id,url,label,status,text,retrievedAt,error})=>({
           id,url,label,status,text,retrievedAt,error:error||null
         }))
@@ -396,7 +399,7 @@ export default {
       if(input?.schema!=='secquoia.quhub.llm.chat.request.v1')throw new Error('schema_invalid');
       const messages=normalizeMessages(input.messages);
       const websites=await groundWebsites(messages);
-      const groundedMessages=[websiteGroundingMessage(websites),...messages];
+      const groundedMessages=[consultantSystemMessage(),websiteGroundingMessage(websites),...messages];
       const route=selectProvider(input,env);
       const estimate=estimateRequest(route.provider.id,groundedMessages);
       const started=Date.now();
@@ -438,6 +441,7 @@ export {
   PRIORITY,
   RATE_CARDS,
   WEBSITE_SOURCES,
+  AGGY_CONSULTANT_PLAYBOOK,
   htmlToText,
   normalizeMessages,
   normalizeUsage,
