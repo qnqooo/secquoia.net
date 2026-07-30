@@ -40,7 +40,7 @@
 <script>
 (()=>{
   'use strict';
-  const RELEASE='1.2.8';
+  const RELEASE='1.2.9';
   const PACKS=Object.freeze({
     'qvit-ai-credit-1':Object.freeze({amountUsd:1,minutes:4,label:'Tiempo IA · Inicio'}),
     'qvit-ai-credit-5':Object.freeze({amountUsd:5,minutes:20,label:'Tiempo IA · Conversación'}),
@@ -108,10 +108,15 @@
     localStorage.setItem(PAYMENT_KEY,JSON.stringify(confirmation));
     const pending=readPending();
     localStorage.removeItem(PENDING_KEY);
-    setStatus('¡Pago confirmado!',`Aggy recibió la confirmación de USD ${confirmation.amountUsd.toFixed(2)}. Voice LIVE continuará durante ${Math.round(confirmation.voiceLiveMinutes)} minutos adicionales.`,{tone:'success'});
     const destination=new URL(safeReturn(pending?.returnTo));
     destination.hash=new URLSearchParams({aggy_payment:'success',session_id:sessionId}).toString();
-    setTimeout(()=>location.replace(destination.href),1500);
+    setStatus('¡Pago confirmado!',`Aggy recibió la confirmación de USD ${confirmation.amountUsd.toFixed(2)}. Voice LIVE continuará durante ${Math.round(confirmation.voiceLiveMinutes)} minutos adicionales. Volveremos a Aggy automáticamente.`,{
+      tone:'success',
+      retry:{label:'Continuar con Aggy',action:()=>location.replace(destination.href)}
+    });
+    returnAction.href=destination.href;
+    returnAction.textContent='Volver al sitio';
+    setTimeout(()=>location.replace(destination.href),900);
   };
   const showFailure=(title,copy,retry)=>{setStatus(title,copy,{tone:'error',retry});returnAction.href=safeReturn(readPending()?.returnTo)};
   const run=async()=>{

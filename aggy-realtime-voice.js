@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.2.8';
+  const aggyVersion='1.2.9';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -157,7 +157,11 @@
     const params=new URLSearchParams(location.search);
     const paymentFragment=new URLSearchParams(location.hash.replace(/^#/,''));
     const sessionId=String(params.get('session_id')||paymentFragment.get('session_id')||'');
-    const paymentState=params.get('payment')||paymentFragment.get('payment');
+    const paymentState=
+      params.get('payment')||
+      params.get('aggy_payment')||
+      paymentFragment.get('payment')||
+      paymentFragment.get('aggy_payment');
     if(paymentState!=='success'||!/^cs_live_[A-Za-z0-9_]{16,200}$/.test(sessionId))return null;
     const response=await fetchWithTimeout(`https://pay.secquoia.group/v1/qupay/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`,{
       method:'GET',
@@ -175,6 +179,7 @@
     localStorage.setItem('secquoia.aggy.qupay.wallet-binding.v1',walletBindingToken);
     params.delete('session_id');
     params.delete('payment');
+    params.delete('aggy_payment');
     const sanitized=`${location.pathname}${params.size?`?${params}`:''}`;
     history.replaceState(history.state,'',sanitized);
     const paidConfirmation=Object.freeze({
@@ -814,7 +819,7 @@
   const prewarmVoice=async()=>{
     setState('connecting','Aggy Voice se está preparando','Verificando el servicio seguro sin abrir el micrófono ni consumir una sesión del proveedor.','ACTIVANDO');
     try{
-      const paidConfirmation=await paymentReturnPromise;
+      const paidConfirmation=(await paymentReturnPromise)||postPaymentGreeting;
       const [voiceResult,qugeoResult,knowledgeResult,usageResult]=await Promise.allSettled([
         fetchVoiceHealth(),
         fetchWithTimeout(qugeoEndpoint,{method:'GET',credentials:'omit',cache:'no-store'},4500),
@@ -852,8 +857,8 @@
       const permissionState=await microphonePermissionState();
       if(paidConfirmation){
         let paidStatus=usageResult.status==='fulfilled'?usageResult.value:null;
-        for(let attempt=0;attempt<16&&Number(paidStatus?.wallet?.balance||0)<Number(paidStatus?.continuation?.customerQVit||1);attempt++){
-          await new Promise(resolve=>setTimeout(resolve,750));
+        for(let attempt=0;attempt<40&&Number(paidStatus?.wallet?.balance||0)<Number(paidStatus?.continuation?.customerQVit||1);attempt++){
+          await new Promise(resolve=>setTimeout(resolve,1500));
           paidStatus=await fetchUsageStatus().catch(()=>paidStatus);
         }
         if(Number(paidStatus?.wallet?.balance||0)>=Number(paidStatus?.continuation?.customerQVit||1)){
@@ -861,7 +866,11 @@
           await startRealtime(true,{userInitiated:permissionState!=='granted',postPayment:paidConfirmation});
           return;
         }
-        usageUi('Pago confirmado · acreditación en curso','QuPay confirmó el pago. Estamos terminando de acreditar tu Tiempo IA; toca Reintentar en unos segundos.','checking');
+        usageUi('Pago confirmado · acreditación en curso','QuPay confirmó el pago. Estamos terminando de acreditar tu Tiempo IA; no necesitas pagar nuevamente.','checking');
+        startButton.disabled=false;
+        startButton.textContent='Reintentar activación';
+        setState('idle','Tu pago está confirmado','La acreditación de Tiempo IA continúa de forma segura. Toca Reintentar activación en unos segundos; no realices otro pago.','PROCESANDO');
+        return;
       }
       if(permissionState!=='denied'){
         startButton.textContent='Iniciando voz';
@@ -882,7 +891,10 @@
     }
   };
 
-  startButton.addEventListener('click',()=>startRealtime(false,{userInitiated:true}));
+  startButton.addEventListener('click',()=>{
+    const paid=postPaymentGreeting||storedPaymentGreeting();
+    startRealtime(Boolean(paid),{userInitiated:true,postPayment:paid});
+  });
   usageContinueButton?.addEventListener('click',()=>startRealtime(true,{userInitiated:true}));
   endButton.addEventListener('click',()=>endVoice('CLIENT_END'));
   muteButton.addEventListener('click',()=>{

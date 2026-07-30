@@ -110,6 +110,8 @@ test('Post-payment journey is visual, exact and action-oriented without forcing 
   assert.match(html,/id="aggyPaymentContinue"/);
   assert.match(html,/class="aggy-payment-route"/);
   assert.match(html,/secquoia:aggy:payment-confirmed/);
+  assert.match(html,/showAggyPaymentMoment[\s\S]{0,1200}setAssistantState\('expanded',\{focus:false\}\)/);
+  assert.match(html,/showAggyPaymentMoment[\s\S]{0,1300}\[data-open-aggy-panel="voice"\]/);
   assert.match(html,/assistantLauncher\.dataset\.paidMinutes=String\(minutes\)/);
   assert.match(html,/aggyPaymentContinue\.onclick=\(\)=>\{setAggyPaymentMoment\(false\);openAggyVoice\(\{reveal:true\}\)\}/);
   assert.match(html,/document\.body\.classList\.contains\('aggy-embed-mode'\)\)return/);
@@ -208,7 +210,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.8');
+  assert.equal(release.version,'1.2.9');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -531,11 +533,11 @@ test('Time AI purchase preserves one explicit continuation action and all govern
 
 test('Cross-site paid return resumes Voice LIVE with exact commercial-consultative acknowledgment',()=>{
   assert.match(voice,/paymentFragment=new URLSearchParams\(location\.hash\.replace/);
-  assert.match(voice,/paymentState=params\.get\('payment'\)\|\|paymentFragment\.get\('payment'\)/);
+  assert.match(voice,/params\.get\('payment'\)[\s\S]{0,180}params\.get\('aggy_payment'\)[\s\S]{0,180}paymentFragment\.get\('payment'\)[\s\S]{0,180}paymentFragment\.get\('aggy_payment'\)/);
   assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
   assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conectado conmigo/);
   assert.match(voice,/single most important risk, business objective or decision/);
-  assert.match(voice,/for\(let attempt=0;attempt<16/);
+  assert.match(voice,/for\(let attempt=0;attempt<40/);
 });
 
 test('Time AI package selection resumes through QuIdentify before QuPay Checkout',()=>{

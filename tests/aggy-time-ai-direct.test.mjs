@@ -55,6 +55,13 @@ test('post-payment confirmation crosses the Stripe return and is consumed once b
   assert.match(voice,/paymentThankYouFallbackKey='secquoia\.aggy\.payment-thank-you\.pending\.v1'/);
   assert.match(voice,/localStorage\.getItem\(paymentThankYouFallbackKey\)/);
   assert.match(voice,/localStorage\.removeItem\(paymentThankYouFallbackKey\)/);
+  assert.match(voice,/params\.get\('aggy_payment'\)/);
+  assert.match(voice,/paymentFragment\.get\('aggy_payment'\)/);
+  assert.match(voice,/params\.delete\('aggy_payment'\)/);
+  assert.match(voice,/\(await paymentReturnPromise\)\|\|postPaymentGreeting/);
+  assert.match(voice,/attempt<40/);
+  assert.match(script,/Continuar con Aggy/);
+  assert.match(script,/setTimeout\(\(\)=>location\.replace\(destination\.href\),900\)/);
   assert.match(voice,/server-confirmed post-payment continuation/);
   assert.match(voice,/exact confirmed amount/);
   assert.match(voice,/exact purchased Voice LIVE allowance/);
