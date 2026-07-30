@@ -1,9 +1,9 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "1.2.4",
-  "releaseId": "aggy-1.2.4-qvit-wallet-bootstrap",
-  "releasedAt": "2026-07-30T08:44:32-05:00",
+  "version": "1.2.5",
+  "releaseId": "aggy-1.2.5-direct-time-ai-checkout",
+  "releasedAt": "2026-07-30T08:54:24-05:00",
   "channel": "stable",
   "lifecycle": "general-availability",
   "distribution": "ecosystem-hosted",

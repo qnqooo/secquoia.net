@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.2.4';
+  const aggyVersion='1.2.5';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -65,9 +65,11 @@
     try{return String(localStorage.getItem('secquoia.aggy.qupay.wallet-binding.v1')||'').trim()}catch{return ''}
   })();
   const paymentThankYouKey='secquoia.aggy.payment-thank-you.v1';
+  const paymentThankYouFallbackKey='secquoia.aggy.payment-thank-you.pending.v1';
   const storedPaymentGreeting=()=>{
     try{
-      const value=JSON.parse(sessionStorage.getItem(paymentThankYouKey)||'null');
+      const serialized=sessionStorage.getItem(paymentThankYouKey)||localStorage.getItem(paymentThankYouFallbackKey)||'null';
+      const value=JSON.parse(serialized);
       return value&&Number(value.amountUsd)>0&&Number(value.voiceLiveMinutes)>0?value:null;
     }catch{return null}
   };
@@ -150,6 +152,7 @@
     window.dispatchEvent(new CustomEvent('secquoia:aggy:payment-confirmed',{detail}));
     if(window.parent!==window&&parentOrigin)window.parent.postMessage(detail,parentOrigin);
   };
+  if(postPaymentGreeting)setTimeout(()=>publishPaymentConfirmation(postPaymentGreeting),0);
   const recoverPaidCheckout=async()=>{
     const params=new URLSearchParams(location.search);
     const sessionId=String(params.get('session_id')||'');
@@ -537,7 +540,10 @@
           : `Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Then briefly explain that the Aggy button opens chat, secure file exchange, and encrypted individual or group calls. Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
-    if(paid)sessionStorage.removeItem(paymentThankYouKey);
+    if(paid){
+      sessionStorage.removeItem(paymentThankYouKey);
+      localStorage.removeItem(paymentThankYouFallbackKey);
+    }
   };
 
   const sendPendingReadAloud=()=>{

@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.2.4';
+  const version='1.2.5';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -152,11 +152,15 @@
     launcher.setAttribute('aria-expanded',String(open||panel.classList.contains('open')));
     if(open)continuityClose.focus();
   };
-  const marketplaceUrlFor=packId=>{
-    const url=new URL(usageMarketplaceUrl);
-    url.searchParams.set('time_ai','1');
-    url.searchParams.set('addon',packId);
-    url.hash='ai-services';
+  const timeAiCheckoutUrlFor=packId=>{
+    const url=new URL('https://secquoia.net/aggy-time-ai.html');
+    url.searchParams.set('pack',packId);
+    url.searchParams.set('return_to',window.location.href);
+    try{
+      const source=new URL(usageMarketplaceUrl);
+      const walletReference=String(source.searchParams.get('wallet_ref')||'');
+      if(/^[A-Za-z0-9_-]{43}$/.test(walletReference))url.searchParams.set('wallet_ref',walletReference);
+    }catch{}
     return url.href;
   };
   const setPaymentMomentOpen=open=>{
@@ -288,7 +292,7 @@
     const pack=event.target.closest('[data-pack]')?.dataset.pack;
     if(!/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(pack||''))return;
     setContinuityOpen(false);
-    window.location.assign(marketplaceUrlFor(pack));
+    window.location.assign(timeAiCheckoutUrlFor(pack));
   });
   root.addEventListener('keydown',event=>{if(event.key==='Escape'){setContinuityOpen(false);setOpen(false)}});
   window.addEventListener('message',event=>{
@@ -311,7 +315,7 @@
     if(event.data?.type==='secquoia:aggy:open-time-ai'){
       try{
         const marketplaceUrl=new URL(String(event.data.marketplaceUrl||''));
-        if(marketplaceUrl.protocol==='https:'&&marketplaceUrl.hostname==='secquoia.net'&&marketplaceUrl.pathname==='/qu-market.html'){
+        if(marketplaceUrl.protocol==='https:'&&marketplaceUrl.hostname==='secquoia.net'&&marketplaceUrl.pathname==='/aggy-time-ai.html'){
           setOpen(false,{focus:false});
           window.location.assign(marketplaceUrl.href);
         }

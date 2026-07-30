@@ -1,4 +1,4 @@
-const RELEASE='1.2.4';
+const RELEASE='1.2.5';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
 const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
@@ -165,8 +165,8 @@ const verifyStripeSignature=async(raw,header,secret,now=Math.floor(Date.now()/10
 const stripeForm=(body,qufense)=>{
   const form=new URLSearchParams();
   form.set('mode','payment');
-  form.set('success_url','https://secquoia.net/qu-market.html?payment=success&session_id={CHECKOUT_SESSION_ID}#ai-services');
-  form.set('cancel_url','https://secquoia.net/qu-market.html?payment=cancelled#ai-services');
+  form.set('success_url','https://secquoia.net/aggy-time-ai.html?payment=success&session_id={CHECKOUT_SESSION_ID}');
+  form.set('cancel_url','https://secquoia.net/aggy-time-ai.html?payment=cancelled');
   form.set('client_reference_id',body.orderRef);
   form.set('line_items[0][price_data][currency]','usd');
   form.set('line_items[0][price_data][unit_amount]',String(body.pack.usdCents));

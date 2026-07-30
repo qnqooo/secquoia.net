@@ -208,7 +208,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.4');
+  assert.equal(release.version,'1.2.5');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);
@@ -437,7 +437,7 @@ test('Aggy accepts only a valid signed QuPay wallet binding',async()=>{
   );
 });
 
-test('Marketplace exhausted state opens a focused continuity dialog before any purchase',()=>{
+test('Marketplace exhausted state opens a focused continuity dialog and a direct Time AI route',()=>{
   for(const id of ['aggyContinuityDialog','aggyContinuityClose','aggyContinuityChat']){
     assert.match(html,new RegExp(`id="${id}"`));
   }
@@ -446,8 +446,9 @@ test('Marketplace exhausted state opens a focused continuity dialog before any p
   assert.match(html,/assistant-launcher\[data-expired="true"\]/);
   assert.match(html,/aggyContinuityDialog\.showModal\(\)/);
   assert.match(html,/openAgent\(\);document\.querySelector\('\[data-open-aggy-panel="chat"\]'\)\?\.click\(\)/);
-  assert.match(html,/url\.searchParams\.set\('addon',packId\)/);
-  assert.match(html,/window\.location\.assign\(timeAiUrl\(pack\)\)/);
+  assert.match(html,/new URL\('https:\/\/secquoia\.net\/aggy-time-ai\.html'\)/);
+  assert.match(html,/url\.searchParams\.set\('pack',packId\)/);
+  assert.match(html,/type:'secquoia:aggy:open-time-ai'/);
   assert.match(html,/Sin renovación automática/);
   for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
     assert.match(html,new RegExp(`data-time-ai-pack="${pack}"`));
@@ -504,7 +505,7 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one visibl
   assert.match(worker,/QUPAY_CONFIRMED_QVIT_CREDIT/);
 });
 
-test('Time AI purchase uses one native top-level link and opens all Marketplace time options',()=>{
+test('Time AI purchase preserves one explicit continuation action and all governed packages',()=>{
   assert.match(html,/\.btn\.primary\{[^}]*color:#000!important;[^}]*text-shadow:none/);
   assert.match(html,/let qupayCheckoutPending=false/);
   assert.match(html,/aria-busy/);
@@ -515,7 +516,7 @@ test('Time AI purchase uses one native top-level link and opens all Marketplace 
   assert.match(voice,/usageMarketplaceLink\.href=usageMarketplaceUrl/);
   assert.match(voice,/marketplaceUrl:usageMarketplaceUrl/);
   assert.match(html,/Ver paquetes de Tiempo IA/);
-  assert.doesNotMatch(voice,/postMessage\(\{type:'secquoia:aggy:open-time-ai'/);
+  assert.match(html,/postMessage\(\{type:'secquoia:aggy:open-time-ai'/);
   assert.match(addons,/activationParams\.get\('time_ai'\)==='1'\?'ai':'all'/);
   assert.match(addons,/getElementById\('ai-services'\)\?\.scrollIntoView/);
   assert.match(worker,/time_ai=1&wallet_ref=/);

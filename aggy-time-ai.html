@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#04170f">
+  <title>Tiempo IA · Aggy</title>
+  <style>
+    :root{color-scheme:dark;--bg:#03130c;--card:#092419;--line:#1f6648;--green:#20ed91;--cyan:#27b8ff;--ink:#f2fff8;--muted:#a8c8b8;--danger:#ff7b72}
+    *{box-sizing:border-box}body{margin:0;min-height:100svh;display:grid;place-items:center;padding:24px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at 50% 0,#0f4c34 0,transparent 38%),var(--bg);color:var(--ink)}
+    main{width:min(560px,100%);background:linear-gradient(145deg,rgba(15,62,43,.98),rgba(4,23,15,.98));border:1px solid var(--line);border-radius:32px;box-shadow:0 28px 80px #0009;overflow:hidden}
+    header{display:flex;align-items:center;gap:14px;padding:24px 26px;border-bottom:1px solid #ffffff14}.avatar{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:24px;color:#042015;background:linear-gradient(145deg,var(--green),var(--cyan))}h1{font-size:22px;margin:0}header p{margin:3px 0 0;color:var(--muted);font-size:14px}
+    section{padding:28px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:28px}.step{display:grid;gap:7px;justify-items:center;text-align:center;color:#789889;font-size:11px;font-weight:750}.step i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;border:1px solid #47725e;background:#0a281c}.step.active{color:var(--ink)}.step.active i,.step.done i{background:var(--green);border-color:var(--green);color:#052015}
+    .package{border:1px solid #45a87b;background:#ffffff09;border-radius:22px;padding:20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:20px}.package strong{display:block;font-size:20px}.package small{display:block;color:var(--muted);margin-top:5px}.price{font-size:30px;font-weight:900;white-space:nowrap}
+    .status{min-height:84px;border-radius:20px;padding:18px;background:#061a12;border:1px solid #ffffff12}.status strong{display:block;font-size:17px}.status p{margin:7px 0 0;color:var(--muted);line-height:1.45}.spinner{display:inline-block;width:13px;height:13px;margin-right:8px;border:2px solid #ffffff35;border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(1turn)}}
+    .actions{display:flex;gap:10px;margin-top:18px}.actions[hidden]{display:none}.button{appearance:none;border:0;border-radius:16px;padding:14px 18px;font-weight:850;font-size:15px;cursor:pointer;text-decoration:none;text-align:center;flex:1}.primary{background:linear-gradient(90deg,var(--green),var(--cyan));color:#041b11}.secondary{background:#ffffff0d;color:var(--ink);border:1px solid #ffffff24}.fine{color:#789889;font-size:11px;line-height:1.45;margin:18px 3px 0}.error{color:#ffd3cf}.success{color:#7dffc0}
+    @media(max-width:520px){body{padding:0;background:var(--bg)}main{min-height:100svh;border:0;border-radius:0}section{padding:24px 18px}.steps{gap:3px}.step{font-size:10px}.package{padding:17px}.price{font-size:25px}}
+  </style>
+</head>
+<body>
+<main>
+  <header><span class="avatar">A</span><div><h1>Continuar con Aggy</h1><p>Una ruta directa, segura y sin carrito.</p></div></header>
+  <section>
+    <div class="steps" aria-label="Proceso de compra">
+      <span class="step" data-step="1"><i>1</i>Paquete</span>
+      <span class="step" data-step="2"><i>2</i>Identidad</span>
+      <span class="step" data-step="3"><i>3</i>Pago</span>
+      <span class="step" data-step="4"><i>4</i>Voice LIVE</span>
+    </div>
+    <div class="package"><div><strong id="packName">Tiempo IA</strong><small id="packMinutes">Preparando paquete</small></div><span class="price" id="packPrice">—</span></div>
+    <div class="status" role="status" aria-live="polite"><strong id="statusTitle"><span class="spinner"></span>Preparando</strong><p id="statusCopy">Estamos validando el paquete seleccionado.</p></div>
+    <div class="actions" id="actions" hidden>
+      <button class="button primary" type="button" id="primaryAction">Reintentar</button>
+      <a class="button secondary" id="returnAction" href="https://secquoia.group/">Volver</a>
+    </div>
+    <p class="fine">SECQUOIA no recibe ni almacena los datos de tu tarjeta. QuFense autoriza la operación dentro del ecosistema; el pago se completa en Stripe mediante HTTPS administrado por Stripe. No se realiza ningún cargo hasta que tú lo confirmas.</p>
+  </section>
+</main>
+<script>
+(()=>{
+  'use strict';
+  const RELEASE='1.2.5';
+  const PACKS=Object.freeze({
+    'qvit-ai-credit-1':Object.freeze({amountUsd:1,minutes:4,label:'Tiempo IA · Inicio'}),
+    'qvit-ai-credit-5':Object.freeze({amountUsd:5,minutes:20,label:'Tiempo IA · Conversación'}),
+    'qvit-ai-credit-10':Object.freeze({amountUsd:10,minutes:41,label:'Tiempo IA · Extendido'}),
+    'qvit-ai-credit-25':Object.freeze({amountUsd:25,minutes:104,label:'Tiempo IA · Flexible'}),
+    'qvit-ai-credit-100':Object.freeze({amountUsd:100,minutes:416,label:'Tiempo IA · Ampliado'}),
+    'qvit-ai-credit-500':Object.freeze({amountUsd:500,minutes:2083,label:'Tiempo IA · Equipos'})
+  });
+  const TRUSTED_RETURN_ORIGINS=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);
+  const PENDING_KEY='secquoia.aggy.time-ai.pending.v1';
+  const PAYMENT_KEY='secquoia.aggy.payment-thank-you.pending.v1';
+  const WALLET_KEY='secquoia.aggy.qupay.wallet-binding.v1';
+  const params=new URLSearchParams(location.search);
+  const statusTitle=document.getElementById('statusTitle'),statusCopy=document.getElementById('statusCopy'),actions=document.getElementById('actions'),primaryAction=document.getElementById('primaryAction'),returnAction=document.getElementById('returnAction');
+  const setStep=active=>document.querySelectorAll('[data-step]').forEach(node=>{const step=Number(node.dataset.step);node.classList.toggle('active',step===active);node.classList.toggle('done',step<active)});
+  const setStatus=(title,copy,{tone='',retry=null}={})=>{
+    statusTitle.textContent=title;statusTitle.className=tone;statusCopy.textContent=copy;
+    actions.hidden=!retry;
+    if(retry){primaryAction.textContent=retry.label;primaryAction.onclick=retry.action}
+  };
+  const safeReturn=value=>{
+    try{const url=new URL(String(value||''));return url.protocol==='https:'&&TRUSTED_RETURN_ORIGINS.has(url.origin)?url.href:'https://secquoia.group/'}catch{return 'https://secquoia.group/'}
+  };
+  const readPending=()=>{try{return JSON.parse(localStorage.getItem(PENDING_KEY)||'null')}catch{return null}};
+  const writePending=value=>localStorage.setItem(PENDING_KEY,JSON.stringify(value));
+  const resolveWallet=async candidate=>{
+    if(/^[A-Za-z0-9_-]{43}$/.test(String(candidate||'')))return candidate;
+    const response=await fetch('https://aggy.secquoia.group/api/aggy/usage/status',{headers:{Accept:'application/json'},credentials:'omit',cache:'no-store'});
+    const body=await response.json().catch(()=>({}));
+    const reference=String(body?.wallet?.reference||'');
+    return response.ok&&/^[A-Za-z0-9_-]{43}$/.test(reference)?reference:'';
+  };
+  const identityUrl=pending=>{
+    const returnUrl=new URL(location.origin+location.pathname);
+    returnUrl.searchParams.set('quidentify','verified');
+    returnUrl.searchParams.set('pack',pending.packId);
+    returnUrl.searchParams.set('wallet_ref',pending.walletReference);
+    const url=new URL('https://quidentify.secquoia.group/v1/authorize');
+    url.searchParams.set('client','qumarket');
+    url.searchParams.set('purpose','time_ai_checkout');
+    url.searchParams.set('return_uri',returnUrl.href);
+    return url.href;
+  };
+  const openCheckout=async pending=>{
+    setStep(3);
+    setStatus('Abriendo el pago seguro','QuPay y QuFense están preparando Stripe. Tú confirmarás el cargo en la siguiente pantalla.');
+    const orderRef=`aggy-${Date.now()}-${crypto.randomUUID().slice(0,8)}`;
+    const response=await fetch('https://pay.secquoia.group/v1/qupay/checkout',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Idempotency-Key':orderRef},
+      body:JSON.stringify({schema:'secquoia.qupay.aggy-checkout.v1',packId:pending.packId,walletReference:pending.walletReference,orderRef})
+    });
+    const body=await response.json().catch(()=>({}));
+    if(!response.ok||!/^https:\/\/checkout\.stripe\.com\//.test(String(body.checkoutUrl||'')))throw new Error(String(body.reason||body.error||'checkout_unavailable'));
+    location.assign(body.checkoutUrl);
+  };
+  const confirmPayment=async sessionId=>{
+    setStep(4);
+    setStatus('Confirmando tu pago','Estamos verificando el pago certificado antes de reactivar Aggy.');
+    const response=await fetch(`https://pay.secquoia.group/v1/qupay/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`,{headers:{Accept:'application/json'},credentials:'omit',cache:'no-store'});
+    const body=await response.json().catch(()=>({}));
+    if(!response.ok||body.schema!=='secquoia.qupay.aggy-payment-confirmation.v1'||body.status!=='PAID'||!/^[A-Za-z0-9_-]{80,900}\.[0-9a-f]{64}$/i.test(String(body.walletBinding||'')))throw new Error(String(body.error||'payment_confirmation_unavailable'));
+    const confirmation={amountUsd:Number(body.amountUsd),voiceLiveMinutes:Number(body.voiceLiveMinutes),packId:String(body.packId||''),confirmedAt:new Date().toISOString(),release:RELEASE};
+    localStorage.setItem(WALLET_KEY,body.walletBinding);
+    localStorage.setItem(PAYMENT_KEY,JSON.stringify(confirmation));
+    const pending=readPending();
+    localStorage.removeItem(PENDING_KEY);
+    setStatus('¡Pago confirmado!',`Aggy recibió la confirmación de USD ${confirmation.amountUsd.toFixed(2)}. Voice LIVE continuará durante ${Math.round(confirmation.voiceLiveMinutes)} minutos adicionales.`,{tone:'success'});
+    const destination=new URL(safeReturn(pending?.returnTo));
+    destination.searchParams.set('aggy_payment','success');
+    setTimeout(()=>location.replace(destination.href),1500);
+  };
+  const showFailure=(title,copy,retry)=>{setStatus(title,copy,{tone:'error',retry});returnAction.href=safeReturn(readPending()?.returnTo)};
+  const run=async()=>{
+    const payment=params.get('payment');
+    if(payment==='success'){
+      const sessionId=String(params.get('session_id')||'');
+      if(!/^cs_live_[A-Za-z0-9_]{16,200}$/.test(sessionId))throw new Error('invalid_checkout_session');
+      await confirmPayment(sessionId);
+      return;
+    }
+    if(payment==='cancelled'){
+      const pending=readPending(),pack=PACKS[pending?.packId];
+      if(pack){document.getElementById('packName').textContent=pack.label;document.getElementById('packMinutes').textContent=`${pack.minutes} min aprox. de Voice LIVE`;document.getElementById('packPrice').textContent=`$${pack.amountUsd} USD`}
+      setStep(3);
+      showFailure('Pago cancelado','No se realizó ningún cargo. Puedes intentarlo nuevamente o volver a Aggy.',{label:'Volver a Stripe',action:()=>openCheckout(pending).catch(handleError)});
+      return;
+    }
+    const packId=String(params.get('pack')||'');
+    const pack=PACKS[packId];
+    if(!pack)throw new Error('invalid_package');
+    document.getElementById('packName').textContent=pack.label;
+    document.getElementById('packMinutes').textContent=`${pack.minutes} min aprox. de Voice LIVE`;
+    document.getElementById('packPrice').textContent=`$${pack.amountUsd} USD`;
+    setStep(1);
+    const walletReference=await resolveWallet(params.get('wallet_ref'));
+    if(!walletReference)throw new Error('wallet_unavailable');
+    const existing=readPending();
+    const pending={packId,walletReference,returnTo:safeReturn(params.get('return_to')||existing?.returnTo),createdAt:Date.now()};
+    writePending(pending);
+    returnAction.href=pending.returnTo;
+    if(params.get('quidentify')!=='verified'){
+      setStep(2);
+      setStatus('Verifica tu identidad','Abriremos QuIdentify/Okta. Al regresar, Stripe se abrirá automáticamente.');
+      setTimeout(()=>location.assign(identityUrl(pending)),500);
+      return;
+    }
+    await openCheckout(pending);
+  };
+  const handleError=error=>{
+    const code=String(error?.message||'unavailable');
+    const copy=code==='invalid_package'?'El paquete no es válido. Elige uno desde Aggy.':code==='wallet_unavailable'?'No fue posible preparar tu billetera QVit. No se realizó ningún cargo.':code==='qufense_checkout_unavailable'?'La compuerta segura QuFense no respondió. No se realizó ningún cargo.':'No fue posible completar este paso. No se realizó ningún cargo.';
+    showFailure('No pudimos continuar',copy,{label:'Reintentar',action:()=>location.reload()});
+  };
+  run().catch(handleError);
+})();
+</script>
+</body>
+</html>

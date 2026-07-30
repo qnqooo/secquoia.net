@@ -2,6 +2,19 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.5 - 2026-07-30
+
+### Direct Time AI checkout
+
+- Replaces the Marketplace detour with a focused four-step route: package,
+  QuIdentify/Okta, Stripe and Voice LIVE.
+- Preserves the chosen package, pseudonymous QVit wallet and trusted return
+  page without exposing a catalog, cart or unrelated controls.
+- Returns only after server-side Stripe confirmation, installs the signed
+  wallet binding and gives Aggy the exact paid amount and purchased Voice LIVE
+  minutes for her spoken continuation.
+- Keeps payment consent explicit and never initiates an automatic charge.
+
 ## 1.2.4 - 2026-07-30
 
 ### Direct-purchase QVit wallet bootstrap
