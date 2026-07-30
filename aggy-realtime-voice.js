@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.0.4';
+  const aggyVersion='1.1.0';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -139,6 +139,17 @@
     return fetch(url,{...options,signal:controller.signal})
       .finally(()=>clearTimeout(timeoutId));
   };
+  const publishPaymentConfirmation=confirmation=>{
+    const detail=Object.freeze({
+      type:'secquoia:aggy:payment-confirmed',
+      amountUsd:Number(confirmation.amountUsd||0),
+      voiceLiveMinutes:Number(confirmation.voiceLiveMinutes||0),
+      packId:String(confirmation.packId||''),
+      version:aggyVersion
+    });
+    window.dispatchEvent(new CustomEvent('secquoia:aggy:payment-confirmed',{detail}));
+    if(window.parent!==window&&parentOrigin)window.parent.postMessage(detail,parentOrigin);
+  };
   const recoverPaidCheckout=async()=>{
     const params=new URLSearchParams(location.search);
     const sessionId=String(params.get('session_id')||'');
@@ -167,6 +178,7 @@
       packId:String(confirmation.packId||'')
     });
     sessionStorage.setItem(paymentThankYouKey,JSON.stringify(paidConfirmation));
+    publishPaymentConfirmation(paidConfirmation);
     return paidConfirmation;
   };
   const paymentReturnPromise=recoverPaidCheckout().catch(error=>{

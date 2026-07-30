@@ -17,13 +17,14 @@ test('Aggy ecosystem embed has valid JavaScript and one-instance protection',()=
 });
 
 test('Aggy embed is accessible, responsive and grants only required frame capabilities',()=>{
+  const allow=embed.match(/allow="([^"]*)"/)?.[1]||'';
   assert.match(embed,/aria-expanded/);
   assert.match(embed,/role="dialog"/);
   assert.match(embed,/prefers-reduced-motion/);
   assert.match(embed,/allow="microphone; autoplay"/);
   assert.match(embed,/sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"/);
   assert.doesNotMatch(embed,/allow-top-navigation(?:\s|")/);
-  assert.doesNotMatch(embed,/camera|geolocation|clipboard-write|payment/);
+  assert.doesNotMatch(allow,/camera|geolocation|clipboard-write|payment/);
 });
 
 test('Aggy stays compact without stealing focus and starts Voice LIVE automatically',()=>{
@@ -63,18 +64,31 @@ test('Aggy exhausted state is yellow, preserves readable copy and offers explici
   assert.match(embed,/frame\.contentWindow\?\.postMessage\(\{type:'secquoia:aggy:open-chat'/);
 });
 
+test('Aggy embed presents a compact post-payment moment and keeps expansion user initiated',()=>{
+  assert.match(embed,/class="payment-moment"/);
+  assert.match(embed,/Tu conversación continúa\./);
+  assert.match(embed,/data-payment-amount/);
+  assert.match(embed,/data-payment-minutes/);
+  assert.match(embed,/class="payment-route"/);
+  assert.match(embed,/secquoia:aggy:payment-confirmed/);
+  assert.match(embed,/launcher\.dataset\.paidMinutes=String\(minutes\)/);
+  assert.match(embed,/paymentPrimary\.addEventListener\('click'/);
+  assert.match(embed,/setPaymentMomentOpen\(true\)/);
+  assert.doesNotMatch(embed,/showPaymentMoment=[\s\S]{0,1200}setOpen\(true\)/);
+});
+
 test('Aggy compact widget uses the governed Realtime voice client only',()=>{
   for(const id of ['aggyVoiceStage','aggyVoiceBadge','aggyVoiceHeadline','aggyVoiceCaption','aggyLanguage','aggyLiveVoice','aggyVoiceMute','aggyVoiceEnd']){
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz de SQAILE - Acento neutro/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.0\.4"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.1\.0"/);
   assert.match(embed,/qu-market\.html\?embed=1&aggy=1/);
   assert.match(embed,/title="Aggy Communications"/);
   assert.doesNotMatch(widget,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.0\.4"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.0\.4"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.1\.0"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.1\.0"[^>]*data-aggy-site="secquoia\.net"/);
 });

@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.0.4';
+  const version='1.1.0';
   const frameUrl=`https://secquoia.net/qu-market.html?embed=1&aggy=1&site=${encodeURIComponent(site)}&v=${encodeURIComponent(version)}`;
   const host=document.createElement('div');
   host.id='secquoia-aggy-embed';
@@ -62,11 +62,32 @@
       .continuity-pack small{color:#6c6450;font-size:9px;font-weight:700}
       .continuity-pack.recommended{background:#fff1bd;border-color:#dcaa19}
       .continuity-note{display:block;margin-top:11px;color:#726950;font-size:9px;font-weight:650}
-      @media(max-width:560px){.launcher{right:12px;bottom:12px}.panel{inset:8px;width:auto;height:auto;border-radius:20px}.continuity{right:8px;bottom:78px;width:calc(100vw - 16px)}.continuity-packs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      .payment-moment{position:fixed;right:18px;bottom:92px;z-index:2147483647;width:min(410px,calc(100vw - 28px));overflow:hidden;border:1px solid rgba(6,97,66,.18);border-radius:24px;background:linear-gradient(145deg,#f7fffb 0%,#e8fff5 54%,#e9f5ff 100%);color:#071b13;box-shadow:0 28px 90px rgba(0,32,20,.34);font:700 12px/1.45 Inter,Segoe UI,Arial,sans-serif;animation:aggy-payment-arrive .5s cubic-bezier(.2,.85,.2,1)}
+      .payment-moment[hidden]{display:none}
+      .payment-glow{position:absolute;right:-42px;top:-56px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(53,255,140,.38),transparent 67%);pointer-events:none}
+      .payment-body{position:relative;padding:20px}
+      .payment-kicker{display:flex;align-items:center;gap:8px;color:#08724c;font-size:10px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
+      .payment-check{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#0ecb7d;color:#fff;box-shadow:0 0 0 7px rgba(14,203,125,.11);font-size:13px}
+      .payment-moment h2{margin:14px 0 5px;font:950 23px/1.05 Inter,Segoe UI,Arial,sans-serif;letter-spacing:-.025em}
+      .payment-moment p{margin:0;color:#52655c;font-weight:650}
+      .payment-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+      .payment-stat{padding:11px;border:1px solid rgba(7,75,51,.1);border-radius:14px;background:rgba(255,255,255,.72)}
+      .payment-stat small{display:block;color:#6c7c74;font-size:9px;text-transform:uppercase;letter-spacing:.08em}
+      .payment-stat strong{display:block;margin-top:3px;color:#073e2c;font-size:17px}
+      .payment-route{display:grid;grid-template-columns:auto 1fr auto 1fr auto;align-items:center;gap:6px;margin:0 0 16px;color:#08724c;font-size:9px}
+      .payment-route i{width:8px;height:8px;border-radius:50%;background:#13d487;box-shadow:0 0 0 4px rgba(19,212,135,.12)}
+      .payment-route span{height:2px;border-radius:999px;background:linear-gradient(90deg,#13d487,#55a9ff);transform-origin:left;animation:aggy-route-fill .8s .18s both}
+      .payment-actions{display:grid;grid-template-columns:1fr auto;gap:8px}
+      .payment-primary,.payment-later{min-height:44px;border-radius:13px;font:900 11px Inter,Segoe UI,Arial,sans-serif;cursor:pointer}
+      .payment-primary{border:0;background:linear-gradient(135deg,#11db8a,#36a6ff);color:#04140e;box-shadow:0 10px 24px rgba(23,160,124,.2)}
+      .payment-later{border:1px solid rgba(7,75,51,.14);background:rgba(255,255,255,.65);color:#345047;padding:0 14px}
+      @media(max-width:560px){.launcher{right:12px;bottom:12px}.panel{inset:8px;width:auto;height:auto;border-radius:20px}.continuity,.payment-moment{right:8px;bottom:78px;width:calc(100vw - 16px)}.continuity-packs{grid-template-columns:repeat(2,minmax(0,1fr))}.payment-body{padding:17px}.payment-moment h2{font-size:21px}}
       @keyframes aggy-live-halo{0%{opacity:.72;transform:scale(.65)}75%,100%{opacity:0;transform:scale(1.75)}}
       @keyframes aggy-guide-pulse{50%{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,74,180,.46)}}
       @keyframes aggy-final-minute{to{transform:scaleY(1.8);filter:brightness(1.28)}}
       @keyframes aggy-frame-spin{to{transform:rotate(360deg)}}
+      @keyframes aggy-payment-arrive{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+      @keyframes aggy-route-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
       @media(prefers-reduced-motion:reduce){.panel{transition:none}.dot::after,.minute-link,.launcher-nudge{animation:none!important}}
     </style>
     <button class="launcher" type="button" data-voice="connecting" aria-expanded="false" aria-controls="aggy-panel" title="Aggy ${version}">
@@ -77,6 +98,17 @@
       <div class="bar"><span>Aggy <small>${version}</small></span><button class="close" type="button" aria-label="Cerrar Aggy">×</button></div>
       <div class="frame-state" role="status"><div><i aria-hidden="true"></i><span>Conectando la experiencia segura de Aggy…</span><button type="button" hidden>Reintentar</button></div></div>
       <iframe title="Aggy Communications" src="${frameUrl}" allow="microphone; autoplay" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation-by-user-activation"></iframe>
+    </section>
+    <section class="payment-moment" role="status" aria-live="polite" aria-label="Pago confirmado y Tiempo IA disponible" hidden>
+      <span class="payment-glow" aria-hidden="true"></span>
+      <div class="payment-body">
+        <div class="payment-kicker"><span class="payment-check" aria-hidden="true">✓</span><span>Pago confirmado</span></div>
+        <h2>Tu conversación continúa.</h2>
+        <p>Aggy está lista para retomar exactamente donde quedaron.</p>
+        <div class="payment-stats"><div class="payment-stat"><small>Pago recibido</small><strong data-payment-amount>USD —</strong></div><div class="payment-stat"><small>Voice LIVE</small><strong data-payment-minutes>— minutos</strong></div></div>
+        <div class="payment-route" aria-label="Pago confirmado, Tiempo IA activado, Aggy lista"><i></i><span></span><i></i><span></span><i></i></div>
+        <div class="payment-actions"><button class="payment-primary" type="button">Continuar con Aggy</button><button class="payment-later" type="button">Ahora no</button></div>
+      </div>
     </section>
     <section class="continuity" role="dialog" aria-modal="true" aria-labelledby="aggy-continuity-title" hidden>
       <div class="continuity-head"><div><h2 id="aggy-continuity-title">Tu tiempo gratis finalizó</h2><p>Continúa por Chat seguro o elige Tiempo IA para seguir conversando por voz.</p></div><button class="continuity-close" type="button" aria-label="Cerrar">×</button></div>
@@ -104,10 +136,16 @@
   const continuity=root.querySelector('.continuity');
   const continuityClose=root.querySelector('.continuity-close');
   const continuityChat=root.querySelector('.continuity-chat');
+  const paymentMoment=root.querySelector('.payment-moment');
+  const paymentAmount=paymentMoment.querySelector('[data-payment-amount]');
+  const paymentMinutes=paymentMoment.querySelector('[data-payment-minutes]');
+  const paymentPrimary=paymentMoment.querySelector('.payment-primary');
+  const paymentLater=paymentMoment.querySelector('.payment-later');
   const launcherStatus=launcher.querySelector('small');
   const launcherNudge=launcher.querySelector('.launcher-nudge');
   const minuteChain=launcher.querySelector('.minute-chain');
   const minuteLinks=[...launcher.querySelectorAll('.minute-link')];
+  let paymentMomentTimer=0;
   let usageMarketplaceUrl='https://secquoia.net/qu-market.html?time_ai=1#ai-services';
   const setContinuityOpen=open=>{
     continuity.hidden=!open;
@@ -120,6 +158,24 @@
     url.searchParams.set('addon',packId);
     url.hash='ai-services';
     return url.href;
+  };
+  const setPaymentMomentOpen=open=>{
+    paymentMoment.hidden=!open;
+    clearTimeout(paymentMomentTimer);
+    if(open)paymentMomentTimer=setTimeout(()=>{paymentMoment.hidden=true},14000);
+  };
+  const showPaymentMoment=detail=>{
+    const amount=Number(detail.amountUsd||0);
+    const minutes=Math.round(Number(detail.voiceLiveMinutes||0));
+    if(!(amount>0&&amount<=100000&&minutes>0&&minutes<=100000))return;
+    paymentAmount.textContent=`USD ${amount.toFixed(2)}`;
+    paymentMinutes.textContent=`${minutes} minutos`;
+    launcher.dataset.expired='false';
+    launcher.dataset.paidAvailable='true';
+    launcher.dataset.paidMinutes=String(minutes);
+    launcherStatus.textContent=`${minutes} min disponibles · Voice LIVE`;
+    launcherNudge.textContent='Pago confirmado · toca para continuar';
+    setPaymentMomentOpen(true);
   };
   const updateMinuteChain=detail=>{
     const contractIncluded=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode);
@@ -135,11 +191,12 @@
       return;
     }
     if(paidAvailable){
+      const paidMinutes=Number(launcher.dataset.paidMinutes||0);
       launcher.dataset.expired='false';
       minuteLinks.forEach(link=>link.classList.remove('lit'));
       minuteChain.classList.remove('exhausted');
       minuteChain.setAttribute('aria-label','Tiempo IA pagado disponible');
-      launcherStatus.textContent='Tiempo IA disponible · continuar';
+      launcherStatus.textContent=paidMinutes>0?`${paidMinutes} min disponibles · Voice LIVE`:'Tiempo IA disponible · continuar';
       launcherNudge.textContent='Toca aquí para continuar Voice LIVE';
       return;
     }
@@ -221,6 +278,12 @@
     setOpen(true);
     frame.contentWindow?.postMessage({type:'secquoia:aggy:open-chat',version},'https://secquoia.net');
   });
+  paymentPrimary.addEventListener('click',()=>{
+    setPaymentMomentOpen(false);
+    setOpen(true);
+    requestVoiceStart();
+  });
+  paymentLater.addEventListener('click',()=>setPaymentMomentOpen(false));
   continuity.addEventListener('click',event=>{
     const pack=event.target.closest('[data-pack]')?.dataset.pack;
     if(!/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(pack||''))return;
@@ -259,12 +322,17 @@
       updateMinuteChain(event.data);
       return;
     }
+    if(event.data?.type==='secquoia:aggy:payment-confirmed'){
+      showPaymentMoment(event.data);
+      return;
+    }
     if(event.data?.type!=='secquoia:aggy:voice-state')return;
     const state=['connecting','live','ready','blocked'].includes(event.data.state)?event.data.state:'ready';
     launcher.dataset.voice=state;
     const preview=launcher.dataset.accessMode==='ECOSYSTEM_PREVIEW';
     const included=launcher.dataset.accessMode==='CONTRACT_INCLUDED';
     const paidAvailable=launcher.dataset.paidAvailable==='true';
+    const paidMinutes=Number(launcher.dataset.paidMinutes||0);
     const expired=launcher.dataset.expired==='true';
     launcher.dataset.voice=expired?'blocked':state;
     launcherStatus.textContent=expired
@@ -272,7 +340,7 @@
       :state==='connecting'
       ?'Conectando Voice LIVE…'
       :paidAvailable
-        ?state==='live'?'EN VIVO · Tiempo IA':'Tiempo IA disponible · continuar'
+        ?state==='live'?'EN VIVO · Tiempo IA':paidMinutes>0?`${paidMinutes} min disponibles · Voice LIVE`:'Tiempo IA disponible · continuar'
       :preview
         ?'Preview · sin consumo'
         :included
