@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.2.9';
+  const aggyVersion='1.2.10';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -893,7 +893,10 @@
 
   startButton.addEventListener('click',()=>{
     const paid=postPaymentGreeting||storedPaymentGreeting();
-    startRealtime(Boolean(paid),{userInitiated:true,postPayment:paid});
+    const paidBalanceAvailable=
+      Number(lastUsageStatus?.wallet?.balance||0)>=
+      Number(lastUsageStatus?.continuation?.customerQVit||1);
+    startRealtime(Boolean(paid||paidBalanceAvailable),{userInitiated:true,postPayment:paid});
   });
   usageContinueButton?.addEventListener('click',()=>startRealtime(true,{userInitiated:true}));
   endButton.addEventListener('click',()=>endVoice('CLIENT_END'));

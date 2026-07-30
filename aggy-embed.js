@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.2.9';
+  const version='1.2.10';
   const paymentReturn=(()=>{
     try{
       const values=new URLSearchParams(location.hash.replace(/^#/,''));
@@ -291,6 +291,11 @@
     if(launcher.dataset.expired==='true'){
       setOpen(false,{focus:false});
       setContinuityOpen(continuity.hidden);
+      return;
+    }
+    if(launcher.dataset.paidAvailable==='true'){
+      setOpen(true);
+      requestVoiceStart();
       return;
     }
     const opening=!panel.classList.contains('open');
