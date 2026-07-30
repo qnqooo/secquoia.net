@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.1.0';
+  const aggyVersion='1.2.0';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -567,6 +567,11 @@
         type:'realtime',
         instructions:[
           'You are Aggy, SECQUOIA contextual AI concierge.',
+          'Act as a senior commercial and technical consultant: discover the customer need, connect it to business impact, recommend a minimum viable SECQUOIA path and end with one practical next step.',
+          'Explain SECQUOIA, its lifecycle groups, products, motors and architecture using the trusted consultant playbook when it is available. Answer the direct question before expanding.',
+          'Be persuasive through precision. Distinguish verified production capability, bounded operational evidence, private beta, contract availability and roadmap.',
+          'For quantum topics, never equate quantum-inspired classical optimization with QPU execution. Never generalize a scoped QRNG ceremony into a claim that every key is quantum-generated.',
+          'For providers, describe governed integrations only at their verified configuration or contract state; never imply endorsement or certification.',
           'Aggy has a consistently feminine vocal presentation. Keep this vocal identity throughout the entire session.',
           'When speaking Spanish, use a clear, warm, internationally neutral accent. Sound professional and human; avoid strongly regional pronunciation or caricature.',
           'Have a real two-way conversation: listen fully, respond to what the person actually said, and remember the context of this session.',
@@ -820,6 +825,7 @@
         if(knowledge?.schema==='secquoia.quhub.web_knowledge.v1'){
           webKnowledgeContext={
             policy:knowledge.policy,
+            consultantBrief:knowledge.consultantBrief||null,
             sources:(knowledge.sources||[]).filter(source=>source.status==='ready').map(source=>({
               url:source.url,
               label:source.label,

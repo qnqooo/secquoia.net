@@ -2,6 +2,26 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.0 - 2026-07-30
+
+### Commercial and technical consultant
+
+- Adds a governed consultant playbook covering SECQUOIA Strategic Holdings,
+  the eight cybersecurity lifecycle groups and the transversal platform
+  engines.
+- Gives Aggy a discovery method that connects customer needs to business
+  impact, recommends a minimum viable path and closes with one practical next
+  action.
+- Adds professional narratives for cybersecurity by design, SQAILE ethical and
+  epistemological governance, modular activation and governed provider
+  orchestration.
+- Distinguishes repository-tested PQC, QRNG-contributed hybrid key derivation,
+  classical Hamiltonian policy optimization and quantum-inspired simulation
+  from formal certification or physical quantum computing.
+- Publishes the same structured context through QuHub for Voice LIVE and
+  multi-provider chat while preserving website grounding and fail-closed
+  provider boundaries.
+
 ## 1.1.0 - 2026-07-30
 
 ### Experiential Time AI payment journey

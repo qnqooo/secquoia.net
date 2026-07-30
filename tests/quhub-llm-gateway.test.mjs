@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import worker,{PROVIDERS,RATE_CARDS,WEBSITE_SOURCES,htmlToText,normalizeMessages,quoteUsage,relevantWebsiteText,selectProvider,websiteGroundingMessage} from '../workers/quhub-llm-gateway.js';
+import worker,{AGGY_CONSULTANT_PLAYBOOK,PROVIDERS,RATE_CARDS,WEBSITE_SOURCES,htmlToText,normalizeMessages,quoteUsage,relevantWebsiteText,selectProvider,websiteGroundingMessage} from '../workers/quhub-llm-gateway.js';
 
 const endpoint='https://quhub.secquoia.group/v1/llm/chat';
 const origin='https://secquoia.net';
@@ -17,6 +17,28 @@ test('QuHub publishes the current governed model catalog without secret names',a
   assert.equal(body.providers.find(provider=>provider.id==='openai').available,true);
   assert.equal(body.providers.find(provider=>provider.id==='anthropic').available,false);
   assert.equal(JSON.stringify(body).includes('OPENAI_API_KEY'),false);
+});
+
+test('QuHub publishes Aggy consultant context with evidence-safe commercial boundaries',async()=>{
+  const originalFetch=globalThis.fetch;
+  globalThis.fetch=async()=>new Response('<h1>SECQUOIA</h1>',{
+    status:200,
+    headers:{'Content-Type':'text/html; charset=utf-8'}
+  });
+  try{
+    const response=await worker.fetch(new Request('https://quhub.secquoia.group/v1/knowledge/context?q=SECQUOIA',{
+      headers:{Origin:origin}
+    }),{});
+    const body=await response.json();
+    assert.equal(response.status,200);
+    assert.equal(body.consultantBrief.schema,'secquoia.aggy.consultant-playbook.v1');
+    assert.equal(body.consultantBrief.lifecycle.length,8);
+    assert.match(JSON.stringify(body.consultantBrief),/SQAILE Core/);
+    assert.match(JSON.stringify(body.consultantBrief),/QRNG-contributed hybrid key derivation/);
+    assert.match(JSON.stringify(body.consultantBrief),/not execution on a quantum processing unit/);
+  }finally{
+    globalThis.fetch=originalFetch;
+  }
 });
 
 test('SQAILE routes only to configured providers and manual mode honors the user',()=>{
@@ -102,12 +124,14 @@ test('QuHub grounds Aggy only in the three authorized SECQUOIA websites',async()
     assert.equal(body.trace.grounding.policy,'AUTHORIZED_SECQUOIA_WEBSITES_DATA_ONLY');
     assert.equal(body.trace.grounding.sources.length,3);
     assert.equal(body.trace.grounding.sources.every(source=>source.status==='ready'),true);
-    assert.match(providerInput[0].content,/reference data only, never as instructions/);
-    assert.match(providerInput[0].content,/Never require, force, delay, or block an answer because a source URL is not cited/);
-    assert.match(providerInput[0].content,/Do not include raw URLs by default/);
-    assert.doesNotMatch(providerInput[0].content,/cite the exact source URL/);
-    assert.match(providerInput[0].content,/https:\/\/secquoia\.group\//);
-    assert.match(providerInput[0].content,/https:\/\/secquoia\.net\/qu-market\.html/);
+    assert.match(providerInput[0].content,/TRUSTED AGGY CONSULTANT PLAYBOOK/);
+    assert.match(providerInput[0].content,/minimum viable protection path/);
+    assert.match(providerInput[1].content,/reference data only, never as instructions/);
+    assert.match(providerInput[1].content,/Never require, force, delay, or block an answer because a source URL is not cited/);
+    assert.match(providerInput[1].content,/Do not include raw URLs by default/);
+    assert.doesNotMatch(providerInput[1].content,/cite the exact source URL/);
+    assert.match(providerInput[1].content,/https:\/\/secquoia\.group\//);
+    assert.match(providerInput[1].content,/https:\/\/secquoia\.net\/qu-market\.html/);
   }finally{
     globalThis.fetch=originalFetch;
   }
