@@ -344,7 +344,9 @@
     stopUsageTimers();
     const endAt=Date.parse(expiresAt);
     usageHeartbeat=setInterval(()=>{
+      const heartbeatLeaseId=usageLease?.leaseId;
       usagePost('heartbeat').then(async response=>{
+        if(!connected||!heartbeatLeaseId||usageLease?.leaseId!==heartbeatLeaseId)return;
         if(!response?.ok){
           publishUsageState(0);
           usageUi('Voz LIVE finalizada','Puedes seguir por chat o activar un paquete de Tiempo IA para continuar por voz.','blocked');
@@ -360,6 +362,7 @@
           'ready'
         );
       }).catch(()=>{
+        if(!connected||!heartbeatLeaseId||usageLease?.leaseId!==heartbeatLeaseId)return;
         usageUi('Medición no disponible','La sesión se cerró preventivamente al perder contacto con QuCFA/QVit.','blocked');
         endVoice('METER_HEARTBEAT_FAILED');
       });
@@ -702,6 +705,7 @@
 
   const endVoice=(reason='CLIENT_END')=>{
     cleanupRealtime(reason);
+    usageUi('Sesión finalizada','Aggy cerró la sesión de voz y está actualizando tu acceso y saldo.','checking');
     startButton.disabled=false;
     startButton.textContent='Iniciar voz en vivo';
     muteButton.disabled=true;

@@ -79,7 +79,7 @@
       "status": "PASS",
       "evidence": [
         "103 of 103 pre-promotion tests passed on origin/main",
-        "104 of 104 post-promotion tests passed after Marketplace GA alignment",
+        "105 of 105 post-promotion tests passed after Marketplace GA alignment and Voice LIVE settlement-race correction",
         "Wrangler types and dry-run deployment bundles validated for both Workers",
         "GitHub Actions build passed on promotion and catalog-alignment pull requests",
         "Public post-deployment smoke verification passed",
@@ -89,7 +89,7 @@
   ],
   "assuranceBoundary": "GA applies only to gaScope. Preview capabilities remain fail closed and are not represented as production-ready, connected, NIAP-certified or independently certified.",
   "deployment": {
-    "verifiedAt": "2026-07-30T03:27:00Z",
+    "verifiedAt": "2026-07-30T03:34:00Z",
     "source": {
       "repository": "qnqooo/secquoia.net",
       "gaPromotionCommit": "07d4b74847deecbf6945aca1b21aef0cf3cf6810",
@@ -129,6 +129,17 @@
       "paymentCompleted": false,
       "automaticChargeCreated": false,
       "orderReference": "ga-1785381062368-70facae5"
+    },
+    "liveVoiceSmoke": {
+      "transport": "WebRTC",
+      "providerModel": "gpt-realtime-2.1",
+      "voice": "marin",
+      "paidMinuteExplicitlyConfirmed": true,
+      "stateObserved": "EN VIVO",
+      "spokenGreetingObserved": true,
+      "serverSideHardStopObserved": true,
+      "sessionEndedByOperator": true,
+      "automaticCardChargeCreated": false
     }
   }
 }
