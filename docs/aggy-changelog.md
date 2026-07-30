@@ -2,6 +2,17 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.2.10 - 2026-07-30
+
+### Paid launcher opens Voice LIVE
+
+- Makes a paid QVit balance authoritative for the launcher's next action even
+  after the one-time Stripe return marker has been consumed or lost on mobile.
+- Opens Voice LIVE directly when the customer taps Aggy with paid Time AI
+  available; the ordinary unpaid launcher continues to open the conversation.
+- Applies the same paid-continuation behavior to the native Marketplace and the
+  universal ecosystem embed.
+
 ## 1.2.9 - 2026-07-30
 
 ### Mobile post-payment Voice LIVE recovery
