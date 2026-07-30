@@ -54,7 +54,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
 @media(max-width:760px){.value-strip,.package-grid,.estimator,.onboarding-steps{grid-template-columns:1fr}.section-intro{align-items:flex-start;flex-direction:column}.conversion-section{padding-top:28px}.package-card{min-height:0}.estimator{gap:14px}.estimator-options,.governed-route ol{grid-template-columns:1fr}.market-tour-inner{padding:22px}}
 .btn[hidden],.market[hidden]{display:none!important}
 </style>
-<link rel="stylesheet" href="aggy-marketplace.css?v=1.0.4">
+<link rel="stylesheet" href="aggy-marketplace.css?v=1.1.0">
 <style>@media(max-width:780px){.aggy-tabs{grid-template-columns:minmax(130px,1fr) auto 54px}.aggy-top-trust small{display:none}}</style>
 <style>
 .aggy-continuity{width:min(430px,calc(100% - 20px));padding:0;border:1px solid rgba(105,74,0,.22);border-radius:22px;background:#fffaf0;color:#172019;box-shadow:0 30px 100px rgba(0,0,0,.55)}
@@ -70,7 +70,16 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
 .aggy-continuity-pack small{color:#6c6450;font-size:9px}.aggy-continuity-pack.recommended{background:#fff1bd;border-color:#dcaa19}
 .aggy-continuity-note{display:block;margin-top:11px;color:#726950;font-size:9px}.assistant-launcher[data-expired="true"]{background:linear-gradient(135deg,#ffe9a8,#ffc24f);color:#161000;border-color:rgba(78,52,0,.2)}
 .assistant-launcher[data-expired="true"] .assistant-launcher-nudge{display:block;background:linear-gradient(135deg,#fff3c9,#ffd979);color:#261900;border-color:#fff6d8;animation:none}.assistant-launcher[data-expired="true"] .assistant-launcher-nudge:after{border-top-color:#ffd979}
-@media(max-width:520px){.aggy-continuity-packs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.aggy-payment-moment{position:fixed;right:18px;bottom:108px;z-index:119;width:min(420px,calc(100vw - 28px));overflow:hidden;border:1px solid rgba(6,97,66,.18);border-radius:25px;background:linear-gradient(145deg,#f7fffb 0%,#e8fff5 54%,#e9f5ff 100%);color:#071b13;box-shadow:0 30px 100px rgba(0,32,20,.42);animation:aggy-payment-arrive .5s cubic-bezier(.2,.85,.2,1)}
+.aggy-payment-moment[hidden]{display:none}.aggy-payment-moment:before{content:"";position:absolute;right:-42px;top:-56px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(53,255,140,.4),transparent 67%)}
+.aggy-payment-inner{position:relative;padding:21px}.aggy-payment-kicker{display:flex;align-items:center;gap:9px;color:#08724c;font-size:10px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.aggy-payment-check{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#0ecb7d;color:#fff;box-shadow:0 0 0 7px rgba(14,203,125,.11)}
+.aggy-payment-moment h2{margin:14px 0 5px;color:#071b13;font-size:24px;line-height:1.05;letter-spacing:-.03em}.aggy-payment-moment p{margin:0;color:#52655c;font-size:12px;line-height:1.5}
+.aggy-payment-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}.aggy-payment-stat{padding:11px;border:1px solid rgba(7,75,51,.1);border-radius:14px;background:rgba(255,255,255,.74)}.aggy-payment-stat small{display:block;color:#6c7c74;font-size:9px;text-transform:uppercase;letter-spacing:.08em}.aggy-payment-stat strong{display:block;margin-top:3px;color:#073e2c;font-size:17px}
+.aggy-payment-route{display:grid;grid-template-columns:auto 1fr auto 1fr auto;align-items:center;gap:6px;margin-bottom:16px}.aggy-payment-route i{width:8px;height:8px;border-radius:50%;background:#13d487;box-shadow:0 0 0 4px rgba(19,212,135,.12)}.aggy-payment-route span{height:2px;border-radius:999px;background:linear-gradient(90deg,#13d487,#55a9ff);transform-origin:left;animation:aggy-route-fill .8s .18s both}
+.aggy-payment-actions{display:grid;grid-template-columns:1fr auto;gap:8px}.aggy-payment-actions button{min-height:44px;border-radius:13px;font-weight:900;cursor:pointer}.aggy-payment-continue{border:0;background:linear-gradient(135deg,#11db8a,#36a6ff);color:#04140e;box-shadow:0 10px 24px rgba(23,160,124,.2)}.aggy-payment-later{border:1px solid rgba(7,75,51,.14);background:rgba(255,255,255,.68);color:#345047;padding:0 14px}
+@keyframes aggy-payment-arrive{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}@keyframes aggy-route-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(max-width:520px){.aggy-continuity-packs{grid-template-columns:repeat(2,minmax(0,1fr))}.aggy-payment-moment{right:8px;bottom:88px;width:calc(100vw - 16px)}.aggy-payment-inner{padding:17px}.aggy-payment-moment h2{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.aggy-payment-moment,.aggy-payment-route span{animation:none}}
 </style>
 <link rel="stylesheet" href="qumarket-addons.css">
 </head>
@@ -87,7 +96,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <div class="runtime-settings" aria-hidden="true">
         <select class="nav-select" id="assistantLangTop" title="Aggy language"><option value="auto">Auto language</option><option value="en">English</option><option value="es">Español</option></select>
         <select class="nav-select" id="voiceContext" title="Aggy voice context"><option value="advisor">Advisor voice</option><option value="executive">Executive brief</option><option value="technical">Technical deep dive</option><option value="friendly">Friendly guide</option></select>
-        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.0.4 · Voz de SQAILE - Acento neutro</span>
+        <span class="nav-select" id="aggyVoiceProvider" title="Aggy Voice Realtime">Aggy v1.1.0 · Voz de SQAILE - Acento neutro</span>
         <div class="language-toggle"><button class="btn active" id="enBtn" type="button">EN</button><button class="btn" id="esBtn" type="button">ES</button></div>
       </div>
     </div>
@@ -439,7 +448,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <aside class="aggy-privacy-note"><strong>Grupos gobernados</strong><span>Cada integrante debe aprobarse antes de una conversación o llamada real.</span></aside>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="more">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.0.4</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy</strong><small>Voz de SQAILE · herramientas y controles</small></div><span class="aggy-state local">v1.1.0</span></div>
       <div class="aggy-profile-card"><div class="avatar">A</div><div><strong>Asistente inteligente</strong><small>Conversación, archivos, modelos y seguridad en un solo lugar.</small></div></div>
       <div class="aggy-more-list">
         <button type="button" data-open-aggy-panel="models"><span>✦</span><p><strong>IA Models</strong><small>SQAILE Core y proveedores en QuHub</small></p><i>›</i></button>
@@ -448,7 +457,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       <details class="aggy-drawer"><summary>Preferencias e identidad</summary><div class="aggy-form-grid two"><label class="aggy-label">Nombre<input id="visitorName" placeholder="Nombre"></label><label class="aggy-label">Necesidad<select id="assistantNeed"><option value="auto">Need context</option><option value="protect">Protect endpoints</option><option value="soc">SOC / monitoring</option><option value="payments">Payments / fintech</option><option value="finance">Cost / pricing</option><option value="ai">AI agent / voice</option></select></label></div><p class="aggy-note">QuIdentify es requerido para comunicaciones con terceros.</p></details>
     </section>
     <section class="aggy-panel" data-market-aggy-panel="voice">
-      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.0.4 GA · incluida durante contratos activos; visitantes: 10 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
+      <div class="aggy-panel-head"><button class="aggy-back" type="button" data-open-aggy-panel="chat" aria-label="Volver al chat">‹</button><div><strong>Aggy Voice Live</strong><small>v1.1.0 GA · incluida durante contratos activos; visitantes: 10 minutos gratis</small></div><span class="aggy-state checking" id="aggyVoiceBadge">INICIANDO</span></div>
       <div class="aggy-voice-stage" id="aggyVoiceStage" data-state="idle">
         <div class="aggy-orb" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <strong id="aggyVoiceHeadline">Activando Aggy Voice</strong>
@@ -495,6 +504,16 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     </section>
   </div>
 </section>
+<aside class="aggy-payment-moment" id="aggyPaymentMoment" role="status" aria-live="polite" aria-label="Pago confirmado y Tiempo IA disponible" hidden>
+  <div class="aggy-payment-inner">
+    <div class="aggy-payment-kicker"><span class="aggy-payment-check" aria-hidden="true">✓</span><span>Pago confirmado</span></div>
+    <h2>Tu conversación continúa.</h2>
+    <p>Aggy está lista para retomar exactamente donde quedaron.</p>
+    <div class="aggy-payment-stats"><div class="aggy-payment-stat"><small>Pago recibido</small><strong id="aggyPaymentAmount">USD —</strong></div><div class="aggy-payment-stat"><small>Voice LIVE</small><strong id="aggyPaymentMinutes">— minutos</strong></div></div>
+    <div class="aggy-payment-route" aria-label="Pago confirmado, Tiempo IA activado, Aggy lista"><i></i><span></span><i></i><span></span><i></i></div>
+    <div class="aggy-payment-actions"><button class="aggy-payment-continue" id="aggyPaymentContinue" type="button">Continuar con Aggy</button><button class="aggy-payment-later" id="aggyPaymentLater" type="button">Ahora no</button></div>
+  </div>
+</aside>
 <button class="assistant-launcher" type="button" id="assistantLauncher" data-voice="connecting" aria-label="Abrir Aggy: chat, archivos y llamadas seguras"><span class="assistant-launcher-nudge" role="note">Toca aquí: chat, archivos y llamadas seguras</span><span class="avatar">A</span><span class="assistant-launcher-copy"><strong>Aggy</strong><small>Conectando Voice LIVE…</small><span class="assistant-minute-chain" role="meter" aria-label="10 minutos de Voz LIVE disponibles" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i><i class="assistant-minute-link"></i></span></span></button>
 <dialog class="aggy-continuity" id="aggyContinuityDialog" aria-labelledby="aggyContinuityTitle">
   <div class="aggy-continuity-inner">
@@ -546,7 +565,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     qupay:{code:'available',label:{en:'Available',es:'Disponible'},summary:{en:'Governed checkout module available after identity, order and payment-provider validation.',es:'Módulo de checkout gobernado disponible tras validar identidad, orden y proveedor de pagos.'},requirements:{en:['Verified QuIdentify identity','Approved commercial order','Compatible payment-provider account and fees'],es:['Identidad verificada por QuIdentify','Orden comercial aprobada','Cuenta y tarifas compatibles del proveedor de pagos']}},
     quhub:{code:'available',label:{en:'Available',es:'Disponible'},summary:{en:'Governed connector gateway for approved APIs, providers and reusable integrations.',es:'Gateway gobernado para API, proveedores e integraciones reutilizables aprobadas.'},requirements:{en:['Verified organization','Connector and data-flow inventory','Server-side provider credentials and approved rate card'],es:['Organización verificada','Inventario de conectores y flujos de datos','Credenciales de proveedor del lado servidor y tarifario aprobado']}},
     quidentify:{code:'starter',label:{en:'Starter',es:'Starter'},summary:{en:'Identity onboarding package for organizations starting governed access and consent.',es:'Paquete inicial de identidad para organizaciones que implementan acceso y consentimiento gobernados.'},requirements:{en:['Verifiable corporate domain','DNS and mailbox-possession validation','OIDC/Okta configuration scope'],es:['Dominio corporativo verificable','Validación DNS y posesión del correo','Alcance de configuración OIDC/Okta']}},
-    aggy:{code:'available',label:{en:'GA · Available',es:'GA · Disponible'},summary:{en:'Aggy Core 1.0.4 is generally available for Voice LIVE, assistant chat, governed access and QuPay/QVit continuity. Preview communication capabilities remain visibly fail closed.',es:'Aggy Core 1.0.4 está disponible de forma general para Voz LIVE, chat asistente, acceso gobernado y continuidad QuPay/QVit. Las capacidades Preview de comunicaciones permanecen visiblemente bloqueadas de forma segura.'},requirements:{en:['Verified QuIdentify workspace for contracted access','QuHub connectivity for external AI providers','Accepted LLM, voice and QVit variable-cost policy'],es:['Workspace verificado por QuIdentify para acceso contratado','Conectividad QuHub para proveedores externos de IA','Aceptación de costos variables de LLM, voz y QVits']}},
+    aggy:{code:'available',label:{en:'GA · Available',es:'GA · Disponible'},summary:{en:'Aggy Core 1.1.0 is generally available for Voice LIVE, assistant chat, governed access and QuPay/QVit continuity. Preview communication capabilities remain visibly fail closed.',es:'Aggy Core 1.1.0 está disponible de forma general para Voz LIVE, chat asistente, acceso gobernado y continuidad QuPay/QVit. Las capacidades Preview de comunicaciones permanecen visiblemente bloqueadas de forma segura.'},requirements:{en:['Verified QuIdentify workspace for contracted access','QuHub connectivity for external AI providers','Accepted LLM, voice and QVit variable-cost policy'],es:['Workspace verificado por QuIdentify para acceso contratado','Conectividad QuHub para proveedores externos de IA','Aceptación de costos variables de LLM, voz y QVits']}},
     qucfa:{code:'starter',label:{en:'Starter',es:'Starter'},summary:{en:'Initial financial-governance workspace for auditable rate cards and usage economics.',es:'Workspace inicial de gobierno financiero para tarifarios y economía de uso auditables.'},requirements:{en:['Authorized financial role','Approved rate card or cost-data source','Defined workspace and reporting scope'],es:['Rol financiero autorizado','Tarifario o fuente de costos aprobada','Workspace y alcance de reportes definidos']}},
     quoptio:{code:'private-beta',label:{en:'Private beta',es:'Beta privada'},summary:{en:'Controlled optimization evaluation for stacks with measurable cost and latency baselines.',es:'Evaluación controlada de optimización para stacks con líneas base medibles de costo y latencia.'},requirements:{en:['Active QuCFA financial governance','Defined product stack','Approved baseline metrics and optimization target'],es:['Gobierno financiero QuCFA activo','Stack de producto definido','Métricas base y objetivo de optimización aprobados']}},
     qupkiaas:{code:'private-beta',label:{en:'Governed pilot',es:'Piloto gobernado'},summary:{en:'Application-ready pilot; live issuance starts only after provider activation, rate-card approval and tenant acceptance.',es:'Piloto listo para solicitud; la emisión real inicia únicamente después de activar el proveedor, aprobar el tarifario y aceptar el tenant.'},requirements:{en:['Verified QuIdentify organization','Approved AWS Private CA or DigiCert tenant and rate card','CSR and certificate-policy profile','QuFense and QuHub production gates'],es:['Organización verificada por QuIdentify','Tenant y tarifario aprobados de AWS Private CA o DigiCert','Perfil de CSR y política de certificados','Compuertas de producción QuFense y QuHub']}}
@@ -569,6 +588,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   const body=document.body, endpointSelect=document.getElementById('endpointSelect'), productRoot=document.getElementById('productCards'), cart=document.getElementById('cart'), cartList=document.getElementById('cartList'), subtotalEl=document.getElementById('subtotal'), servicesTotalEl=document.getElementById('servicesTotal'), discountEl=document.getElementById('discount'), renewalRow=document.getElementById('renewalRow'), renewalTotalEl=document.getElementById('renewalTotal'), totalEl=document.getElementById('total'), totalLabel=document.getElementById('totalLabel'), statusEl=document.getElementById('status'), ipInput=document.getElementById('ipInput'), ipFile=document.getElementById('ipFile'), deploySummary=document.getElementById('deploySummary'), deployList=document.getElementById('deployList');
   const assistant=document.getElementById('assistant'), assistantBody=document.getElementById('assistantBody'), assistantToggle=document.getElementById('assistantToggle'), assistantHide=document.getElementById('assistantHide'), assistantLauncher=document.getElementById('assistantLauncher'), conv=document.getElementById('conversation'), agentInput=document.getElementById('agentInput'), agentState=document.getElementById('agentState'), micBtn=document.getElementById('mic'), assistantLangTop=document.getElementById('assistantLangTop'), voiceContext=document.getElementById('voiceContext'), visitorName=document.getElementById('visitorName'), assistantNeed=document.getElementById('assistantNeed'), identityGate=document.getElementById('identityGate'), identityStatus=document.getElementById('identityStatus');
   const aggyContinuityDialog=document.getElementById('aggyContinuityDialog'),aggyContinuityClose=document.getElementById('aggyContinuityClose'),aggyContinuityChat=document.getElementById('aggyContinuityChat');
+  const aggyPaymentMoment=document.getElementById('aggyPaymentMoment'),aggyPaymentAmount=document.getElementById('aggyPaymentAmount'),aggyPaymentMinutes=document.getElementById('aggyPaymentMinutes'),aggyPaymentContinue=document.getElementById('aggyPaymentContinue'),aggyPaymentLater=document.getElementById('aggyPaymentLater');
   let aggyMarketplaceUrl='https://secquoia.net/qu-market.html?time_ai=1#ai-services';
   const pocForm=document.getElementById('pocForm'),pocStatus=document.getElementById('pocStatus');
   const publicMailboxDomains=new Set(['gmail.com','googlemail.com','outlook.com','hotmail.com','live.com','msn.com','yahoo.com','icloud.com','me.com','aol.com','proton.me','protonmail.com','gmx.com','mail.com','zoho.com','yandex.com']);
@@ -690,11 +710,12 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
       return;
     }
     if(paidAvailable){
+      const paidMinutes=Number(assistantLauncher.dataset.paidMinutes||0);
       assistantLauncher.dataset.expired='false';
       links.forEach(link=>link.classList.remove('lit'));
       chain.classList.remove('exhausted');
       chain.setAttribute('aria-label','Tiempo IA pagado disponible');
-      copy.textContent='Tiempo IA disponible · continuar';
+      copy.textContent=paidMinutes>0?`${paidMinutes} min disponibles · Voice LIVE`:'Tiempo IA disponible · continuar';
       nudge.textContent='Toca aquí para continuar Voice LIVE';
       return;
     }
@@ -716,12 +737,30 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   function timeAiUrl(packId){const url=new URL(aggyMarketplaceUrl);url.searchParams.set('time_ai','1');url.searchParams.set('addon',packId);url.hash='ai-services';return url.href}
   function openAggyContinuity(){if(typeof aggyContinuityDialog.showModal==='function'&&!aggyContinuityDialog.open)aggyContinuityDialog.showModal()}
   function openAggyVoice(options={}){const focus=options?.focus!==false,reveal=options?.reveal!==false;if(reveal){setAssistantState('expanded',{focus});document.querySelector('[data-open-aggy-panel="voice"]')?.click()}document.getElementById('aggyLiveVoice')?.click();agentState.textContent=lang()==='es'?'Abriendo Aggy Voice Realtime…':'Opening Aggy Voice Realtime…'}
+  let aggyPaymentTimer=0;
+  function setAggyPaymentMoment(open){aggyPaymentMoment.hidden=!open;clearTimeout(aggyPaymentTimer);if(open)aggyPaymentTimer=setTimeout(()=>{aggyPaymentMoment.hidden=true},14000)}
+  function showAggyPaymentMoment(detail={}){
+    if(document.body.classList.contains('aggy-embed-mode'))return;
+    const amount=Number(detail.amountUsd||0),minutes=Math.round(Number(detail.voiceLiveMinutes||0));
+    if(!(amount>0&&amount<=100000&&minutes>0&&minutes<=100000))return;
+    aggyPaymentAmount.textContent=`USD ${amount.toFixed(2)}`;
+    aggyPaymentMinutes.textContent=`${minutes} minutos`;
+    assistantLauncher.dataset.expired='false';
+    assistantLauncher.dataset.paidAvailable='true';
+    assistantLauncher.dataset.paidMinutes=String(minutes);
+    assistantLauncher.querySelector('small').textContent=`${minutes} min disponibles · Voice LIVE`;
+    assistantLauncher.querySelector('.assistant-launcher-nudge').textContent='Pago confirmado · toca para continuar';
+    setAggyPaymentMoment(true);
+  }
   window.addEventListener('secquoia:aggy:usage-state',event=>updateAggyMinuteChain(event.detail));
-  window.addEventListener('secquoia:aggy:voice-state',event=>{const state=event.detail?.state||'ready',copy=assistantLauncher.querySelector('small'),preview=assistantLauncher.dataset.accessMode==='ECOSYSTEM_PREVIEW',included=assistantLauncher.dataset.accessMode==='CONTRACT_INCLUDED',paidAvailable=assistantLauncher.dataset.paidAvailable==='true',expired=assistantLauncher.dataset.expired==='true';assistantLauncher.dataset.voice=expired?'blocked':state;copy.textContent=expired?'Tiempo gratis agotado · continuar':state==='connecting'?'Conectando Voice LIVE…':paidAvailable?(state==='live'?'EN VIVO · Tiempo IA':'Tiempo IA disponible · continuar'):preview?'Preview · sin consumo':included?'Voz LIVE · incluida':state==='live'?'EN VIVO · 10 min gratis':state==='blocked'?'Toca para activar · 10 min gratis':'Voice LIVE · 10 min gratis'});
+  window.addEventListener('secquoia:aggy:payment-confirmed',event=>showAggyPaymentMoment(event.detail));
+  window.addEventListener('secquoia:aggy:voice-state',event=>{const state=event.detail?.state||'ready',copy=assistantLauncher.querySelector('small'),preview=assistantLauncher.dataset.accessMode==='ECOSYSTEM_PREVIEW',included=assistantLauncher.dataset.accessMode==='CONTRACT_INCLUDED',paidAvailable=assistantLauncher.dataset.paidAvailable==='true',paidMinutes=Number(assistantLauncher.dataset.paidMinutes||0),expired=assistantLauncher.dataset.expired==='true';assistantLauncher.dataset.voice=expired?'blocked':state;copy.textContent=expired?'Tiempo gratis agotado · continuar':state==='connecting'?'Conectando Voice LIVE…':paidAvailable?(state==='live'?'EN VIVO · Tiempo IA':paidMinutes>0?`${paidMinutes} min disponibles · Voice LIVE`:'Tiempo IA disponible · continuar'):preview?'Preview · sin consumo':included?'Voz LIVE · incluida':state==='live'?'EN VIVO · 10 min gratis':state==='blocked'?'Toca para activar · 10 min gratis':'Voice LIVE · 10 min gratis'});
   document.getElementById('assistantHead').onclick=e=>{if(e.target.closest('button'))return;setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantToggle.onclick=e=>{e.stopPropagation();setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantHide.onclick=e=>{e.stopPropagation();setAssistantState('hidden')};assistantLauncher.onclick=()=>{assistantLauncher.dataset.guideDismissed='true';if(assistantLauncher.dataset.expired==='true'){openAggyContinuity();return}openAgent()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&assistant.dataset.state==='expanded')setAssistantState('minimized')});
   aggyContinuityClose.onclick=()=>aggyContinuityDialog.close();
   aggyContinuityChat.onclick=()=>{aggyContinuityDialog.close();openAgent();document.querySelector('[data-open-aggy-panel="chat"]')?.click()};
   aggyContinuityDialog.addEventListener('click',event=>{const pack=event.target.closest('[data-time-ai-pack]')?.dataset.timeAiPack;if(!/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(pack||''))return;aggyContinuityDialog.close();window.location.assign(timeAiUrl(pack))});
+  aggyPaymentContinue.onclick=()=>{setAggyPaymentMoment(false);openAggyVoice({reveal:true})};
+  aggyPaymentLater.onclick=()=>setAggyPaymentMoment(false);
   window.addEventListener('message',event=>{const trustedParents=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);if(event.source!==window.parent||!trustedParents.has(event.origin))return;if(event.data?.type==='secquoia:aggy:start-voice'){openAggyVoice({focus:false,reveal:false});return}if(event.data?.type==='secquoia:aggy:open-chat'){openAgent();document.querySelector('[data-open-aggy-panel="chat"]')?.click()}});
   document.getElementById('headerSupport').onclick=()=>{setAssistantState('expanded');agentInput.focus()};
   document.getElementById('send').onclick=()=>{const q=agentInput.value.trim();if(!q)return;agentInput.value='';handleUserInput(q)};agentInput.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('send').click()});
@@ -797,10 +836,10 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   const params=new URLSearchParams(location.search);if(params.get('quidentify')==='verified')setVerified(params.get('session')||params.get('state')||'verified-callback');assistantLangTop.value=profile.langPref;voiceContext.value=profile.voiceContext;visitorName.value=profile.name;setLang(profile.langPref==='auto'?inferLanguage():profile.langPref);restoreSavedEstimate();renderProducts();renderPackages();renderEstimate();updateCart();renderDeployment();renderIdentityGate();const embedded=params.get('embed')==='1';if(embedded){document.body.classList.add('aggy-embed-mode');assistantLauncher.hidden=true;assistant.classList.add('aggy-full','open')}setAssistantState(embedded?'expanded':'hidden',{persist:false,focus:false});addMsg(greeting(),'agent');agentState.textContent=lang()==='es'?'Aggy disponible':'Aggy ready';window.addEventListener('load',()=>openAggyVoice({focus:false,reveal:false}),{once:true});if(params.get('aggy')==='voice')openAggyVoice({focus:false,reveal:false});if(params.get('bundle')==='1')bundle();else if(params.get('product'))addProduct(params.get('product').toLowerCase());
 })();
 </script>
-<script src="aggy-secure-chat-crypto.bundle.js?v=1.0.4"></script>
-<script src="aggy-secure-chat.js?v=1.0.4"></script>
-<script src="aggy-marketplace.js?v=1.0.4"></script>
-<script src="aggy-realtime-voice.js?v=1.0.4"></script>
+<script src="aggy-secure-chat-crypto.bundle.js?v=1.1.0"></script>
+<script src="aggy-secure-chat.js?v=1.1.0"></script>
+<script src="aggy-marketplace.js?v=1.1.0"></script>
+<script src="aggy-realtime-voice.js?v=1.1.0"></script>
 <script src="qumarket-addons.js"></script>
 </body>
 </html>

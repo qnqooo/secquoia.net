@@ -78,6 +78,8 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/voiceLiveMinutes/);
   assert.match(voice,/durante \$\{paidMinutes\} minutos adicionales/);
   assert.match(voice,/resume the previous conversation or help with something new/);
+  assert.match(voice,/secquoia:aggy:payment-confirmed/);
+  assert.match(voice,/publishPaymentConfirmation\(paidConfirmation\)/);
   assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
   assert.match(voice,/turn_detection:\{type:'semantic_vad',eagerness:'high',create_response:true,interrupt_response:true\}/);
   assert.match(voice,/const speechSpeed=1\.08/);
@@ -98,6 +100,19 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/Never require, force, delay, or block an answer because a source URL is not cited/);
   assert.match(voice,/Do not speak raw URLs by default/);
   assert.doesNotMatch(voice,/sk-(?:proj-)?[A-Za-z0-9_-]{8,}|OPENAI_API_KEY|api\.openai\.com/);
+});
+
+test('Post-payment journey is visual, exact and action-oriented without forcing the panel open',()=>{
+  assert.match(html,/id="aggyPaymentMoment"/);
+  assert.match(html,/Tu conversación continúa\./);
+  assert.match(html,/id="aggyPaymentAmount"/);
+  assert.match(html,/id="aggyPaymentMinutes"/);
+  assert.match(html,/id="aggyPaymentContinue"/);
+  assert.match(html,/class="aggy-payment-route"/);
+  assert.match(html,/secquoia:aggy:payment-confirmed/);
+  assert.match(html,/assistantLauncher\.dataset\.paidMinutes=String\(minutes\)/);
+  assert.match(html,/aggyPaymentContinue\.onclick=\(\)=>\{setAggyPaymentMoment\(false\);openAggyVoice\(\{reveal:true\}\)\}/);
+  assert.match(html,/document\.body\.classList\.contains\('aggy-embed-mode'\)\)return/);
 });
 
 test('Visitor trials are isolated per browser instead of being shared by public IP',async()=>{
@@ -193,7 +208,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.0.4');
+  assert.equal(release.version,'1.1.0');
   assert.equal(release.channel,'stable');
   assert.equal(release.lifecycle,'general-availability');
   assert.equal(release.productionApproved,true);

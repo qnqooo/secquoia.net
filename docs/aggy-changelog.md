@@ -2,6 +2,21 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.1.0 - 2026-07-30
+
+### Experiential Time AI payment journey
+
+- Replaces the passive payment return with a compact, non-blocking confirmation
+  moment that shows the exact payment and Voice LIVE minutes.
+- Adds an animated three-stage route from payment confirmation to activated
+  Time AI and an Aggy-ready state.
+- Keeps the full communications panel collapsed until the customer chooses the
+  single primary action, `Continuar con Aggy`.
+- Updates the compact launcher with the purchased minutes and preserves a
+  secondary `Ahora no` path without interrupting the website.
+- Uses responsive, reduced-motion-aware presentation across the native
+  Marketplace and ecosystem embeds.
+
 ## 1.0.4 - 2026-07-30
 
 ### Contextual post-payment voice greeting
