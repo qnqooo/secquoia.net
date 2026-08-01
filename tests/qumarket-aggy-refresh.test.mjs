@@ -90,6 +90,9 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.doesNotMatch(voice,/X-Aggy-Voice-Model/);
   assert.doesNotMatch(voice,/startLocalFallback|localFallback|speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|MediaRecorder/);
   assert.match(voice,/window\.AggyVoice=Object\.freeze/);
+  assert.match(voice,/const startAuthorizedVoice=async\(\)=>/);
+  assert.match(voice,/start:\(\)=>startAuthorizedVoice\(\)/);
+  assert.doesNotMatch(voice,/start:\(\)=>startRealtime\(false,\{userInitiated:true\}\)/);
   assert.match(voice,/readAloud:text/);
   assert.match(voice,/const naturalVoice='marin'/);
   assert.match(voice,/let qugeoLanguage='es'/);
@@ -642,7 +645,7 @@ test('Cross-site paid return resumes Voice LIVE with exact commercial-consultati
   assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conmigo/);
   assert.match(voice,/single most important objective, blocker or decision/);
   assert.match(voice,/for\(let attempt=0;attempt<40/);
-  assert.match(voice,/paidBalanceAvailable=[\s\S]{0,180}lastUsageStatus\?\.wallet\?\.balance/);
+  assert.match(voice,/paidBalanceAvailable=[\s\S]{0,180}usageStatus\?\.wallet\?\.balance/);
   assert.match(voice,/startRealtime\(Boolean\(paid\|\|paidBalanceAvailable\)/);
 });
 
