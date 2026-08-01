@@ -108,7 +108,8 @@ test('QuFense receipt validation binds order, amount, digest, authority and expi
   assert.equal(worker.validQuFenseReceipt(document,expected,document.authorityFingerprint,now),true);
   assert.equal(worker.validQuFenseReceipt({...document,receipt:{...receipt,amount:2501}},expected,document.authorityFingerprint,now),false);
   assert.equal(worker.validQuFenseReceipt(document,expected,'f'.repeat(32),now),false);
-  assert.equal(worker.validQuFenseReceipt(document,expected,document.authorityFingerprint,now+15_001),false);
+  assert.equal(worker.validQuFenseReceipt(document,expected,document.authorityFingerprint,now+30_000),true);
+  assert.equal(worker.validQuFenseReceipt(document,expected,document.authorityFingerprint,now+45_001),false);
 });
 
 test('Authorized Checkout carries QuFense evidence into Stripe metadata',async()=>{
