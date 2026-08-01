@@ -165,6 +165,8 @@
   const minuteChain=launcher.querySelector('.minute-chain');
   const minuteLinks=[...launcher.querySelectorAll('.minute-link')];
   let paymentMomentTimer=0;
+  let paymentActivationPending=false;
+  let paymentReturnRecoveryShown=false;
   let usageMarketplaceUrl='https://secquoia.net/qu-market.html?time_ai=1#ai-services';
   const setContinuityOpen=open=>{
     continuity.hidden=!open;
@@ -185,29 +187,30 @@
   const setPaymentMomentOpen=open=>{
     paymentMoment.hidden=!open;
     clearTimeout(paymentMomentTimer);
-    if(open)paymentMomentTimer=setTimeout(()=>{paymentMoment.hidden=true},14000);
+    if(open)paymentMomentTimer=setTimeout(()=>{paymentMoment.hidden=true},60000);
   };
   const showPaymentMoment=detail=>{
     const amount=Number(detail.amountUsd||0);
     const minutes=Math.round(Number(detail.voiceLiveMinutes||0));
-    if(!(amount>0&&amount<=100000&&minutes>0&&minutes<=100000))return;
-    paymentAmount.textContent=`USD ${amount.toFixed(2)}`;
+    if(!(minutes>0&&minutes<=100000))return;
+    paymentAmount.textContent=amount>0&&amount<=100000?`USD ${amount.toFixed(2)}`:'Confirmado';
     paymentMinutes.textContent=`${minutes} minutos`;
     launcher.dataset.expired='false';
     launcher.dataset.continuityRequired='false';
     launcher.dataset.paidAvailable='true';
     launcher.dataset.paidMinutes=String(minutes);
     launcherStatus.textContent=`${minutes} min disponibles · Voice LIVE`;
-    launcherNudge.textContent='Pago confirmado · toca para continuar';
-    setOpen(true,{focus:false});
+    launcherNudge.textContent='Un toque para activar Voice LIVE';
+    paymentActivationPending=true;
+    setOpen(false,{focus:false});
     setPaymentMomentOpen(true);
-    requestVoiceStart();
   };
   const updateMinuteChain=detail=>{
     const contractIncluded=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode);
     const paidAvailable=detail.paidAvailable===true;
     launcher.dataset.accessMode=String(detail.accessMode||'VISITOR_TRIAL');
     launcher.dataset.paidAvailable=String(paidAvailable);
+    if(Number.isFinite(Number(detail.paidMinutes))&&Number(detail.paidMinutes)>0)launcher.dataset.paidMinutes=String(Math.floor(Number(detail.paidMinutes)));
     minuteChain.classList.toggle('contract',contractIncluded);
     if(contractIncluded){
       const preview=detail.accessMode==='ECOSYSTEM_PREVIEW';
@@ -225,7 +228,11 @@
       minuteChain.classList.remove('exhausted');
       minuteChain.setAttribute('aria-label','Tiempo IA pagado disponible');
       launcherStatus.textContent=paidMinutes>0?`${paidMinutes} min disponibles · Voice LIVE`:'Tiempo IA disponible · continuar';
-      launcherNudge.textContent='Toca aquí para continuar Voice LIVE';
+      launcherNudge.textContent='Un toque para activar Voice LIVE';
+      if(paymentReturn&&!paymentReturnRecoveryShown&&paidMinutes>0){
+        paymentReturnRecoveryShown=true;
+        showPaymentMoment({voiceLiveMinutes:paidMinutes});
+      }
       return;
     }
     const total=Math.max(1,Number(detail.totalSeconds||600));
@@ -302,7 +309,8 @@
       return;
     }
     if(launcher.dataset.paidAvailable==='true'){
-      setOpen(true);
+      launcherStatus.textContent='Conectando Voice LIVE…';
+      setOpen(false,{focus:false});
       requestVoiceStart();
       return;
     }
@@ -318,7 +326,8 @@
   });
   paymentPrimary.addEventListener('click',()=>{
     setPaymentMomentOpen(false);
-    setOpen(true);
+    launcherStatus.textContent='Conectando Voice LIVE…';
+    setOpen(false,{focus:false});
     requestVoiceStart();
   });
   paymentLater.addEventListener('click',()=>setPaymentMomentOpen(false));
@@ -333,7 +342,7 @@
     if(event.source!==frame.contentWindow||event.origin!=='https://secquoia.net')return;
     if(event.data?.type==='secquoia:aggy:frame-ready'){
       markFrameReady();
-      requestVoiceStart();
+      if(!paymentReturn)requestVoiceStart();
       return;
     }
     if(event.data?.type==='secquoia:aggy:qupay-checkout'){
@@ -373,6 +382,14 @@
     const paidMinutes=Number(launcher.dataset.paidMinutes||0);
     const expired=launcher.dataset.expired==='true';
     launcher.dataset.voice=expired?'blocked':state;
+    if(state==='live'){
+      paymentActivationPending=false;
+      setPaymentMomentOpen(false);
+    }else if(state==='blocked'&&paidAvailable&&paymentActivationPending){
+      paymentPrimary.textContent='Reintentar Voice LIVE';
+      launcherNudge.textContent='Toca para reintentar · no hubo consumo';
+      setPaymentMomentOpen(true);
+    }
     launcherStatus.textContent=expired
       ?'Tiempo gratis agotado · continuar'
       :state==='connecting'
@@ -391,7 +408,7 @@
   });
   frame.addEventListener('load',()=>{
     frame.dataset.ready='true';
-    requestVoiceStart();
+    if(!paymentReturn)requestVoiceStart();
     watchFrame();
   });
   frameRetry.addEventListener('click',()=>{frameAttempts=0;loadFrame()});
