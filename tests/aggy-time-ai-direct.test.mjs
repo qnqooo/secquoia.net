@@ -60,11 +60,15 @@ test('package selection bypasses Marketplace from both ecosystem and SECQUOIA.ne
   assert.match(market,/function timeAiUrl\(packId\)\{const url=new URL\('https:\/\/secquoia\.net\/aggy-time-ai\.html'\)/);
 });
 
-test('post-payment confirmation crosses the Stripe return and is consumed once by Voice LIVE',()=>{
+test('post-payment confirmation crosses the Stripe return and is consumed only after audible Voice LIVE playback',()=>{
   assert.match(voice,/paymentThankYouFallbackKey='secquoia\.aggy\.payment-thank-you\.pending\.v1'/);
   assert.match(voice,/localStorage\.getItem\(paymentThankYouFallbackKey\)/);
   assert.match(voice,/localStorage\.removeItem\(paymentThankYouFallbackKey\)/);
   assert.match(voice,/paymentGreetingAwaitingCompletion=Boolean\(paid\)/);
+  assert.match(voice,/paymentGreetingResponseCompleted=true/);
+  assert.match(voice,/remoteAudioPlaybackStarted=true/);
+  assert.match(voice,/if\(!paymentGreetingAwaitingCompletion\|\|!paymentGreetingResponseCompleted\|\|!remoteAudioPlaybackStarted\)return/);
+  assert.match(voice,/remoteAudio\.play\(\)\.then\(confirmPlayback\)/);
   assert.match(voice,/if\(paymentGreetingAwaitingCompletion\)\{/);
   assert.doesNotMatch(voice,/if\(paid\)\{\s*sessionStorage\.removeItem\(paymentThankYouKey\)/);
   assert.match(voice,/params\.get\('aggy_payment'\)/);
@@ -82,6 +86,9 @@ test('post-payment confirmation crosses the Stripe return and is consumed once b
   assert.match(voice,/params\.get\('session_id'\)\|\|paymentFragment\.get\('session_id'\)/);
   assert.match(embed,/url\.hash=new URLSearchParams\(\{payment:'success',session_id:paymentReturn\}\)\.toString\(\)/);
   assert.match(embed,/history\.replaceState\(history\.state,'',sanitized\.href\)/);
+  assert.match(market,/function setAggyPaymentMoment\(open\)\{aggyPaymentMoment\.hidden=!open;clearTimeout\(aggyPaymentTimer\);aggyPaymentTimer=0\}/);
+  assert.doesNotMatch(market,/aggyPaymentTimer=setTimeout/);
+  assert.match(market,/aggy-realtime-voice\.js\?v=1\.3\.0-rc\.1-postpay-20260801/);
 });
 
 test('cross-site payment handoff preserves wallet, exact amount and minutes without URL secrets',()=>{
