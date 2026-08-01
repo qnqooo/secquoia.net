@@ -113,6 +113,10 @@ test('QuMarket add-ons expose the hybrid QuCFA commercial model',()=>{
   assert.match(addonsCss,/\.addon-cards/);
 });
 
+test('Marketplace cache-busts the normalized Time AI rate card',()=>{
+  assert.match(html,/qumarket-addons\.js\?v=1\.3\.0-rc\.1-qucfa-20260801/);
+});
+
 test('QuMarket cart keeps recurring and one-time service totals separate',()=>{
   assert.match(html,/selectedAddons=new Map/);
   assert.match(html,/monthlyAddons=addonItems\.filter/);
