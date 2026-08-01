@@ -1,4 +1,4 @@
-const RELEASE='1.2.11';
+const RELEASE='1.2.12';
 const STRIPE_API='https://api.stripe.com/v1';
 const AGGY_CREDIT_ENDPOINT='https://aggy.secquoia.group/api/aggy/usage/qupay-credit';
 const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
@@ -75,6 +75,8 @@ const issueWalletBinding=async(object,env,now=Date.now())=>{
   return `${payload}.${await hmacHex(env.AGGY_QUPAY_WEBHOOK_SECRET,payload)}`;
 };
 const sha256Hex=async value=>hex(await crypto.subtle.digest('SHA-256',encoder.encode(value)));
+const QUFENSE_RECEIPT_LIFETIME_MS=15_000;
+const QUFENSE_SIGNATURE_TRANSIT_GRACE_MS=30_000;
 const checkoutDigestInput=({packId,pack,walletReference,orderRef})=>JSON.stringify({
   schema:'secquoia.qupay.checkout-intent.v1',
   source:'qupay',
@@ -86,34 +88,33 @@ const checkoutDigestInput=({packId,pack,walletReference,orderRef})=>JSON.stringi
   walletReference,
   orderRef
 });
-const validQuFenseReceipt=(document,expected,authorityFingerprint,now=Date.now())=>{
+const qufenseReceiptInvalidReason=(document,expected,authorityFingerprint,now=Date.now())=>{
   const receipt=document?.receipt;
   const issuedAt=Date.parse(receipt?.issuedAt);
   const expiresAt=Date.parse(receipt?.expiresAt);
-  return Boolean(
-    document?.schema==='sqaile.qufense.signed-flow-receipt.v1'&&
-    document.authority==='QuFense'&&
-    document.authorityFingerprint===authorityFingerprint&&
-    typeof document.primarySignature==='string'&&document.primarySignature.length>64&&
-    typeof document.conservativeSignature==='string'&&document.conservativeSignature.length>64&&
-    document.moduleValidationClaimed===false&&
-    receipt?.schema==='sqaile.qufense.checkout-authorization.v1'&&
-    receipt.decision==='ALLOW'&&
-    receipt.source==='qupay'&&receipt.provider==='stripe'&&
-    receipt.action==='stripe.checkout.session.create'&&
-    receipt.purpose==='live_qvit_checkout'&&
-    receipt.orderRef===expected.orderRef&&receipt.packId===expected.packId&&
-    receipt.amount===expected.pack.usdCents&&receipt.currency==='usd'&&
-    receipt.payloadDigest===expected.payloadDigest&&
-    receipt.externalTransportEncrypted===true&&
-    receipt.providerAuthentication==='STRIPE_RESTRICTED_LIVE_KEY'&&
-    receipt.authorizationProfile==='QF-CHECKOUT-AUTHZ-PQC-1'&&
-    receipt.providerPayloadPqcClaimed===false&&
-    receipt.moduleValidationClaimed===false&&
-    Number.isFinite(issuedAt)&&Number.isFinite(expiresAt)&&
-    issuedAt<=now+1000&&expiresAt>now&&expiresAt-issuedAt===15_000
-  );
+  const checks=[
+    ['document_schema',document?.schema==='sqaile.qufense.signed-flow-receipt.v1'],
+    ['authority',document?.authority==='QuFense'],
+    ['authority_fingerprint',document?.authorityFingerprint===authorityFingerprint],
+    ['primary_signature',typeof document?.primarySignature==='string'&&document.primarySignature.length>64],
+    ['conservative_signature',typeof document?.conservativeSignature==='string'&&document.conservativeSignature.length>64],
+    ['document_module_claim',document?.moduleValidationClaimed===false],
+    ['receipt_schema',receipt?.schema==='sqaile.qufense.checkout-authorization.v1'],
+    ['decision',receipt?.decision==='ALLOW'],
+    ['route',receipt?.source==='qupay'&&receipt?.provider==='stripe'&&receipt?.action==='stripe.checkout.session.create'&&receipt?.purpose==='live_qvit_checkout'],
+    ['intent',receipt?.orderRef===expected.orderRef&&receipt?.packId===expected.packId&&receipt?.amount===expected.pack.usdCents&&receipt?.currency==='usd'],
+    ['payload_digest',receipt?.payloadDigest===expected.payloadDigest],
+    ['provider_boundary',receipt?.externalTransportEncrypted===true&&receipt?.providerAuthentication==='STRIPE_RESTRICTED_LIVE_KEY'],
+    ['authorization_profile',receipt?.authorizationProfile==='QF-CHECKOUT-AUTHZ-PQC-1'],
+    ['claims',receipt?.providerPayloadPqcClaimed===false&&receipt?.moduleValidationClaimed===false],
+    ['timestamps',Number.isFinite(issuedAt)&&Number.isFinite(expiresAt)],
+    ['issued_at',issuedAt<=now+1000&&now-issuedAt<=QUFENSE_RECEIPT_LIFETIME_MS+QUFENSE_SIGNATURE_TRANSIT_GRACE_MS],
+    ['expiry',expiresAt>now-QUFENSE_SIGNATURE_TRANSIT_GRACE_MS&&expiresAt-issuedAt===QUFENSE_RECEIPT_LIFETIME_MS]
+  ];
+  return checks.find(([,ok])=>!ok)?.[0]||null;
 };
+const validQuFenseReceipt=(document,expected,authorityFingerprint,now=Date.now())=>
+  qufenseReceiptInvalidReason(document,expected,authorityFingerprint,now)===null;
 const authorizeCheckoutWithQuFense=async(intent,env)=>{
   if(!env.QUFENSE||!env.QUFENSE_AUTHORITY_FINGERPRINT){
     return {ok:false,status:503,error:'qufense_checkout_not_configured'};
@@ -138,7 +139,10 @@ const authorizeCheckoutWithQuFense=async(intent,env)=>{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload),
-      signal:AbortSignal.timeout(4000)
+      // Keep the caller's budget above the QuFense edge-to-origin budget so
+      // cold starts can finish and the signed authorization receipt can be
+      // validated instead of being canceled mid-flight.
+      signal:AbortSignal.timeout(35_000)
     });
   }catch{
     return {ok:false,status:503,error:'qufense_checkout_unavailable'};
@@ -147,8 +151,9 @@ const authorizeCheckoutWithQuFense=async(intent,env)=>{
   if(!response.ok){
     return {ok:false,status:response.status===403?403:503,error:response.status===403?'qufense_checkout_denied':'qufense_checkout_unavailable',reason:String(document?.reason||document?.error||'QUFENSE_DENIED').slice(0,100)};
   }
-  if(!validQuFenseReceipt(document,{...intent,payloadDigest},env.QUFENSE_AUTHORITY_FINGERPRINT)){
-    return {ok:false,status:503,error:'qufense_receipt_invalid'};
+  const receiptInvalidReason=qufenseReceiptInvalidReason(document,{...intent,payloadDigest},env.QUFENSE_AUTHORITY_FINGERPRINT);
+  if(receiptInvalidReason){
+    return {ok:false,status:503,error:'qufense_receipt_invalid',reason:receiptInvalidReason};
   }
   return {ok:true,document,payloadDigest};
 };
@@ -377,4 +382,4 @@ export default {
   }
 };
 
-export {PACKS,STRIPE_TRANSPORT_BOUNDARY,authorizeCheckoutWithQuFense,checkoutDigestInput,confirmCheckout,hmacHex,issueWalletBinding,stripeForm,validQuFenseReceipt,verifyStripeSignature};
+export {PACKS,STRIPE_TRANSPORT_BOUNDARY,authorizeCheckoutWithQuFense,checkoutDigestInput,confirmCheckout,hmacHex,issueWalletBinding,qufenseReceiptInvalidReason,stripeForm,validQuFenseReceipt,verifyStripeSignature};

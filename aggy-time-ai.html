@@ -40,7 +40,7 @@
 <script>
 (()=>{
   'use strict';
-  const RELEASE='1.2.11';
+  const RELEASE='1.2.12';
   const PACKS=Object.freeze({
     'qvit-ai-credit-1':Object.freeze({amountUsd:1,minutes:4,label:'Tiempo IA · Inicio'}),
     'qvit-ai-credit-5':Object.freeze({amountUsd:5,minutes:20,label:'Tiempo IA · Conversación'}),
@@ -86,7 +86,7 @@
   };
   const openCheckout=async pending=>{
     setStep(3);
-    setStatus('Abriendo el pago seguro','QuPay y QuFense están preparando Stripe. Tú confirmarás el cargo en la siguiente pantalla.');
+    setStatus('Firmando tu acceso seguro','QuFense valida y firma la operación con E2EE/PQC. Este control puede tardar unos segundos; Stripe se abrirá automáticamente.');
     const orderRef=`aggy-${Date.now()}-${crypto.randomUUID().slice(0,8)}`;
     const response=await fetch('https://pay.secquoia.group/v1/qupay/checkout',{
       method:'POST',

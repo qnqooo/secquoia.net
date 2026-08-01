@@ -22,7 +22,7 @@ export default {
         method:request.method,
         headers,
         body:request.method==='POST'?await request.text():undefined,
-        signal:AbortSignal.timeout(5000)
+        signal:AbortSignal.timeout(30_000)
       });
     }catch{
       return json({error:'qufense_origin_unavailable',failClosed:true},503);
