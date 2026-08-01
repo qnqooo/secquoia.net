@@ -160,7 +160,7 @@
     if(!/^[A-Za-z0-9_-]{80,1600}\.[a-f0-9]{64}$/i.test(identityReceipt)){
       setStep(2);
       setStatus('Verifica tu identidad','Abriremos QuIdentify/Okta. Al regresar, Stripe se abrirá automáticamente.');
-      setTimeout(()=>location.assign(identityUrl(pending)),500);
+      location.assign(identityUrl(pending));
       return;
     }
     pending.identityReceipt=identityReceipt;
