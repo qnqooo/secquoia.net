@@ -82,8 +82,8 @@ test('Aggy markup contains no duplicate element IDs',()=>{
 test('Aggy Realtime replaces browser legacy speech and recording',()=>{
   assert.doesNotMatch(html,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder|id="voiceSelect"/);
   assert.doesNotMatch(bridge,/speechSynthesis|SpeechSynthesisUtterance|SpeechRecognition|webkitSpeechRecognition|MediaRecorder/);
-  assert.match(html,/Aggy v1\.2\.11 [^<]* Voz de SQAILE - Acento neutro/);
-  assert.match(html,/Voz de SQAILE - Acento neutro/);
+  assert.match(html,/Aggy v1\.3\.0-rc\.1 [^<]* Voz femenina · acento colombiano/);
+  assert.match(html,/Voz femenina · acento colombiano/);
   assert.match(html,/Leer con Aggy/);
   assert.match(bridge,/window\.AggyVoice\.start/);
 });

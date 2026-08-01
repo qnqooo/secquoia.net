@@ -35,9 +35,15 @@ test('direct flow runs package, QuIdentify, QuPay Stripe and certified Aggy cont
   assert.match(script,/resolveWallet\(params\.get\('wallet_ref'\)\)/);
   assert.match(script,/https:\/\/quidentify\.secquoia\.group\/v1\/authorize/);
   assert.match(script,/url\.searchParams\.set\('purpose','time_ai_checkout'\)/);
+  assert.match(script,/quidentify_receipt/);
+  assert.match(script,/X-QuIdentify-Receipt/);
+  assert.doesNotMatch(script,/searchParams\.set\('quidentify','verified'\)/);
   assert.match(script,/https:\/\/pay\.secquoia\.group\/v1\/qupay\/checkout/);
   assert.match(script,/\^https:\\\/\\\/checkout\\\.stripe\\\.com\\\//);
   assert.match(script,/\/v1\/qupay\/checkout\/confirm\?session_id=/);
+  assert.match(script,/X-QuPay-Confirmation/);
+  assert.match(script,/confirmationCapability/);
+  assert.match(script,/response\.status===401[\s\S]{0,220}delete pending\.identityReceipt[\s\S]{0,220}identityUrl\(pending\)/);
   assert.match(script,/body\.status!=='PAID'/);
   assert.match(script,/localStorage\.setItem\(WALLET_KEY,body\.walletBinding\)/);
   assert.match(script,/localStorage\.setItem\(PAYMENT_KEY,JSON\.stringify\(confirmation\)\)/);

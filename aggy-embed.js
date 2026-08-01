@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const version='1.2.11';
+  const version='1.3.0-rc.1';
   const paymentReturn=(()=>{
     try{
       const values=new URLSearchParams(location.hash.replace(/^#/,''));

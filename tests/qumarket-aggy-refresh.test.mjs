@@ -212,13 +212,13 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
   }
 });
 
-test('Aggy publishes one consistent stable version and bounded GA scope',async()=>{
-  assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
-  assert.equal(release.version,'1.2.11');
-  assert.equal(release.channel,'stable');
-  assert.equal(release.lifecycle,'general-availability');
-  assert.equal(release.productionApproved,true);
-  assert.equal(release.thirdPartySale,true);
+test('Aggy publishes one consistent candidate version with promotion blocked',async()=>{
+  assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/);
+  assert.equal(release.version,'1.3.0-rc.1');
+  assert.equal(release.channel,'release-candidate');
+  assert.equal(release.lifecycle,'release-candidate');
+  assert.equal(release.productionApproved,false);
+  assert.equal(release.thirdPartySale,false);
   assert.ok(release.gaScope.includes('AGGY_VOICE_LIVE'));
   assert.ok(release.previewCapabilities.includes('CDR_PROTECTED_ATTACHMENTS'));
   assert.match(voice,new RegExp(`const aggyVersion='${release.version.replaceAll('.','\\.')}';`));
@@ -230,8 +230,8 @@ test('Aggy publishes one consistent stable version and bounded GA scope',async()
   const body=await response.json();
   assert.equal(body.version,release.version);
   assert.equal(body.channel,release.channel);
-  assert.equal(body.productionApproved,true);
-  assert.equal(body.thirdPartySale,true);
+  assert.equal(body.productionApproved,false);
+  assert.equal(body.thirdPartySale,false);
   assert.deepEqual(body.gaScope,release.gaScope);
   assert.deepEqual(body.previewCapabilities,release.previewCapabilities);
 });
@@ -253,9 +253,9 @@ test('Aggy Voice health probe activates without opening a paid provider session'
     assert.equal(body.voiceIdentity,'feminine');
     assert.equal(body.defaultLocale,'es-CO');
     assert.equal(body.release.version,release.version);
-    assert.equal(body.release.channel,'stable');
-    assert.equal(body.release.productionApproved,true);
-    assert.equal(body.release.thirdPartySale,true);
+    assert.equal(body.release.channel,'release-candidate');
+    assert.equal(body.release.productionApproved,false);
+    assert.equal(body.release.thirdPartySale,false);
     assert.equal(body.qugeo.language,'es');
     assert.equal(body.qugeo.locale,'es-CO');
     assert.equal(body.qugeo.source,'BROWSER_LANGUAGE_FALLBACK');
@@ -492,8 +492,8 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one visibl
   assert.match(html,/Ver paquetes de Tiempo IA/);
   assert.match(worker,/qupay_credit_not_configured/);
   assert.match(worker,/ASSISTED_ACTIVATION_REQUIRED/);
-  assert.match(worker,/AGGY_MAX_PAID_BLOCKS_DAY=15/);
-  assert.match(worker,/AGGY_MAX_PAID_BLOCKS_MONTH=150/);
+  assert.match(worker,/AGGY_MAX_PAID_BLOCKS_DAY=240/);
+  assert.match(worker,/AGGY_MAX_PAID_BLOCKS_MONTH=3000/);
   assert.match(worker,/let duration=freeRemaining/);
   assert.match(worker,/paid_continuation_confirmation_required/);
   assert.match(worker,/paidContinuationConfirmed===true/);
@@ -517,6 +517,22 @@ test('Voice client exposes ten free minutes, warns at 5/3/1 and keeps one visibl
   assert.match(worker,/QUPAY_CONFIRMED_QVIT_CREDIT/);
 });
 
+test('QuOptio selects the safest eligible continuation without silent charges',()=>{
+  const now=2_000_000_000_000;
+  const account={qvit_balance:workerModule.AGGY_PAID_BLOCK_QVIT,paid_blocks_day:0,paid_blocks_month:0};
+  const free=workerModule.evaluateQuOptioDecision({account,entitlement:null,freeRemainingMs:60_000,now});
+  assert.equal(free.mode,'VISITOR_FREE');
+  assert.equal(free.durationSeconds,60);
+  assert.equal(free.silentChargeAllowed,false);
+  const consent=workerModule.evaluateQuOptioDecision({account,entitlement:null,freeRemainingMs:0,now});
+  assert.equal(consent.mode,'CONSENT_REQUIRED');
+  assert.equal(consent.reservedQVit,0);
+  const paid=workerModule.evaluateQuOptioDecision({account,entitlement:null,freeRemainingMs:0,paidContinuationConfirmed:true,now});
+  assert.equal(paid.mode,'PAID_QVIT');
+  assert.equal(paid.reservedQVit,workerModule.AGGY_PAID_BLOCK_QVIT);
+  assert.equal(paid.overdraftAllowed,false);
+});
+
 test('Time AI purchase preserves one explicit continuation action and all governed packages',()=>{
   assert.match(html,/\.btn\.primary\{[^}]*color:#000!important;[^}]*text-shadow:none/);
   assert.match(html,/let qupayCheckoutPending=false/);
@@ -531,7 +547,7 @@ test('Time AI purchase preserves one explicit continuation action and all govern
   assert.match(html,/postMessage\(\{type:'secquoia:aggy:open-time-ai'/);
   assert.match(addons,/activationParams\.get\('time_ai'\)==='1'\?'ai':'all'/);
   assert.match(addons,/getElementById\('ai-services'\)\?\.scrollIntoView/);
-  assert.match(worker,/time_ai=1&wallet_ref=/);
+  assert.match(worker,/aggy-time-ai\.html\?pack=qvit-ai-credit-1&wallet_ref=/);
   assert.doesNotMatch(worker,/addon=qvit-ai-credit-1&wallet_ref=/);
 });
 

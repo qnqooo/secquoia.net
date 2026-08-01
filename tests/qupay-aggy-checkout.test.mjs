@@ -5,6 +5,12 @@ import test from 'node:test';
 
 const source=await readFile(new URL('../workers/qupay-aggy-checkout.js',import.meta.url),'utf8');
 const worker=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+const identitySecret='unit-test-quidentify-checkout-secret-32-bytes-minimum';
+const sharedSecret='unit-test-aggy-shared-secret-32-bytes-minimum';
+const identityReceipt=({packId,walletReference,now=Math.floor(Date.now()/1000),jti='J'.repeat(32)}={})=>{
+  const payload=Buffer.from(JSON.stringify({schema:'secquoia.quidentify.aggy-checkout-receipt.v1',iss:'QuIdentify',aud:'QuPay',purpose:'AGGY_TIME_AI_CHECKOUT',subjectFingerprint:'a'.repeat(64),packId,walletReference,returnOrigin:'https://secquoia.net',mfa:true,jti,iat:now,nbf:now-5,exp:now+300})).toString('base64url');
+  return `${payload}.${createHmac('sha256',identitySecret).update(payload).digest('hex')}`;
+};
 
 test('QuPay exposes only governed QVit packs',()=>{
   assert.deepEqual(Object.keys(worker.PACKS),['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']);
@@ -48,12 +54,13 @@ test('Checkout never calls Stripe when QuFense denies the intent',async()=>{
       body:JSON.stringify({
         packId:'qvit-ai-credit-25',
         walletReference:'w'.repeat(43),
-        orderRef:'order-denied-1234'
+        identityReceipt:identityReceipt({packId:'qvit-ai-credit-25',walletReference:'w'.repeat(43)})
       })
     }),{
       STRIPE_RESTRICTED_KEY:'rk_live_test',
       STRIPE_WEBHOOK_SECRET:'whsec_test',
-      AGGY_QUPAY_WEBHOOK_SECRET:'shared_test',
+      AGGY_QUPAY_WEBHOOK_SECRET:sharedSecret,
+      QUIDENTIFY_CHECKOUT_RECEIPT_SECRET:identitySecret,
       QUFENSE_AUTHORITY_FINGERPRINT:'e17334292df7d6f72b3395109e401b11',
       QUFENSE:{fetch:async()=>new Response(JSON.stringify({decision:'DENY',reason:'POLICY_DENIED'}),{status:403,headers:{'Content-Type':'application/json'}})}
     });
@@ -65,12 +72,46 @@ test('Checkout never calls Stripe when QuFense denies the intent',async()=>{
   }
 });
 
+test('Checkout rejects forged legacy identity markers before QuFense or Stripe',async()=>{
+  const originalFetch=globalThis.fetch;
+  let stripeCalls=0;
+  let qufenseCalls=0;
+  globalThis.fetch=async()=>{stripeCalls++;return new Response('{}',{status:500})};
+  try{
+    const response=await worker.default.fetch(new Request('https://pay.secquoia.group/v1/qupay/checkout?quidentify=verified',{
+      method:'POST',
+      headers:{Origin:'https://secquoia.net','Content-Type':'application/json'},
+      body:JSON.stringify({packId:'qvit-ai-credit-1',walletReference:'w'.repeat(43),quidentify:'verified'})
+    }),{
+      STRIPE_RESTRICTED_KEY:'rk_live_test',
+      STRIPE_WEBHOOK_SECRET:'whsec_test',
+      AGGY_QUPAY_WEBHOOK_SECRET:sharedSecret,
+      QUIDENTIFY_CHECKOUT_RECEIPT_SECRET:identitySecret,
+      QUFENSE_AUTHORITY_FINGERPRINT:'e17334292df7d6f72b3395109e401b11',
+      QUFENSE:{fetch:async()=>{qufenseCalls++;return new Response('{}',{status:500})}}
+    });
+    assert.equal(response.status,401);
+    assert.equal(stripeCalls,0);
+    assert.equal(qufenseCalls,0);
+  }finally{
+    globalThis.fetch=originalFetch;
+  }
+});
+
+test('QuPay rejects a correctly signed identity receipt with incomplete timestamps',async()=>{
+  const now=Math.floor(Date.now()/1000);
+  const payload=Buffer.from(JSON.stringify({schema:'secquoia.quidentify.aggy-checkout-receipt.v1',iss:'QuIdentify',aud:'QuPay',purpose:'AGGY_TIME_AI_CHECKOUT',subjectFingerprint:'a'.repeat(64),packId:'qvit-ai-credit-1',walletReference:'w'.repeat(43),returnOrigin:'https://secquoia.net',mfa:true,jti:'J'.repeat(32),iat:now,exp:now+300})).toString('base64url');
+  const token=`${payload}.${createHmac('sha256',identitySecret).update(payload).digest('hex')}`;
+  await assert.rejects(()=>worker.verifyQuIdentifyCheckoutReceipt(token,identitySecret,{packId:'qvit-ai-credit-1',walletReference:'w'.repeat(43)}),/inactive/);
+});
+
 test('QuFense receipt validation binds order, amount, digest, authority and expiry',()=>{
   const intent={
     packId:'qvit-ai-credit-25',
     pack:worker.PACKS['qvit-ai-credit-25'],
     walletReference:'w'.repeat(43),
-    orderRef:'order-valid-1234'
+    orderRef:'order-valid-1234',
+    identity:{jti:'J'.repeat(32),subjectFingerprint:'a'.repeat(64)}
   };
   const payloadDigest='a'.repeat(64);
   const now=2_000_000_000_000;
@@ -117,7 +158,8 @@ test('Authorized Checkout carries QuFense evidence into Stripe metadata',async()
     packId:'qvit-ai-credit-25',
     pack:worker.PACKS['qvit-ai-credit-25'],
     walletReference:'w'.repeat(43),
-    orderRef:'order-evidence-1234'
+    orderRef:'order-evidence-1234',
+    identity:{jti:'J'.repeat(32),subjectFingerprint:'a'.repeat(64)}
   };
   const authorityFingerprint='e17334292df7d6f72b3395109e401b11';
   const env={
@@ -154,6 +196,7 @@ test('Authorized Checkout carries QuFense evidence into Stripe metadata',async()
   assert.equal(form.get('metadata[qufense_evidence_id]'),'QFP-checkout-test');
   assert.equal(form.get('metadata[qufense_authority_fingerprint]'),authorityFingerprint);
   assert.equal(form.get('metadata[qufense_payload_digest]'),result.payloadDigest);
+  assert.equal(form.get('metadata[quidentify_receipt_id]'),'J'.repeat(32));
   assert.equal(form.get('success_url'),'https://secquoia.net/aggy-time-ai.html?payment=success&session_id={CHECKOUT_SESSION_ID}');
   assert.equal(form.get('cancel_url'),'https://secquoia.net/aggy-time-ai.html?payment=cancelled');
 });
@@ -161,6 +204,7 @@ test('Authorized Checkout carries QuFense evidence into Stripe metadata',async()
 test('Paid Checkout confirmation returns a signed wallet binding and 20-minute USD 5 pack',async()=>{
   const originalFetch=globalThis.fetch;
   globalThis.fetch=async url=>{
+    if(String(url).startsWith('https://aggy.secquoia.group/'))return new Response(JSON.stringify({credited:true,duplicate:false}),{status:200,headers:{'Content-Type':'application/json'}});
     assert.match(String(url),/api\.stripe\.com\/v1\/checkout\/sessions\/cs_live_/);
     return new Response(JSON.stringify({
       id:'cs_live_paid_confirmation_123456',
@@ -169,18 +213,23 @@ test('Paid Checkout confirmation returns a signed wallet binding and 20-minute U
       amount_total:500,
       currency:'usd',
       metadata:{
+        schema:'secquoia.qupay.aggy-qvit.v1',
         pack_id:'qvit-ai-credit-5',
         wallet_reference:'w'.repeat(43),
-        qvit_amount:'5000000'
+        qvit_amount:'5000000',
+        order_ref:'qid-'+('J'.repeat(32)),
+        quidentify_receipt_id:'J'.repeat(32),
+        quidentify_subject_fingerprint:'a'.repeat(64)
       }
     }),{status:200,headers:{'Content-Type':'application/json'}});
   };
   try{
+    const capability=await worker.issueCheckoutConfirmationCapability({sessionId:'cs_live_paid_confirmation_123456',walletReference:'w'.repeat(43),identityReceiptId:'J'.repeat(32)},sharedSecret);
     const response=await worker.default.fetch(new Request('https://pay.secquoia.group/v1/qupay/checkout/confirm?session_id=cs_live_paid_confirmation_123456',{
-      headers:{Origin:'https://secquoia.net'}
+      headers:{Origin:'https://secquoia.net','X-QuPay-Confirmation':capability}
     }),{
       STRIPE_RESTRICTED_KEY:'rk_live_test',
-      AGGY_QUPAY_WEBHOOK_SECRET:'shared-test-secret'
+      AGGY_QUPAY_WEBHOOK_SECRET:sharedSecret
     });
     const body=await response.json();
     assert.equal(response.status,200);
@@ -188,6 +237,7 @@ test('Paid Checkout confirmation returns a signed wallet binding and 20-minute U
     assert.equal(body.amountUsd,5);
     assert.equal(body.qvitAmount,5_000_000);
     assert.equal(body.voiceLiveMinutes,20);
+    assert.equal(body.creditStatus,'CREDITED');
     assert.match(body.walletBinding,/^[A-Za-z0-9_-]+\.[0-9a-f]{64}$/);
   }finally{
     globalThis.fetch=originalFetch;
@@ -199,6 +249,8 @@ test('Health reports each secret gate without exposing values',async()=>{
     STRIPE_RESTRICTED_KEY:'unit-test-restricted-key',
     STRIPE_WEBHOOK_SECRET:'unit-test-webhook-key',
     AGGY_QUPAY_WEBHOOK_SECRET:'shared_test',
+    QUIDENTIFY_CHECKOUT_RECEIPT_SECRET:identitySecret,
+    QUIDENTIFY_CHECKOUT_RECEIPT_SECRET:identitySecret,
     QUFENSE:{fetch:async(_url,init)=>{
       assert.equal(_url,'https://qufense.internal/readyz');
       assert.equal(init.method,'GET');

@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "secquoia-qupay-aggy",
   "main": "workers/qupay-aggy-checkout.js",
-  "compatibility_date": "2026-07-29",
+  "compatibility_date": "2026-07-31",
   "services": [
     {
       "binding": "QUFENSE",

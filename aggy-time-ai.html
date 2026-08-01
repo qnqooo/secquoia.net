@@ -75,7 +75,6 @@
   };
   const identityUrl=pending=>{
     const returnUrl=new URL(location.origin+location.pathname);
-    returnUrl.searchParams.set('quidentify','verified');
     returnUrl.searchParams.set('pack',pending.packId);
     returnUrl.searchParams.set('wallet_ref',pending.walletReference);
     const url=new URL('https://quidentify.secquoia.group/v1/authorize');
@@ -84,29 +83,39 @@
     url.searchParams.set('return_uri',returnUrl.href);
     return url.href;
   };
-  const openCheckout=async pending=>{
+  const openCheckout=async(pending,identityReceipt=pending?.identityReceipt)=>{
+    if(!/^[A-Za-z0-9_-]{80,1600}\.[a-f0-9]{64}$/i.test(String(identityReceipt||'')))throw new Error('quidentify_checkout_receipt_required');
     setStep(3);
     setStatus('Firmando tu acceso seguro','QuFense valida y firma la operación con E2EE/PQC. Este control puede tardar unos segundos; Stripe se abrirá automáticamente.');
-    const orderRef=`aggy-${Date.now()}-${crypto.randomUUID().slice(0,8)}`;
     const response=await fetch('https://pay.secquoia.group/v1/qupay/checkout',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Idempotency-Key':orderRef},
-      body:JSON.stringify({schema:'secquoia.qupay.aggy-checkout.v1',packId:pending.packId,walletReference:pending.walletReference,orderRef})
+      headers:{'Content-Type':'application/json','X-QuIdentify-Receipt':identityReceipt},
+      body:JSON.stringify({schema:'secquoia.qupay.aggy-checkout.v2',packId:pending.packId,walletReference:pending.walletReference,identityReceipt})
     });
     const body=await response.json().catch(()=>({}));
-    if(!response.ok||!/^https:\/\/checkout\.stripe\.com\//.test(String(body.checkoutUrl||'')))throw new Error(String(body.reason||body.error||'checkout_unavailable'));
+    if(response.status===401&&String(body.error||'').includes('quidentify')){
+      delete pending.identityReceipt;
+      writePending(pending);
+      location.assign(identityUrl(pending));
+      return;
+    }
+    if(!response.ok||!/^https:\/\/checkout\.stripe\.com\//.test(String(body.checkoutUrl||''))||!/^[A-Za-z0-9_-]{80,1200}\.[a-f0-9]{64}$/i.test(String(body.confirmationCapability||'')))throw new Error(String(body.reason||body.error||'checkout_unavailable'));
+    pending.confirmationCapability=body.confirmationCapability;
+    writePending(pending);
     location.assign(body.checkoutUrl);
   };
   const confirmPayment=async sessionId=>{
     setStep(4);
     setStatus('Confirmando tu pago','Estamos verificando el pago certificado antes de reactivar Aggy.');
-    const response=await fetch(`https://pay.secquoia.group/v1/qupay/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`,{headers:{Accept:'application/json'},credentials:'omit',cache:'no-store'});
+    const pending=readPending();
+    const confirmationCapability=String(pending?.confirmationCapability||'');
+    if(!/^[A-Za-z0-9_-]{80,1200}\.[a-f0-9]{64}$/i.test(confirmationCapability))throw new Error('checkout_confirmation_capability_required');
+    const response=await fetch(`https://pay.secquoia.group/v1/qupay/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`,{headers:{Accept:'application/json','X-QuPay-Confirmation':confirmationCapability},credentials:'omit',cache:'no-store'});
     const body=await response.json().catch(()=>({}));
     if(!response.ok||body.schema!=='secquoia.qupay.aggy-payment-confirmation.v1'||body.status!=='PAID'||!/^[A-Za-z0-9_-]{80,900}\.[0-9a-f]{64}$/i.test(String(body.walletBinding||'')))throw new Error(String(body.error||'payment_confirmation_unavailable'));
-    const confirmation={amountUsd:Number(body.amountUsd),voiceLiveMinutes:Number(body.voiceLiveMinutes),packId:String(body.packId||''),confirmedAt:new Date().toISOString(),release:RELEASE};
+    const confirmation={amountUsd:Number(body.amountUsd),voiceLiveMinutes:Number(body.voiceLiveMinutes),packId:String(body.packId||''),creditStatus:String(body.creditStatus||'PENDING_RECONCILIATION'),confirmedAt:new Date().toISOString(),release:RELEASE};
     localStorage.setItem(WALLET_KEY,body.walletBinding);
     localStorage.setItem(PAYMENT_KEY,JSON.stringify(confirmation));
-    const pending=readPending();
     localStorage.removeItem(PENDING_KEY);
     const destination=new URL(safeReturn(pending?.returnTo));
     destination.hash=new URLSearchParams({aggy_payment:'success',session_id:sessionId}).toString();
@@ -147,17 +156,21 @@
     const pending={packId,walletReference,returnTo:safeReturn(params.get('return_to')||existing?.returnTo),createdAt:Date.now()};
     writePending(pending);
     returnAction.href=pending.returnTo;
-    if(params.get('quidentify')!=='verified'){
+    const identityReceipt=String(params.get('quidentify_receipt')||existing?.identityReceipt||'');
+    if(!/^[A-Za-z0-9_-]{80,1600}\.[a-f0-9]{64}$/i.test(identityReceipt)){
       setStep(2);
       setStatus('Verifica tu identidad','Abriremos QuIdentify/Okta. Al regresar, Stripe se abrirá automáticamente.');
       setTimeout(()=>location.assign(identityUrl(pending)),500);
       return;
     }
-    await openCheckout(pending);
+    pending.identityReceipt=identityReceipt;
+    writePending(pending);
+    history.replaceState(null,'',`${location.pathname}?pack=${encodeURIComponent(packId)}&wallet_ref=${encodeURIComponent(walletReference)}`);
+    await openCheckout(pending,identityReceipt);
   };
   const handleError=error=>{
     const code=String(error?.message||'unavailable');
-    const copy=code==='invalid_package'?'El paquete no es válido. Elige uno desde Aggy.':code==='wallet_unavailable'?'No fue posible preparar tu billetera QVit. No se realizó ningún cargo.':code==='qufense_checkout_unavailable'?'La compuerta segura QuFense no respondió. No se realizó ningún cargo.':'No fue posible completar este paso. No se realizó ningún cargo.';
+    const copy=code==='invalid_package'?'El paquete no es válido. Elige uno desde Aggy.':code==='wallet_unavailable'?'No fue posible preparar tu billetera QVit. No se realizó ningún cargo.':code.includes('quidentify')?'QuIdentify no pudo validar una autorización vigente. Volveremos a verificar tu identidad; no se realizó ningún cargo.':code==='qufense_checkout_unavailable'?'La compuerta segura QuFense no respondió. No se realizó ningún cargo.':'No fue posible completar este paso. No se realizó ningún cargo.';
     showFailure('No pudimos continuar',copy,{label:'Reintentar',action:()=>location.reload()});
   };
   run().catch(handleError);
