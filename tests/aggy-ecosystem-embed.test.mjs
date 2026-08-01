@@ -92,6 +92,11 @@ test('Aggy automatically resumes Voice LIVE after certified payment without open
   assert.doesNotMatch(embed,/setContinuityOpen\(continuity\.hidden\)/);
   assert.match(embed,/session_id/);
   assert.match(embed,/location\.hash\.replace/);
+  assert.match(embed,/sessionStorage\.getItem\(receiptKey\)/);
+  assert.match(embed,/sessionStorage\.setItem\(receiptKey,'1'\)/);
+  assert.match(embed,/setTimeout\(\(\)=>\{paymentMoment\.hidden=true\},12000\)/);
+  assert.match(embed,/window\.addEventListener\('pagehide',\(\)=>setPaymentMomentOpen\(false\)\)/);
+  assert.match(embed,/event\.persisted\)setPaymentMomentOpen\(false\)/);
 });
 
 test('Aggy compact widget uses the governed Realtime voice client only',()=>{

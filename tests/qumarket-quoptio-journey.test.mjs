@@ -55,3 +55,10 @@ test('Marketplace prioritizes equal-size QuSOC, QuFense, QuPKIaaS, QuHub and QuI
   assert.match(html,/aria-label="QuSOC COMMAND 360°"/);
   assert.match(html,/!e\.target\.closest\('button,a'\)/);
 });
+
+test('Marketplace highlights exactly QuSOC, QuFense and QuPKIaaS as Premium',()=>{
+  for(const id of ['qusoc','qufense','qupkiaas'])assert.match(html,new RegExp(`id:'${id}'[^\\n]+premium:true`));
+  assert.equal((html.match(/premium:true/g)||[]).length,3);
+  assert.match(html,/\.product\.premium:before\{content:"PREMIUM"/);
+  assert.match(html,/\(p\.premium\?'premium ':''\)/);
+});
