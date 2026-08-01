@@ -66,7 +66,7 @@ test('Aggy exhausted state is yellow, preserves readable copy and offers explici
   assert.match(embed,/frame\.contentWindow\?\.postMessage\(\{type:'secquoia:aggy:open-chat'/);
 });
 
-test('Aggy requires one clear user gesture after payment and resumes Voice LIVE without opening chat',()=>{
+test('Aggy automatically resumes Voice LIVE after certified payment without opening chat',()=>{
   assert.match(embed,/class="payment-moment"/);
   assert.match(embed,/Tu conversación continúa\./);
   assert.match(embed,/data-payment-amount/);
@@ -76,13 +76,16 @@ test('Aggy requires one clear user gesture after payment and resumes Voice LIVE 
   assert.match(embed,/launcher\.dataset\.paidMinutes=String\(minutes\)/);
   assert.match(embed,/paymentPrimary\.addEventListener\('click'/);
   assert.match(embed,/setPaymentMomentOpen\(true\)/);
-  assert.match(embed,/showPaymentMoment=[\s\S]{0,1400}setOpen\(false,\{focus:false\}\)/);
-  assert.doesNotMatch(embed,/showPaymentMoment=[\s\S]{0,1500}requestVoiceStart\(\)/);
+  assert.match(embed,/showPaymentMoment=[\s\S]{0,1800}setOpen\(false,\{focus:false\}\)/);
+  assert.match(embed,/showPaymentMoment=[\s\S]{0,2000}requestVoiceStart\(\)/);
   assert.match(embed,/paymentPrimary\.addEventListener\('click',[\s\S]{0,220}requestVoiceStart\(\)/);
   assert.match(embed,/aggy_payment/);
   assert.match(embed,/launcher\.dataset\.paidAvailable==='true'[\s\S]{0,260}setOpen\(false,\{focus:false\}\)[\s\S]{0,120}requestVoiceStart\(\)/);
   assert.match(embed,/if\(paymentReturn&&!paymentReturnRecoveryShown&&paidMinutes>0\)/);
-  assert.match(embed,/if\(!paymentReturn\)requestVoiceStart\(\)/);
+  assert.doesNotMatch(embed,/if\(!paymentReturn\)requestVoiceStart\(\)/);
+  assert.match(embed,/Pago confirmado · reactivando Voice LIVE/);
+  assert.match(embed,/paymentPrimary\.hidden=true/);
+  assert.match(embed,/paymentPrimary\.hidden=false/);
   assert.match(embed,/Reintentar Voice LIVE/);
   assert.match(embed,/launcher\.dataset\.continuityRequired=String\(remaining===0\)/);
   assert.match(embed,/continuityRequired[\s\S]{0,260}setContinuityOpen\(true\)/);
