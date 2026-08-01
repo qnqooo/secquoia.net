@@ -46,3 +46,12 @@ test('Cart hides zero-value noise and states the payment boundary honestly',()=>
   assert.match(html,/Card data is handled by Stripe/);
   assert.match(html,/sin cobros prematuros/);
 });
+
+test('Marketplace prioritizes equal-size QuSOC, QuFense, QuHub and QuIdentify cards',()=>{
+  assert.match(html,/products:\['qusoc','qufense','quhub','quidentify'\]/);
+  assert.match(html,/\.product-group \.cards\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\);grid-auto-rows:1fr\}/);
+  assert.match(html,/\.product,\.product\.featured\{grid-column:auto;min-height:326px;height:100%\}/);
+  assert.match(html,/href="https:\/\/qusoc\.secquoia\.group\/admin"/);
+  assert.match(html,/aria-label="QuSOC COMMAND 360°"/);
+  assert.match(html,/!e\.target\.closest\('button,a'\)/);
+});
