@@ -93,6 +93,7 @@
   let webKnowledgeContext=null;
   let greetingSent=false;
   let postPaymentGreeting=storedPaymentGreeting();
+  let paymentGreetingAwaitingCompletion=false;
   let pendingReadAloud='';
   let usageLease=null;
   let usageHeartbeat=null;
@@ -130,6 +131,7 @@
       remainingSeconds:remaining,
       elapsedMinutes:contractIncluded?null:Math.min(10,Math.floor((freeVoiceSeconds-remaining)/60)),
       paidAvailable:options.paidAvailable===true,
+      paidMinutes:Number.isFinite(Number(options.paidMinutes))?Math.max(0,Math.floor(Number(options.paidMinutes))):0,
       marketplaceUrl:usageMarketplaceUrl,
       version:aggyVersion
     });
@@ -241,7 +243,10 @@
         usageMarketplaceUrl=candidate.href;
       }
     }catch{}
-    publishUsageState(free,accessMode,{paidAvailable:balance>=price&&price>0});
+    publishUsageState(free,accessMode,{
+      paidAvailable:balance>=price&&price>0,
+      paidMinutes:price>0?balance/price:0
+    });
     if(status?.activeLease){
       usageUi(
         previewAccess?'Ecosystem Preview activo':contractIncluded?'Aggy incluida en tu servicio':'Sesión medida en curso',
@@ -542,6 +547,7 @@
     const paidAmount=Number(paid?.amountUsd||0).toFixed(2);
     const paidMinutes=Math.max(1,Math.round(Number(paid?.voiceLiveMinutes||0)));
     postPaymentGreeting=null;
+    paymentGreetingAwaitingCompletion=Boolean(paid);
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
@@ -550,10 +556,6 @@
           : `Start speaking immediately in ${language}. Use the SQAILE voice identity and, when speaking Spanish, use a clear, warm, internationally neutral accent. Say one cordial, warm opening equivalent to: "Hi, I'm Aggy. It's a pleasure to meet you. How can I help you?" Then briefly explain that the Aggy button opens chat, secure file exchange, and encrypted individual or group calls. Keep it compact, with no introductory filler or long pause. Speak it aloud through Realtime audio. Do not use headings, lists, text-only output, or repeat this opening later.`
       }
     }));
-    if(paid){
-      sessionStorage.removeItem(paymentThankYouKey);
-      localStorage.removeItem(paymentThankYouFallbackKey);
-    }
   };
 
   const sendPendingReadAloud=()=>{
@@ -636,6 +638,11 @@
       reportUsage(message);
       const completedTranscript=(caption.dataset.transcript||'').trim();
       caption.dataset.transcript='';
+      if(paymentGreetingAwaitingCompletion){
+        paymentGreetingAwaitingCompletion=false;
+        sessionStorage.removeItem(paymentThankYouKey);
+        localStorage.removeItem(paymentThankYouFallbackKey);
+      }
       setState('listening','Continúa cuando quieras',completedTranscript||'La sesión permanece abierta y lista para escucharte.','EN VIVO');
       if(pendingReadAloud)setTimeout(sendPendingReadAloud,120);
       return;

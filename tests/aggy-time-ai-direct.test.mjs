@@ -64,6 +64,9 @@ test('post-payment confirmation crosses the Stripe return and is consumed once b
   assert.match(voice,/paymentThankYouFallbackKey='secquoia\.aggy\.payment-thank-you\.pending\.v1'/);
   assert.match(voice,/localStorage\.getItem\(paymentThankYouFallbackKey\)/);
   assert.match(voice,/localStorage\.removeItem\(paymentThankYouFallbackKey\)/);
+  assert.match(voice,/paymentGreetingAwaitingCompletion=Boolean\(paid\)/);
+  assert.match(voice,/if\(paymentGreetingAwaitingCompletion\)\{/);
+  assert.doesNotMatch(voice,/if\(paid\)\{\s*sessionStorage\.removeItem\(paymentThankYouKey\)/);
   assert.match(voice,/params\.get\('aggy_payment'\)/);
   assert.match(voice,/paymentFragment\.get\('aggy_payment'\)/);
   assert.match(voice,/params\.delete\('aggy_payment'\)/);
@@ -78,6 +81,12 @@ test('post-payment confirmation crosses the Stripe return and is consumed once b
   assert.match(voice,/params\.get\('session_id'\)\|\|paymentFragment\.get\('session_id'\)/);
   assert.match(embed,/url\.hash=new URLSearchParams\(\{payment:'success',session_id:paymentReturn\}\)\.toString\(\)/);
   assert.match(embed,/history\.replaceState\(history\.state,'',sanitized\.href\)/);
+});
+
+test('paid balance refresh keeps the launcher minutes explicit',()=>{
+  assert.match(voice,/paidMinutes:Number\.isFinite\(Number\(options\.paidMinutes\)\)/);
+  assert.match(voice,/paidMinutes:price>0\?balance\/price:0/);
+  assert.match(market,/assistantLauncher\.dataset\.paidMinutes=String\(Math\.floor\(Number\(detail\.paidMinutes\)\)\)/);
 });
 
 test('the direct flow never charges automatically',()=>{
