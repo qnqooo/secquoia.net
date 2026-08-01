@@ -1,0 +1,30 @@
+{
+  "schema": "secquoia.aggy.release-candidate-evidence.v1",
+  "release": "1.3.0-rc.1",
+  "decision": "BLOCK_PRODUCTION_PENDING_CONTROLLED_VALIDATION",
+  "candidateScope": [
+    "AGGY_VOICE_LIVE",
+    "AGGY_ASSISTANT_CHAT",
+    "VISITOR_TRIAL",
+    "CONTRACT_ENTITLEMENTS",
+    "TIME_AI_QVIT",
+    "QUPAY_LIVE"
+  ],
+  "previewCapabilities": [
+    "EXTERNAL_SECURE_MESSAGING",
+    "CDR_PROTECTED_ATTACHMENTS",
+    "E2EE_PQC_CALLS"
+  ],
+  "gates": [
+    {"name": "local_regression", "status": "PASS", "evidence": "130/130 site and Worker tests; 43/43 QuSOC tests"},
+    {"name": "quidentify_signed_receipt", "status": "PASS", "evidence": "29/29 QuIdentify tests and 5/5 repeat runs"},
+    {"name": "qupay_immediate_reconciliation", "status": "PASS", "evidence": "signed confirmation capability and idempotent immediate-credit regression"},
+    {"name": "quoptio_decision_policy", "status": "PASS", "evidence": "contract, free, consent, prepaid and safety-limit decision regression"},
+    {"name": "controlled_usd_1_live_test", "status": "BLOCKED_APPROVAL"},
+    {"name": "eddie_production_approval", "status": "BLOCKED_APPROVAL"}
+  ],
+  "productionApproved": false,
+  "thirdPartySale": false,
+  "approvedBy": null,
+  "approvedAt": null
+}

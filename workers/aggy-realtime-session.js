@@ -8,8 +8,8 @@ const AGGY_PREVIEW_MAX_MS=90*24*60*60*1000;
 const UNMETERED_ACCESS_MODES=new Set(['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW']);
 const AGGY_CONTRACT_PROVIDER_BUDGET_USD=2.5;
 const AGGY_PAID_BLOCK_MS=60*1000;
-const AGGY_MAX_PAID_BLOCKS_DAY=15;
-const AGGY_MAX_PAID_BLOCKS_MONTH=150;
+const AGGY_MAX_PAID_BLOCKS_DAY=240;
+const AGGY_MAX_PAID_BLOCKS_MONTH=3000;
 const AGGY_PENDING_LEASE_MS=30*1000;
 const AGGY_PROVIDER_RESERVE_USD=.15;
 const AGGY_QUOPTIO_STOP_RATIO=.9;
@@ -38,7 +38,7 @@ const AGGY_PAID_BLOCK_QVIT=roundUp(
 );
 const AGGY_QUOPTIO_POLICY=Object.freeze({
   schema:'secquoia.quoptio.aggy-pricing-policy.v1',
-  version:'2026-07-27.1',
+  version:'2026-07-31.1',
   mode:'PREPAID_ONE_MINUTE_MICROLEASE',
   freeSeconds:AGGY_FREE_MS/1000,
   freeScope:'SECQUOIA_ECOSYSTEM_USER',
@@ -62,12 +62,12 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.2.11',
-  channel:'stable',
-  lifecycle:'general-availability',
+  version:'1.3.0-rc.1',
+  channel:'release-candidate',
+  lifecycle:'release-candidate',
   distribution:'ecosystem-hosted',
-  productionApproved:true,
-  thirdPartySale:true,
+  productionApproved:false,
+  thirdPartySale:false,
   gaScope:Object.freeze([
     'AGGY_VOICE_LIVE',
     'AGGY_ASSISTANT_CHAT',
@@ -213,6 +213,34 @@ const aggyBlockQuote=()=>Object.freeze({
   optimizer:{name:'QuOptio',policyVersion:AGGY_QUOPTIO_POLICY.version},
   rateCard:{provider:AGGY_RATE_CARD.provider,model:AGGY_RATE_CARD.model,version:AGGY_RATE_CARD.version,sourceRef:AGGY_RATE_CARD.sourceRef}
 });
+const evaluateQuOptioDecision=({account,entitlement,freeRemainingMs,paidContinuationConfirmed=false,now=Date.now()})=>{
+  const contractActive=UNMETERED_ACCESS_MODES.has(entitlement?.accessMode)&&Number(entitlement?.expiresAtMs)>now;
+  let mode='TOP_UP_REQUIRED';
+  let reason='QVIT_BALANCE_REQUIRED';
+  let durationMs=0;
+  let reservedQVit=0;
+  if(contractActive){
+    mode='CONTRACT_INCLUDED';reason='ACTIVE_SERVICE_ENTITLEMENT';durationMs=Math.min(AGGY_CONTRACT_SESSION_MS,Number(entitlement.expiresAtMs)-now);
+  }else if(freeRemainingMs>0){
+    mode='VISITOR_FREE';reason='FREE_ALLOWANCE_AVAILABLE';durationMs=freeRemainingMs;
+  }else if(Number(account.paid_blocks_day)>=AGGY_MAX_PAID_BLOCKS_DAY){
+    mode='LIMITED';reason='DAILY_SAFETY_LIMIT';
+  }else if(Number(account.paid_blocks_month)>=AGGY_MAX_PAID_BLOCKS_MONTH){
+    mode='LIMITED';reason='MONTHLY_SAFETY_LIMIT';
+  }else if(Number(account.qvit_balance)>=AGGY_PAID_BLOCK_QVIT&&!paidContinuationConfirmed){
+    mode='CONSENT_REQUIRED';reason='EXPLICIT_PAID_CONTINUATION_REQUIRED';
+  }else if(Number(account.qvit_balance)>=AGGY_PAID_BLOCK_QVIT){
+    mode='PAID_QVIT';reason='QVIT_RESERVED_BEFORE_PROVIDER';durationMs=AGGY_PAID_BLOCK_MS;reservedQVit=AGGY_PAID_BLOCK_QVIT;
+  }
+  return Object.freeze({
+    schema:'secquoia.quoptio.aggy-decision.v1',
+    policyVersion:AGGY_QUOPTIO_POLICY.version,
+    decisionId:`${AGGY_QUOPTIO_POLICY.version}:${mode}:${Math.floor(now/60000)}`,
+    mode,reason,durationSeconds:Math.max(0,Math.floor(durationMs/1000)),reservedQVit,
+    provider:AGGY_RATE_CARD.provider,model:AGGY_RATE_CARD.model,voice:DEFAULT_REALTIME_VOICE,
+    rateCardVersion:AGGY_RATE_CARD.version,overdraftAllowed:false,silentChargeAllowed:false
+  });
+};
 const usageSubject=async(request,entitlement=null)=>{
   if(entitlement?.subject)return sha256Base64Url(`aggy-meter-contract-v1|${entitlement.subject}`);
   const visitorId=String(request.headers.get('X-Aggy-Visitor-ID')||'');
@@ -606,6 +634,7 @@ class AggyUsageMeter {
     const freeRemainingMs=Math.max(0,AGGY_FREE_MS-Number(account.free_used_ms));
     const includedActive=UNMETERED_ACCESS_MODES.has(entitlement?.accessMode)&&Number(entitlement.expiresAtMs)>now;
     const publicLeaseKind=UNMETERED_ACCESS_MODES.has(lease?.access_mode)?'CONTRACT':lease?.kind;
+    const quOptioDecision=evaluateQuOptioDecision({account,entitlement,freeRemainingMs,now});
     return {
       schema:'secquoia.aggy.usage-status.v1',
       status:lease?'LEASE_ACTIVE':includedActive?entitlement.accessMode:freeRemainingMs?'FREE_AVAILABLE':Number(account.qvit_balance)>=AGGY_PAID_BLOCK_QVIT?'PAID_AVAILABLE':'TOP_UP_REQUIRED',
@@ -625,6 +654,7 @@ class AggyUsageMeter {
       free:{limitSeconds:AGGY_FREE_MS/1000,usedSeconds:Math.ceil(Number(account.free_used_ms)/1000),remainingSeconds:Math.floor(freeRemainingMs/1000),lifetimeAllowance:true},
       wallet:{currency:'QVIT',balance:Number(account.qvit_balance),overdraftAllowed:false},
       continuation:aggyBlockQuote(),
+      quOptio:quOptioDecision,
       limits:{
         paidBlocksDay:{used:Number(account.paid_blocks_day),max:AGGY_MAX_PAID_BLOCKS_DAY},
         paidBlocksMonth:{used:Number(account.paid_blocks_month),max:AGGY_MAX_PAID_BLOCKS_MONTH},
@@ -632,7 +662,7 @@ class AggyUsageMeter {
         paidMinutesMonthMax:AGGY_MAX_PAID_BLOCKS_MONTH*AGGY_PAID_BLOCK_MS/60000
       },
       activeLease:lease?{leaseId:lease.lease_id,kind:publicLeaseKind,status:lease.status,expiresAt:new Date(Number(lease.expires_at_ms)).toISOString()}:null,
-      engines:['QuCFA','QVit','QuPay','QuIdentify','QuFense','QuAudit'],
+      engines:['QuOptio','QuCFA','QVit','QuPay','QuIdentify','QuFense','QuAudit'],
       audit:'SERVER_SIDE_SQLITE_LEDGER'
     };
   }
@@ -642,10 +672,11 @@ class AggyUsageMeter {
     if(this.activeLease())return this.reply({error:'active_lease_exists',...this.status(now,body.entitlement)},409);
     const account=this.account();
     const freeRemaining=Math.max(0,AGGY_FREE_MS-Number(account.free_used_ms));
+    const quOptio=evaluateQuOptioDecision({account,entitlement:body.entitlement,freeRemainingMs:freeRemaining,paidContinuationConfirmed:body.paidContinuationConfirmed===true,now});
     let kind='FREE';
     let duration=freeRemaining;
     let reserved=0;
-    const contractActive=UNMETERED_ACCESS_MODES.has(body.entitlement?.accessMode)&&Number(body.entitlement.expiresAtMs)>now;
+    const contractActive=quOptio.mode==='CONTRACT_INCLUDED';
     let accessMode='VISITOR_TRIAL';
     let entitlementExpiresAtMs=null;
     if(contractActive){
@@ -653,7 +684,7 @@ class AggyUsageMeter {
       entitlementExpiresAtMs=Number(body.entitlement.expiresAtMs);
       duration=Math.min(AGGY_CONTRACT_SESSION_MS,entitlementExpiresAtMs-now);
     }else if(duration<=0){
-      if(body.paidContinuationConfirmed!==true){
+      if(quOptio.mode==='CONSENT_REQUIRED'){
         return this.reply({
           error:'paid_continuation_confirmation_required',
           paymentRequired:true,
@@ -662,12 +693,11 @@ class AggyUsageMeter {
           ...this.status(now,body.entitlement)
         },402);
       }
+      if(quOptio.mode==='LIMITED')return this.reply({error:quOptio.reason==='DAILY_SAFETY_LIMIT'?'daily_limit_reached':'monthly_limit_reached',quOptio,...this.status(now)},429);
+      if(quOptio.mode!=='PAID_QVIT')return this.reply({error:'insufficient_qvit',quOptio,...this.status(now)},402);
       kind='PAID';
-      duration=AGGY_PAID_BLOCK_MS;
-      reserved=AGGY_PAID_BLOCK_QVIT;
-      if(Number(account.paid_blocks_day)>=AGGY_MAX_PAID_BLOCKS_DAY)return this.reply({error:'daily_limit_reached',...this.status(now)},429);
-      if(Number(account.paid_blocks_month)>=AGGY_MAX_PAID_BLOCKS_MONTH)return this.reply({error:'monthly_limit_reached',...this.status(now)},429);
-      if(Number(account.qvit_balance)<reserved)return this.reply({error:'insufficient_qvit',...this.status(now)},402);
+      duration=quOptio.durationSeconds*1000;
+      reserved=quOptio.reservedQVit;
       this.sql.exec(
         'UPDATE account SET qvit_balance = qvit_balance - ?, paid_blocks_day = paid_blocks_day + 1, paid_blocks_month = paid_blocks_month + 1, qvit_debit_day = qvit_debit_day + ?, qvit_debit_month = qvit_debit_month + ? WHERE id = 1',
         reserved,reserved,reserved
@@ -693,7 +723,8 @@ class AggyUsageMeter {
       pendingExpiresAt:new Date(expires).toISOString(),
       reservedQVit:reserved,
       balanceQVit:Number(this.account().qvit_balance),
-      quote:aggyBlockQuote()
+      quote:aggyBlockQuote(),
+      quOptio
     },201);
   }
   async activate(body,now){
@@ -1075,7 +1106,7 @@ export default {
         body.wallet.topUpAvailable=Boolean(env.AGGY_QUPAY_WEBHOOK_SECRET);
         body.wallet.topUpStatus=body.wallet.topUpAvailable?'QUPAY_SIGNED_WEBHOOK_READY':'ASSISTED_ACTIVATION_REQUIRED';
         body.wallet.topUpUrl=body.wallet.topUpAvailable
-          ? `https://secquoia.net/qu-market.html?time_ai=1&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`
+          ? `https://secquoia.net/aggy-time-ai.html?pack=qvit-ai-credit-1&wallet_ref=${encodeURIComponent(meter.reference)}&return_to=${encodeURIComponent(request.headers.get('Origin')||'https://secquoia.group/')}`
           : 'mailto:sqaile@secquoia.group?subject=Activacion%20QuPay%20para%20Aggy';
         body.identity={
           engine:'QuIdentify',
@@ -1098,7 +1129,7 @@ export default {
         const body=await response.json();
         if(response.ok)body.capability=capability;
         body.walletReference=meter.reference;
-        if(body.wallet)body.wallet.topUpUrl=`https://secquoia.net/qu-market.html?time_ai=1&wallet_ref=${encodeURIComponent(meter.reference)}#ai-services`;
+        if(body.wallet)body.wallet.topUpUrl=`https://secquoia.net/aggy-time-ai.html?pack=qvit-ai-credit-1&wallet_ref=${encodeURIComponent(meter.reference)}&return_to=${encodeURIComponent(request.headers.get('Origin')||'https://secquoia.group/')}`;
         return json(body,response.status,request);
       }
       let body;
@@ -1162,7 +1193,7 @@ export default {
         entitlements:{
           verifier:env.AGGY_ENTITLEMENT_SIGNING_SECRET?'ready':'not_configured',
           issuer:env.AGGY_ENTITLEMENT_SIGNING_SECRET&&env.AGGY_ENTITLEMENT_ISSUER_SECRET?'ready':'not_configured',
-          activationBinding:'QUIIDENTIFY_BACKEND_REQUIRED'
+          activationBinding:'QUIDENTIFY_BACKEND_REQUIRED'
         },
         paidContinuation:{
           status:env.AGGY_QUPAY_WEBHOOK_SECRET?'ready':'blocked',
@@ -1170,7 +1201,7 @@ export default {
           failClosed:true
         },
         limits:{paidMinutesDay:AGGY_MAX_PAID_BLOCKS_DAY,paidMinutesMonth:AGGY_MAX_PAID_BLOCKS_MONTH},
-        quOptio:AGGY_QUOPTIO_POLICY,
+        quOptio:{policy:AGGY_QUOPTIO_POLICY,decisionEngine:'SERVER_SIDE_DURABLE_USAGE_METER',failClosed:true},
         providerCallExecuted:false
       },env.OPENAI_API_KEY&&env.AGGY_USAGE_METERS&&rateCardCurrent?200:503,request);
     }
@@ -1281,6 +1312,7 @@ export {
   DEFAULT_REALTIME_MODEL,
   DEFAULT_REALTIME_VOICE,
   aggyBlockQuote,
+  evaluateQuOptioDecision,
   normalizeRealtimeUsage,
   issueAggyEntitlement,
   quoteRealtimeUsage,

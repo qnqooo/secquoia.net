@@ -4,12 +4,12 @@ import test from 'node:test';
 
 const release=JSON.parse(await readFile(new URL('../aggy-release.json',import.meta.url),'utf8'));
 const rollout=JSON.parse(await readFile(new URL('../aggy-rollout-targets.json',import.meta.url),'utf8'));
-const evidence=JSON.parse(await readFile(new URL('../aggy-ga-evidence.json',import.meta.url),'utf8'));
+const evidence=JSON.parse(await readFile(new URL('../aggy-1.3.0-rc.1-evidence.json',import.meta.url),'utf8'));
 
-test('Aggy stable release and rollout inventory stay synchronized',()=>{
-  assert.equal(release.version,'1.2.11');
-  assert.equal(release.channel,'stable');
-  assert.equal(release.lifecycle,'general-availability');
+test('Aggy release candidate and rollout inventory stay synchronized',()=>{
+  assert.equal(release.version,'1.3.0-rc.1');
+  assert.equal(release.channel,'release-candidate');
+  assert.equal(release.lifecycle,'release-candidate');
   assert.equal(rollout.release,release.version);
   assert.equal(rollout.webSurfaces.length,5);
 });
@@ -37,14 +37,14 @@ test('All known ecosystem web surfaces have an Aggy integration contract',()=>{
   assert.equal(surfaces['QuSpace / QuHub'].status,'excluded-from-ga-owner-only');
 });
 
-test('GA status is explicitly approved and bounded to evidenced capabilities',()=>{
-  assert.equal(release.productionApproved,true);
-  assert.equal(release.thirdPartySale,true);
-  assert.equal(rollout.promotion.productionApproved,true);
-  assert.equal(rollout.promotion.thirdPartySale,true);
-  assert.equal(release.approvedBy,'Eddie Velasquez Ortiz');
-  assert.deepEqual(new Set(release.gaScope),new Set(evidence.gaScope));
+test('Candidate remains blocked from production and third-party sale until approval',()=>{
+  assert.equal(release.productionApproved,false);
+  assert.equal(release.thirdPartySale,false);
+  assert.equal(rollout.promotion.productionApproved,false);
+  assert.equal(rollout.promotion.thirdPartySale,false);
+  assert.equal(release.approvedBy,null);
+  assert.deepEqual(new Set(release.gaScope),new Set(evidence.candidateScope));
   assert.deepEqual(new Set(release.previewCapabilities),new Set(evidence.previewCapabilities));
-  assert.equal(evidence.decision,'APPROVE_AGGY_CORE_GA');
-  assert.equal(evidence.gates.every(gate=>gate.status==='PASS'),true);
+  assert.equal(evidence.decision,'BLOCK_PRODUCTION_PENDING_CONTROLLED_VALIDATION');
+  assert.equal(evidence.gates.some(gate=>gate.status!=='PASS'),true);
 });

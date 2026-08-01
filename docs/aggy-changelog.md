@@ -2,6 +2,25 @@
 
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
+## 1.3.0-rc.1 - 2026-07-31
+
+### Governed Voice LIVE continuity with QuOptio
+
+- Replaces the forgeable `quidentify=verified` marker with a short-lived,
+  MFA-bound QuIdentify receipt signed for the selected package, wallet and
+  trusted return origin.
+- Adds a QuPay confirmation capability and immediate, idempotent post-payment
+  credit reconciliation; the Stripe webhook remains the recovery path.
+- Makes QuOptio choose between contracted access, visitor allowance, explicit
+  QVit continuation, safety limits and top-up without silent charges or
+  overdraft.
+- Adds bounded Voice LIVE recovery after transient connectivity, visibility and
+  provider-session failures. Browser microphone permission is never bypassed.
+- Raises paid safety ceilings to commercially usable but still bounded values:
+  240 minutes per day and 3,000 per month per metered subject.
+- Keeps production promotion and third-party sale blocked until controlled
+  validation and Eddie Velásquez Ortiz approval.
+
 ## 1.2.11 - 2026-07-30
 
 ### Exhausted-time continuity action

@@ -21,7 +21,7 @@
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
   const speechSpeed=1.08;
-  const aggyVersion='1.2.11';
+  const aggyVersion='1.3.0-rc.1';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
     Object.freeze({
@@ -99,9 +99,11 @@
   let usageHardStop=null;
   let lastUsageStatus=null;
   let previousFreeRemainingSeconds=null;
-  let usageMarketplaceUrl='https://secquoia.net/qu-market.html?time_ai=1#ai-services';
+  let usageMarketplaceUrl='https://secquoia.net/aggy-time-ai.html?pack=qvit-ai-credit-1';
   const freeTimeNoticesSent=new Set();
   let connectionOpenTimeout=null;
+  let recoveryTimer=null;
+  let recoveryAttempts=0;
   const trustedParentOrigins=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);
   const parentOrigin=(()=>{
     try{
@@ -643,6 +645,18 @@
     }
   };
 
+  const scheduleVoiceRecovery=(reason='TRANSIENT_FAILURE',delayMs=null)=>{
+    if(connected||connecting||recoveryTimer||document.visibilityState==='hidden'||navigator.onLine===false)return;
+    if(recoveryAttempts>=5)return;
+    const delay=delayMs??Math.min(30_000,1500*(2**recoveryAttempts));
+    recoveryAttempts++;
+    console.info('Aggy Voice recovery scheduled',{reason,attempt:recoveryAttempts,delay});
+    recoveryTimer=setTimeout(()=>{
+      recoveryTimer=null;
+      if(!connected&&!connecting)prewarmVoice();
+    },delay);
+  };
+
   const startRealtime=async(paidContinuationConfirmed=false,{userInitiated=false,postPayment=null}={})=>{
     if(connecting||connected)return;
     if(!window.RTCPeerConnection||!navigator.mediaDevices?.getUserMedia){
@@ -701,6 +715,7 @@
       peer.onconnectionstatechange=()=>{
         if(['failed','disconnected','closed'].includes(peer?.connectionState)&&connected){
           cleanupRealtime('WEBRTC_CONNECTION_ENDED');
+          scheduleVoiceRecovery('WEBRTC_CONNECTION_ENDED');
           setState('error','Conexión finalizada','La sesión WebRTC terminó. Puedes iniciar una nueva conversación.','DESCONECTADA');
           startButton.disabled=false;
           startButton.textContent='Iniciar voz en vivo';
@@ -725,6 +740,7 @@
           if(!leaseExpiresAt)throw new Error('usage_lease_expiry_missing');
           connected=true;
           connecting=false;
+          recoveryAttempts=0;
           configureSession();
           sendInitialGreeting();
           startUsageEnforcement(leaseExpiresAt);
@@ -738,6 +754,7 @@
           await cancelUsage('USAGE_ACTIVATION_FAILED');
           startButton.disabled=false;
           startButton.textContent='Reintentar voz LIVE';
+          scheduleVoiceRecovery('USAGE_ACTIVATION_FAILED');
           setState('error','No se activó la medición segura','La sesión se cerró sin consumir tiempo. Intenta nuevamente.','SIN CONEXIÓN');
         }
       });
@@ -785,6 +802,7 @@
       }else if(error?.name==='MicrophonePermissionTimeout'||error?.message==='microphone_permission_timeout'){
         setState('error','El navegador no respondió','Habilita el micrófono para este sitio y toca Reintentar voz LIVE. No se consumió una sesión.','PERMISO PENDIENTE');
       }else{
+        scheduleVoiceRecovery('SESSION_START_FAILED');
         setState('error','Aggy Voice no está disponible','No fue posible iniciar la sesión Realtime segura. Intenta nuevamente; la voz legacy permanece desactivada.','SIN CONEXIÓN');
       }
     }
@@ -887,6 +905,7 @@
         'PERMISO BLOQUEADO'
       );
     }catch{
+      scheduleVoiceRecovery('PREWARM_FAILED');
       setState('error','Aggy Voice no está disponible','No se pudo verificar el backend seguro. El modo local permanece disponible.','SIN CONEXIÓN');
     }
   };
@@ -918,5 +937,7 @@
     isLive:()=>connected
   });
   window.addEventListener('beforeunload',()=>cleanupRealtime('PAGE_UNLOAD'),{once:true});
+  window.addEventListener('online',()=>{recoveryAttempts=0;scheduleVoiceRecovery('BROWSER_ONLINE',250)});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!connected)scheduleVoiceRecovery('PAGE_VISIBLE',500)});
   prewarmVoice();
 })();

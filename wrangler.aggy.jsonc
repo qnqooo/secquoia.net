@@ -1,7 +1,7 @@
 {
   "name": "secquoia-aggy-realtime",
   "main": "workers/aggy-realtime-session.js",
-  "compatibility_date": "2026-07-29",
+  "compatibility_date": "2026-07-31",
   "compatibility_flags": [
     "nodejs_compat"
   ],
