@@ -753,6 +753,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     const chain=assistantLauncher.querySelector('.assistant-minute-chain'),links=[...assistantLauncher.querySelectorAll('.assistant-minute-link')],included=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode),paidAvailable=detail.paidAvailable===true,copy=assistantLauncher.querySelector('small'),nudge=assistantLauncher.querySelector('.assistant-launcher-nudge');
     assistantLauncher.dataset.accessMode=detail.accessMode||'VISITOR_TRIAL';
     assistantLauncher.dataset.paidAvailable=String(paidAvailable);
+    if(Number.isFinite(Number(detail.paidMinutes))&&Number(detail.paidMinutes)>0)assistantLauncher.dataset.paidMinutes=String(Math.floor(Number(detail.paidMinutes)));
     chain.classList.toggle('contract',included);
     try{const candidate=new URL(String(detail.marketplaceUrl||''));if(candidate.protocol==='https:'&&candidate.hostname==='secquoia.net'&&candidate.pathname==='/qu-market.html')aggyMarketplaceUrl=candidate.href}catch{}
     if(included){
