@@ -102,8 +102,8 @@ test('Guided onboarding is accessible and does not open automatically',()=>{
 });
 
 test('Every rendered module exposes its inclusions',()=>{
-  assert.match(html,/class="module-includes"/);
-  assert.match(html,/What is included/);
+  assert.match(html,/class="product-scope"/);
+  assert.match(html,/Scope and requirements/);
   assert.match(html,/p\.features\.map\(f=>'<li>'\+esc\(f\)/);
   assert.match(html,/p\.license\[l\]/);
 });
@@ -122,7 +122,7 @@ test('Available products expose honest status and application requirements',()=>
   assert.match(html,/label:\{en:'Starter',es:'Starter'\}/);
   assert.match(html,/label:\{en:'Private beta'/);
   assert.match(html,/class="availability-state /);
-  assert.match(html,/class="product-requirements"/);
-  assert.match(html,/Application requirements/);
+  assert.match(html,/class="product-scope"/);
+  assert.match(html,/Scope and requirements/);
   assert.match(html,/availability\.requirements\[l\]\.map/);
 });
