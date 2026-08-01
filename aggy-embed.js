@@ -7,7 +7,7 @@
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
   const version='1.3.0-rc.1';
-  const assetRevision='1.3.0-rc.1-postpay-20260801';
+  const assetRevision='1.3.0-rc.1-serverack-20260801';
   const paymentReturn=(()=>{
     try{
       const values=new URLSearchParams(location.hash.replace(/^#/,''));

@@ -450,6 +450,76 @@ test('Aggy accepts only a valid signed QuPay wallet binding',async()=>{
   );
 });
 
+test('QuCFA reconstructs exact governed payment terms from the durable QVit ledger',()=>{
+  assert.deepEqual(workerModule.paymentTermsFromQVit(1_000_000),{
+    amountUsd:1,
+    amountUsdCents:100,
+    voiceLiveMinutes:5,
+    packId:'qvit-ai-credit-1',
+    qvitAmount:1_000_000
+  });
+  assert.deepEqual(workerModule.paymentTermsFromQVit(5_000_000,'qvit-ai-credit-5'),{
+    amountUsd:5,
+    amountUsdCents:500,
+    voiceLiveMinutes:25,
+    packId:'qvit-ai-credit-5',
+    qvitAmount:5_000_000
+  });
+  assert.equal(workerModule.paymentTermsFromQVit(1_000_000,'qvit-ai-credit-5'),null);
+  assert.equal(workerModule.paymentTermsFromQVit(750_000),null);
+});
+
+test('Pending payment acknowledgment is exposed only through a signed wallet and acknowledged audibly',async()=>{
+  const secret='shared-wallet-binding-secret';
+  const now=Date.now();
+  const encodedPayload=Buffer.from(JSON.stringify({
+    schema:'secquoia.qupay.aggy-wallet-binding.v1',
+    walletReference:'w'.repeat(43),
+    packId:'qvit-ai-credit-1',
+    providerSessionId:'cs_live_paid_confirmation_123456',
+    issuedAt:now,
+    expiresAt:now+60_000
+  })).toString('base64url');
+  const signature=createHmac('sha256',secret).update(encodedPayload).digest('hex');
+  const binding=`${encodedPayload}.${signature}`;
+  const forwarded=[];
+  const meters={
+    idFromName:name=>name,
+    get:()=>( {
+      fetch:async request=>{
+        const body=await request.json();
+        forwarded.push({path:new URL(request.url).pathname,body});
+        if(new URL(request.url).pathname==='/status')return new Response(JSON.stringify({
+          wallet:{balance:1_000_000},
+          free:{remainingSeconds:0},
+          continuation:{customerQVit:200_000},
+          pendingPaymentAcknowledgment:body.includePendingPaymentAcknowledgment?{
+            schema:'secquoia.aggy.payment-acknowledgment.v1',
+            acknowledgmentId:'11111111-1111-4111-8111-111111111111',
+            amountUsd:1,
+            voiceLiveMinutes:5,
+            packId:'qvit-ai-credit-1'
+          }:null
+        }),{headers:{'Content-Type':'application/json'}});
+        return new Response(JSON.stringify({acknowledged:true,duplicate:false}),{headers:{'Content-Type':'application/json'}});
+      }
+    })
+  };
+  const unsigned=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/usage/status'),{AGGY_USAGE_METERS:meters,AGGY_QUPAY_WEBHOOK_SECRET:secret});
+  assert.equal((await unsigned.json()).pendingPaymentAcknowledgment,null);
+  const signedHeaders={'X-Aggy-Wallet-Binding':binding};
+  const signed=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/usage/status',{headers:signedHeaders}),{AGGY_USAGE_METERS:meters,AGGY_QUPAY_WEBHOOK_SECRET:secret});
+  assert.equal((await signed.json()).pendingPaymentAcknowledgment.amountUsd,1);
+  const acknowledged=await workerModule.default.fetch(new Request('https://aggy.secquoia.group/api/aggy/usage/payment-ack',{
+    method:'POST',
+    headers:{...signedHeaders,'Content-Type':'application/json'},
+    body:JSON.stringify({acknowledgmentId:'11111111-1111-4111-8111-111111111111',audiblePlaybackStarted:true,responseCompleted:true})
+  }),{AGGY_USAGE_METERS:meters,AGGY_QUPAY_WEBHOOK_SECRET:secret});
+  assert.equal(acknowledged.status,200);
+  assert.equal(forwarded.at(-1).path,'/payment-ack');
+  assert.equal(forwarded.at(-1).body.audiblePlaybackStarted,true);
+});
+
 test('Marketplace exhausted state opens a focused continuity dialog and a direct Time AI route',()=>{
   for(const id of ['aggyContinuityDialog','aggyContinuityClose','aggyContinuityChat']){
     assert.match(html,new RegExp(`id="${id}"`));
@@ -558,6 +628,11 @@ test('Post-payment Voice LIVE confirms value, time and consultative continuation
   assert.match(voice,/identify and acquire the right SECQUOIA product or service/);
   assert.match(voice,/receive technical or commercial support/);
   assert.match(voice,/advance the deployment of an already selected product/);
+  assert.match(voice,/pendingPaymentAcknowledgment/);
+  assert.match(voice,/\/payment-ack/);
+  assert.match(voice,/audiblePlaybackStarted:true/);
+  assert.match(voice,/responseCompleted:true/);
+  assert.match(voice,/paymentGreetingAckInFlight/);
 });
 
 test('Cross-site paid return resumes Voice LIVE with exact commercial-consultative acknowledgment',()=>{

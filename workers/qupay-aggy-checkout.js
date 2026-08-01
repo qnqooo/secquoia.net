@@ -378,6 +378,8 @@ const creditAggy=async(event,object,env)=>{
     paymentStatus:'CONFIRMED',
     walletReference,
     qvitAmount:pack.qvitAmount,
+    amountUsd:pack.usdCents/100,
+    voiceLiveMinutes:timeAiPackEconomics(pack).voiceLiveMinutes,
     provider:'stripe',
     providerSessionId:String(object.id||''),
     packId:String(metadata.pack_id),
