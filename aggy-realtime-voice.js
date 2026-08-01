@@ -925,6 +925,23 @@
     startRealtime(Boolean(paid||paidBalanceAvailable),{userInitiated:true,postPayment:paid});
   });
   usageContinueButton?.addEventListener('click',()=>startRealtime(true,{userInitiated:true}));
+  window.addEventListener('secquoia:aggy:payment-handoff',event=>{
+    const detail=event.detail||{};
+    const binding=String(detail.walletBinding||'');
+    const confirmation=detail.confirmation||{};
+    if(!/^[A-Za-z0-9_-]{80,900}\.[0-9a-f]{64}$/i.test(binding))return;
+    if(confirmation.schema!=='secquoia.qupay.aggy-payment-handoff.v1'||!(Number(confirmation.amountUsd)>0)||!(Number(confirmation.voiceLiveMinutes)>0))return;
+    walletBindingToken=binding;
+    localStorage.setItem('secquoia.aggy.qupay.wallet-binding.v1',binding);
+    postPaymentGreeting=Object.freeze({
+      amountUsd:Number(confirmation.amountUsd),
+      voiceLiveMinutes:Number(confirmation.voiceLiveMinutes),
+      packId:String(confirmation.packId||'')
+    });
+    sessionStorage.setItem(paymentThankYouKey,JSON.stringify(postPaymentGreeting));
+    publishPaymentConfirmation(postPaymentGreeting);
+    if(!connected&&!connecting)prewarmVoice();
+  });
   endButton.addEventListener('click',()=>endVoice('CLIENT_END'));
   muteButton.addEventListener('click',()=>{
     const track=microphone?.getAudioTracks()[0];

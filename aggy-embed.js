@@ -168,6 +168,7 @@
   let paymentMomentTimer=0;
   let paymentActivationPending=false;
   let paymentReturnRecoveryShown=false;
+  let paymentWindow=null;
   let usageMarketplaceUrl='https://secquoia.net/qu-market.html?time_ai=1#ai-services';
   const setContinuityOpen=open=>{
     continuity.hidden=!open;
@@ -184,6 +185,12 @@
       if(/^[A-Za-z0-9_-]{43}$/.test(walletReference))url.searchParams.set('wallet_ref',walletReference);
     }catch{}
     return url.href;
+  };
+  const openTimeAiCheckout=url=>{
+    paymentWindow=window.open(url,'secquoia-aggy-payment','popup,width=540,height=760');
+    if(paymentWindow)return true;
+    window.location.assign(url);
+    return false;
   };
   const setPaymentMomentOpen=open=>{
     paymentMoment.hidden=!open;
@@ -339,7 +346,7 @@
     const pack=event.target.closest('[data-pack]')?.dataset.pack;
     if(!/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(pack||''))return;
     setContinuityOpen(false);
-    window.location.assign(timeAiCheckoutUrlFor(pack));
+    openTimeAiCheckout(timeAiCheckoutUrlFor(pack));
   });
   root.addEventListener('keydown',event=>{if(event.key==='Escape'){setContinuityOpen(false);setOpen(false)}});
   window.addEventListener('message',event=>{
@@ -364,7 +371,7 @@
         const marketplaceUrl=new URL(String(event.data.marketplaceUrl||''));
         if(marketplaceUrl.protocol==='https:'&&marketplaceUrl.hostname==='secquoia.net'&&marketplaceUrl.pathname==='/aggy-time-ai.html'){
           setOpen(false,{focus:false});
-          window.location.assign(marketplaceUrl.href);
+          setContinuityOpen(true);
         }
       }catch{}
       return;
@@ -411,6 +418,15 @@
         :state==='blocked'
           ?'Toca para activar · 10 min gratis'
           :'Voice LIVE · 10 min gratis';
+  });
+  window.addEventListener('message',event=>{
+    if(event.origin!=='https://secquoia.net'||event.source!==paymentWindow||event.data?.type!=='secquoia:aggy:payment-handoff')return;
+    const walletBinding=String(event.data.walletBinding||'');
+    const confirmation=event.data.confirmation||{};
+    if(!/^[A-Za-z0-9_-]{80,900}\.[0-9a-f]{64}$/i.test(walletBinding))return;
+    if(confirmation.schema!=='secquoia.qupay.aggy-payment-handoff.v1'||!(Number(confirmation.amountUsd)>0)||!(Number(confirmation.voiceLiveMinutes)>0))return;
+    frame.contentWindow?.postMessage({type:'secquoia:aggy:payment-handoff',walletBinding,confirmation,version},'https://secquoia.net');
+    paymentWindow=null;
   });
   frame.addEventListener('load',()=>{
     frame.dataset.ready='true';

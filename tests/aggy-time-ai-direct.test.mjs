@@ -83,6 +83,22 @@ test('post-payment confirmation crosses the Stripe return and is consumed once b
   assert.match(embed,/history\.replaceState\(history\.state,'',sanitized\.href\)/);
 });
 
+test('cross-site payment handoff preserves wallet, exact amount and minutes without URL secrets',()=>{
+  assert.match(script,/schema:'secquoia\.qupay\.aggy-payment-handoff\.v1'/);
+  assert.match(script,/window\.opener\.postMessage\(handoff,destination\.origin\)/);
+  assert.match(script,/setTimeout\(\(\)=>window\.close\(\),1200\)/);
+  assert.doesNotMatch(script,/destination\.hash=.*wallet|destination\.searchParams.*wallet/i);
+  assert.match(embed,/window\.open\(url,'secquoia-aggy-payment'/);
+  assert.match(embed,/event\.source!==paymentWindow/);
+  assert.match(embed,/frame\.contentWindow\?\.postMessage\(\{type:'secquoia:aggy:payment-handoff',walletBinding,confirmation,version\}/);
+  assert.match(market,/event\.source===aggyPaymentWindow&&event\.origin==='https:\/\/secquoia\.net'/);
+  assert.match(market,/new CustomEvent\('secquoia:aggy:payment-handoff'/);
+  assert.match(voice,/window\.addEventListener\('secquoia:aggy:payment-handoff'/);
+  assert.match(voice,/walletBindingToken=binding/);
+  assert.match(voice,/postPaymentGreeting=Object\.freeze/);
+  assert.match(voice,/if\(!connected&&!connecting\)prewarmVoice\(\)/);
+});
+
 test('paid balance refresh keeps the launcher minutes explicit',()=>{
   assert.match(voice,/paidMinutes:Number\.isFinite\(Number\(options\.paidMinutes\)\)/);
   assert.match(voice,/paidMinutes:price>0\?balance\/price:0/);
