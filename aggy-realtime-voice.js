@@ -982,13 +982,16 @@
     }
   };
 
-  startButton.addEventListener('click',()=>{
+  const startAuthorizedVoice=async()=>{
     const paid=postPaymentGreeting||storedPaymentGreeting();
+    let usageStatus=lastUsageStatus;
+    if(!usageStatus)usageStatus=await fetchUsageStatus().catch(()=>null);
     const paidBalanceAvailable=
-      Number(lastUsageStatus?.wallet?.balance||0)>=
-      Number(lastUsageStatus?.continuation?.customerQVit||1);
-    startRealtime(Boolean(paid||paidBalanceAvailable),{userInitiated:true,postPayment:paid});
-  });
+      Number(usageStatus?.wallet?.balance||0)>=
+      Number(usageStatus?.continuation?.customerQVit||1);
+    return startRealtime(Boolean(paid||paidBalanceAvailable),{userInitiated:true,postPayment:paid});
+  };
+  startButton.addEventListener('click',()=>{void startAuthorizedVoice()});
   usageContinueButton?.addEventListener('click',()=>startRealtime(true,{userInitiated:true}));
   window.addEventListener('secquoia:aggy:payment-handoff',event=>{
     const detail=event.detail||{};
@@ -1016,7 +1019,7 @@
     setState(track.enabled?'listening':'idle',track.enabled?'Te escucho':'Micrófono silenciado',track.enabled?'La conversación continúa abierta.':'Aggy no recibe audio mientras el micrófono está silenciado.',track.enabled?'EN VIVO':'SILENCIADA');
   });
   window.AggyVoice=Object.freeze({
-    start:()=>startRealtime(false,{userInitiated:true}),
+    start:()=>startAuthorizedVoice(),
     readAloud:text=>{
       pendingReadAloud=String(text||'').replace(/\s+/g,' ').trim().slice(0,4000);
       if(!pendingReadAloud)return;
