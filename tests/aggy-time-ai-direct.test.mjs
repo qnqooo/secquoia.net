@@ -46,6 +46,7 @@ test('direct flow runs package, QuIdentify, QuPay Stripe and certified Aggy cont
   assert.match(script,/response\.status===401[\s\S]{0,220}delete pending\.identityReceipt[\s\S]{0,220}identityUrl\(pending\)/);
   assert.match(script,/location\.assign\(identityUrl\(pending\)\)/);
   assert.doesNotMatch(script,/setTimeout\(\(\)=>location\.assign\(identityUrl\(pending\)\)/);
+  assert.match(script,/Continuar con QuIdentify/);
   assert.match(script,/body\.status!=='PAID'/);
   assert.match(script,/localStorage\.setItem\(WALLET_KEY,body\.walletBinding\)/);
   assert.match(script,/localStorage\.setItem\(PAYMENT_KEY,JSON\.stringify\(confirmation\)\)/);
