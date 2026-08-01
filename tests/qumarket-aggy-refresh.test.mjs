@@ -74,10 +74,10 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/X-Aggy-Wallet-Binding/);
   assert.match(voice,/\/v1\/qupay\/checkout\/confirm\?session_id=/);
   assert.match(voice,/secquoia\.aggy\.qupay\.wallet-binding\.v1/);
-  assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conectado conmigo/);
+  assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conmigo/);
   assert.match(voice,/voiceLiveMinutes/);
   assert.match(voice,/\$\{paidMinutes\} minutos adicionales de conversación Voice LIVE/);
-  assert.match(voice,/single most important risk, business objective or decision/);
+  assert.match(voice,/single most important objective, blocker or decision/);
   assert.match(voice,/secquoia:aggy:payment-confirmed/);
   assert.match(voice,/publishPaymentConfirmation\(paidConfirmation\)/);
   assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
@@ -110,14 +110,15 @@ test('Post-payment journey is visual, exact and action-oriented without forcing 
   assert.match(html,/id="aggyPaymentContinue"/);
   assert.match(html,/class="aggy-payment-route"/);
   assert.match(html,/secquoia:aggy:payment-confirmed/);
-  assert.match(html,/showAggyPaymentMoment[\s\S]{0,1200}setAssistantState\('expanded',\{focus:false\}\)/);
-  assert.match(html,/showAggyPaymentMoment[\s\S]{0,1300}\[data-open-aggy-panel="voice"\]/);
+  assert.match(html,/showAggyPaymentMoment[\s\S]{0,1500}setAssistantState\('minimized',\{focus:false\}\)/);
+  assert.match(html,/showAggyPaymentMoment[\s\S]{0,1700}openAggyVoice\(\{focus:false,reveal:false\}\)/);
   assert.match(html,/assistantLauncher\.dataset\.paidAvailable==='true'\)\{openAggyVoice\(\{reveal:true\}\);return\}/);
   assert.match(html,/assistantLauncher\.dataset\.continuityRequired=String\(expired\)/);
   assert.match(html,/const continuityRequired=assistantLauncher\.dataset\.continuityRequired==='true'/);
   assert.match(html,/continuityRequired\)\{openAggyContinuity\(\);return\}/);
   assert.match(html,/assistantLauncher\.dataset\.paidMinutes=String\(minutes\)/);
-  assert.match(html,/aggyPaymentContinue\.onclick=\(\)=>\{setAggyPaymentMoment\(false\);openAggyVoice\(\{reveal:true\}\)\}/);
+  assert.match(html,/aggyPaymentContinue\.onclick=\(\)=>\{aggyPaymentContinue\.hidden=true;[\s\S]{0,180}openAggyVoice\(\{focus:false,reveal:false\}\)\}/);
+  assert.match(html,/state==='blocked'&&paidAvailable[\s\S]{0,220}aggyPaymentContinue\.hidden=false/);
   assert.match(html,/document\.body\.classList\.contains\('aggy-embed-mode'\)\)return/);
 });
 
@@ -551,12 +552,20 @@ test('Time AI purchase preserves one explicit continuation action and all govern
   assert.doesNotMatch(worker,/addon=qvit-ai-credit-1&wallet_ref=/);
 });
 
+test('Post-payment Voice LIVE confirms value, time and consultative continuation paths aloud',()=>{
+  assert.match(voice,/He recibido la confirmación segura de USD \$\{paidAmount\}/);
+  assert.match(voice,/\$\{paidMinutes\} minutos adicionales de conversación Voice LIVE/);
+  assert.match(voice,/identify and acquire the right SECQUOIA product or service/);
+  assert.match(voice,/receive technical or commercial support/);
+  assert.match(voice,/advance the deployment of an already selected product/);
+});
+
 test('Cross-site paid return resumes Voice LIVE with exact commercial-consultative acknowledgment',()=>{
   assert.match(voice,/paymentFragment=new URLSearchParams\(location\.hash\.replace/);
   assert.match(voice,/params\.get\('payment'\)[\s\S]{0,180}params\.get\('aggy_payment'\)[\s\S]{0,180}paymentFragment\.get\('payment'\)[\s\S]{0,180}paymentFragment\.get\('aggy_payment'\)/);
   assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
-  assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conectado conmigo/);
-  assert.match(voice,/single most important risk, business objective or decision/);
+  assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conmigo/);
+  assert.match(voice,/single most important objective, blocker or decision/);
   assert.match(voice,/for\(let attempt=0;attempt<40/);
   assert.match(voice,/paidBalanceAvailable=[\s\S]{0,180}lastUsageStatus\?\.wallet\?\.balance/);
   assert.match(voice,/startRealtime\(Boolean\(paid\|\|paidBalanceAvailable\)/);

@@ -123,10 +123,10 @@
       <div class="payment-body">
         <div class="payment-kicker"><span class="payment-check" aria-hidden="true">✓</span><span>Pago confirmado</span></div>
         <h2>Tu conversación continúa.</h2>
-        <p>Aggy está lista para retomar exactamente donde quedaron.</p>
+        <p data-payment-copy>Aggy está reactivando Voice LIVE para retomar exactamente donde quedaron.</p>
         <div class="payment-stats"><div class="payment-stat"><small>Pago recibido</small><strong data-payment-amount>USD —</strong></div><div class="payment-stat"><small>Voice LIVE</small><strong data-payment-minutes>— minutos</strong></div></div>
         <div class="payment-route" aria-label="Pago confirmado, Tiempo IA activado, Aggy lista"><i></i><span></span><i></i><span></span><i></i></div>
-        <div class="payment-actions"><button class="payment-primary" type="button">Continuar con Aggy</button><button class="payment-later" type="button">Ahora no</button></div>
+        <div class="payment-actions"><button class="payment-primary" type="button" hidden>Reintentar Voice LIVE</button><button class="payment-later" type="button">Ahora no</button></div>
       </div>
     </section>
     <section class="continuity" role="dialog" aria-modal="true" aria-labelledby="aggy-continuity-title" hidden>
@@ -158,6 +158,7 @@
   const paymentMoment=root.querySelector('.payment-moment');
   const paymentAmount=paymentMoment.querySelector('[data-payment-amount]');
   const paymentMinutes=paymentMoment.querySelector('[data-payment-minutes]');
+  const paymentCopy=paymentMoment.querySelector('[data-payment-copy]');
   const paymentPrimary=paymentMoment.querySelector('.payment-primary');
   const paymentLater=paymentMoment.querySelector('.payment-later');
   const launcherStatus=launcher.querySelector('small');
@@ -199,11 +200,14 @@
     launcher.dataset.continuityRequired='false';
     launcher.dataset.paidAvailable='true';
     launcher.dataset.paidMinutes=String(minutes);
-    launcherStatus.textContent=`${minutes} min disponibles · Voice LIVE`;
-    launcherNudge.textContent='Un toque para activar Voice LIVE';
+    launcherStatus.textContent='Pago confirmado · reactivando Voice LIVE…';
+    launcherNudge.textContent=amount>0?`USD ${amount.toFixed(2)} · ${minutes} min acreditados`:`${minutes} min acreditados`;
+    paymentCopy.textContent='Pago certificado. Aggy está reactivando Voice LIVE automáticamente.';
+    paymentPrimary.hidden=true;
     paymentActivationPending=true;
     setOpen(false,{focus:false});
     setPaymentMomentOpen(true);
+    requestVoiceStart();
   };
   const updateMinuteChain=detail=>{
     const contractIncluded=['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW'].includes(detail.accessMode);
@@ -342,7 +346,7 @@
     if(event.source!==frame.contentWindow||event.origin!=='https://secquoia.net')return;
     if(event.data?.type==='secquoia:aggy:frame-ready'){
       markFrameReady();
-      if(!paymentReturn)requestVoiceStart();
+      requestVoiceStart();
       return;
     }
     if(event.data?.type==='secquoia:aggy:qupay-checkout'){
@@ -387,7 +391,9 @@
       setPaymentMomentOpen(false);
     }else if(state==='blocked'&&paidAvailable&&paymentActivationPending){
       paymentPrimary.textContent='Reintentar Voice LIVE';
-      launcherNudge.textContent='Toca para reintentar · no hubo consumo';
+      paymentPrimary.hidden=false;
+      paymentCopy.textContent='El navegador no permitió completar el audio automáticamente. Reintenta sin realizar otro pago.';
+      launcherNudge.textContent='Reintenta Voice LIVE · no pagues nuevamente';
       setPaymentMomentOpen(true);
     }
     launcherStatus.textContent=expired
@@ -408,7 +414,7 @@
   });
   frame.addEventListener('load',()=>{
     frame.dataset.ready='true';
-    if(!paymentReturn)requestVoiceStart();
+    requestVoiceStart();
     watchFrame();
   });
   frameRetry.addEventListener('click',()=>{frameAttempts=0;loadFrame()});
