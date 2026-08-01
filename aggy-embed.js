@@ -13,9 +13,14 @@
       const values=new URLSearchParams(location.hash.replace(/^#/,''));
       const sessionId=String(values.get('session_id')||'');
       if(values.get('aggy_payment')!=='success'||!/^cs_live_[A-Za-z0-9_]{16,200}$/.test(sessionId))return '';
+      const receiptKey=`secquoia.aggy.payment-return.${sessionId}`;
+      let alreadyAcknowledged=false;
+      try{alreadyAcknowledged=sessionStorage.getItem(receiptKey)==='1'}catch{}
       const sanitized=new URL(location.href);
       sanitized.hash='';
       history.replaceState(history.state,'',sanitized.href);
+      if(alreadyAcknowledged)return '';
+      try{sessionStorage.setItem(receiptKey,'1')}catch{}
       return sessionId;
     }catch{return ''}
   })();
@@ -198,7 +203,7 @@
   const setPaymentMomentOpen=open=>{
     paymentMoment.hidden=!open;
     clearTimeout(paymentMomentTimer);
-    if(open)paymentMomentTimer=setTimeout(()=>{paymentMoment.hidden=true},60000);
+    if(open)paymentMomentTimer=setTimeout(()=>{paymentMoment.hidden=true},12000);
   };
   const showPaymentMoment=detail=>{
     const amount=Number(detail.amountUsd||0);
@@ -345,6 +350,8 @@
     requestVoiceStart();
   });
   paymentLater.addEventListener('click',()=>setPaymentMomentOpen(false));
+  window.addEventListener('pagehide',()=>setPaymentMomentOpen(false));
+  window.addEventListener('pageshow',event=>{if(event.persisted)setPaymentMomentOpen(false)});
   continuity.addEventListener('click',event=>{
     const pack=event.target.closest('[data-pack]')?.dataset.pack;
     if(!/^qvit-ai-credit-(1|5|10|25|50|100|500|1000)$/.test(pack||''))return;
