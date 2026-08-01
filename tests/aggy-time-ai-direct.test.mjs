@@ -73,7 +73,8 @@ test('post-payment confirmation crosses the Stripe return and is consumed once b
   assert.match(voice,/\(await paymentReturnPromise\)\|\|postPaymentGreeting/);
   assert.match(voice,/attempt<40/);
   assert.match(script,/Continuar con Aggy/);
-  assert.match(script,/setTimeout\(\(\)=>location\.replace\(destination\.href\),900\)/);
+  assert.match(script,/recovery\.searchParams\.set\('aggy_payment','recovered'\)/);
+  assert.match(script,/setTimeout\(\(\)=>location\.replace\(recovery\.href\),900\)/);
   assert.match(voice,/server-confirmed post-payment continuation/);
   assert.match(voice,/exact confirmed amount/);
   assert.match(voice,/exact purchased Voice LIVE allowance/);
@@ -87,6 +88,7 @@ test('cross-site payment handoff preserves wallet, exact amount and minutes with
   assert.match(script,/schema:'secquoia\.qupay\.aggy-payment-handoff\.v1'/);
   assert.match(script,/window\.opener\.postMessage\(handoff,destination\.origin\)/);
   assert.match(script,/setTimeout\(\(\)=>window\.close\(\),1200\)/);
+  assert.match(script,/const continuationUrl=hasOpener\?destination\.href:recovery\.href/);
   assert.doesNotMatch(script,/destination\.hash=.*wallet|destination\.searchParams.*wallet/i);
   assert.match(embed,/window\.open\(url,'secquoia-aggy-payment'/);
   assert.match(embed,/event\.source!==paymentWindow/);

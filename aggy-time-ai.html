@@ -119,19 +119,24 @@
     localStorage.removeItem(PENDING_KEY);
     const destination=new URL(safeReturn(pending?.returnTo));
     destination.hash=new URLSearchParams({aggy_payment:'success',session_id:sessionId}).toString();
+    const recovery=new URL('https://secquoia.net/qu-market.html');
+    recovery.searchParams.set('aggy_payment','recovered');
+    recovery.hash='ai-services';
     const handoff={type:'secquoia:aggy:payment-handoff',walletBinding:body.walletBinding,confirmation};
+    const hasOpener=Boolean(window.opener&&!window.opener.closed);
+    const continuationUrl=hasOpener?destination.href:recovery.href;
     setStatus('¡Pago confirmado!',`Aggy recibió la confirmación de USD ${confirmation.amountUsd.toFixed(2)}. Voice LIVE continuará durante ${Math.round(confirmation.voiceLiveMinutes)} minutos adicionales. Volveremos a Aggy automáticamente.`,{
       tone:'success',
-      retry:{label:'Continuar con Aggy',action:()=>location.replace(destination.href)}
+      retry:{label:'Continuar con Aggy',action:()=>location.replace(continuationUrl)}
     });
-    returnAction.href=destination.href;
+    returnAction.href=continuationUrl;
     returnAction.textContent='Volver al sitio';
-    if(window.opener&&!window.opener.closed){
+    if(hasOpener){
       window.opener.postMessage(handoff,destination.origin);
       setTimeout(()=>window.close(),1200);
       return;
     }
-    setTimeout(()=>location.replace(destination.href),900);
+    setTimeout(()=>location.replace(recovery.href),900);
   };
   const showFailure=(title,copy,retry)=>{setStatus(title,copy,{tone:'error',retry});returnAction.href=safeReturn(readPending()?.returnTo)};
   const run=async()=>{
