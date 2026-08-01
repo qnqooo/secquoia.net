@@ -13,7 +13,7 @@ const identityReceipt=({packId,walletReference,now=Math.floor(Date.now()/1000),j
 };
 
 test('QuPay exposes only governed QVit packs',()=>{
-  assert.deepEqual(Object.keys(worker.PACKS),['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']);
+  assert.deepEqual(Object.keys(worker.PACKS),['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-50','qvit-ai-credit-100','qvit-ai-credit-500','qvit-ai-credit-1000']);
   assert.equal(worker.PACKS['qvit-ai-credit-1'].usdCents,100);
   assert.equal(worker.PACKS['qvit-ai-credit-1'].qvitAmount,1_000_000);
   assert.equal(worker.PACKS['qvit-ai-credit-5'].usdCents,500);
@@ -22,6 +22,26 @@ test('QuPay exposes only governed QVit packs',()=>{
   assert.equal(worker.PACKS['qvit-ai-credit-10'].qvitAmount,10_000_000);
   assert.equal(worker.PACKS['qvit-ai-credit-25'].usdCents,2500);
   assert.equal(worker.PACKS['qvit-ai-credit-25'].qvitAmount,25_000_000);
+  assert.equal(worker.PACKS['qvit-ai-credit-50'].qvitAmount,50_000_000);
+  assert.equal(worker.PACKS['qvit-ai-credit-1000'].qvitAmount,1_000_000_000);
+});
+
+test('QuCFA normalizes every Time AI pack to five minutes per USD without a negative contribution',()=>{
+  assert.equal(worker.TIME_AI_QVIT_PER_MINUTE,200_000);
+  for(const pack of Object.values(worker.PACKS)){
+    const economics=worker.timeAiPackEconomics(pack);
+    assert.equal(economics.voiceLiveMinutes,economics.grossUsd*5);
+    assert.equal(economics.viable,true);
+    assert.ok(economics.contributionUsd>=0);
+  }
+  assert.deepEqual(worker.timeAiPackEconomics(worker.PACKS['qvit-ai-credit-1']),{
+    grossUsd:1,
+    voiceLiveMinutes:5,
+    providerReserveUsd:.625,
+    processorReserveUsd:.345,
+    contributionUsd:.03,
+    viable:true
+  });
 });
 
 test('Stripe signature verification enforces HMAC and replay tolerance',async()=>{
@@ -201,7 +221,7 @@ test('Authorized Checkout carries QuFense evidence into Stripe metadata',async()
   assert.equal(form.get('cancel_url'),'https://secquoia.net/aggy-time-ai.html?payment=cancelled');
 });
 
-test('Paid Checkout confirmation returns a signed wallet binding and 20-minute USD 5 pack',async()=>{
+test('Paid Checkout confirmation returns a signed wallet binding and 25-minute USD 5 pack',async()=>{
   const originalFetch=globalThis.fetch;
   globalThis.fetch=async url=>{
     if(String(url).startsWith('https://aggy.secquoia.group/'))return new Response(JSON.stringify({credited:true,duplicate:false}),{status:200,headers:{'Content-Type':'application/json'}});
@@ -236,7 +256,7 @@ test('Paid Checkout confirmation returns a signed wallet binding and 20-minute U
     assert.equal(body.status,'PAID');
     assert.equal(body.amountUsd,5);
     assert.equal(body.qvitAmount,5_000_000);
-    assert.equal(body.voiceLiveMinutes,20);
+    assert.equal(body.voiceLiveMinutes,25);
     assert.equal(body.creditStatus,'CREDITED');
     assert.match(body.walletBinding,/^[A-Za-z0-9_-]+\.[0-9a-f]{64}$/);
   }finally{

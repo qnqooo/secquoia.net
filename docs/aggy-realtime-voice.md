@@ -20,9 +20,10 @@ cannot choose or override the provider model.
 - During a visitor lease, Aggy gives one visible and spoken notice when 300, 180 and 60 seconds remain.
 - When the visitor allowance ends, chat remains available and Tiempo IA is offered as an explicit opt-in continuation; no automatic charge is made.
 - Continuing requires one prepaid `Aggy Minute` microlease of 60 seconds.
-- The RC16 public-rate-card estimate reserves `240,000 QVit` per minute. The
-  value includes a USD 0.15 provider-cost ceiling and the governed 35% target
-  margin. It is versioned and must be reviewed when OpenAI changes pricing.
+- The 2026-08-01 QuCFA rate card reserves `200,000 QVit` per minute. The value
+  includes a USD 0.125 provider-cost ceiling and the governed 35% gross-margin
+  target after commercial rounding. QuOptio stops paid provider usage at 90%
+  of that ceiling. The rate card is versioned and fails closed when stale.
 - QuOptio policy `2026-07-26.1` keeps the latest approved Realtime voice model,
   prohibits silent model downgrades, trims context with a retention ratio,
   uses semantic VAD and stops at 90% of the provider-cost reserve.

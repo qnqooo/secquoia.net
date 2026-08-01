@@ -56,7 +56,7 @@ test('Aggy exhausted state is yellow, preserves readable copy and offers explici
   assert.match(embed,/Chat seguro o paquetes de Tiempo IA/);
   assert.match(embed,/class="continuity"/);
   assert.match(embed,/Continuar por Chat seguro/);
-  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
+  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-50','qvit-ai-credit-100','qvit-ai-credit-500','qvit-ai-credit-1000']){
     assert.match(embed,new RegExp(`data-pack="${pack}"`));
   }
   assert.match(embed,/new URL\('https:\/\/secquoia\.net\/aggy-time-ai\.html'\)/);

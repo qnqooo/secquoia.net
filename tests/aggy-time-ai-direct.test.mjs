@@ -22,7 +22,7 @@ test('dedicated Time AI page is syntactically valid and deliberately excludes th
 });
 
 test('direct flow allowlists packages and trusted return origins',()=>{
-  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
+  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-50','qvit-ai-credit-100','qvit-ai-credit-500','qvit-ai-credit-1000']){
     assert.match(script,new RegExp(`'${pack}'`));
   }
   for(const origin of ['https://secquoia.group','https://secquoia.net','https://qnq.ooo']){

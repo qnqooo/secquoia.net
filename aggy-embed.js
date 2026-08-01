@@ -134,12 +134,14 @@
       <button class="continuity-chat" type="button">Continuar por Chat seguro</button>
       <strong class="continuity-label">Tiempo IA · pago único</strong>
       <div class="continuity-packs">
-        <button class="continuity-pack recommended" type="button" data-pack="qvit-ai-credit-1"><strong>USD 1</strong><small>≈ 4 min Voice LIVE</small></button>
-        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-5"><strong>USD 5</strong><small>20 min Voice LIVE</small></button>
-        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-10"><strong>USD 10</strong><small>≈ 40 min Voice LIVE</small></button>
-        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-25"><strong>USD 25</strong><small>Crédito IA flexible</small></button>
-        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-100"><strong>USD 100</strong><small>Uso ampliado</small></button>
-        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-500"><strong>USD 500</strong><small>Equipos y proyectos</small></button>
+        <button class="continuity-pack recommended" type="button" data-pack="qvit-ai-credit-1"><strong>USD 1</strong><small>5 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-5"><strong>USD 5</strong><small>25 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-10"><strong>USD 10</strong><small>50 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-25"><strong>USD 25</strong><small>125 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-50"><strong>USD 50</strong><small>250 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-100"><strong>USD 100</strong><small>500 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-500"><strong>USD 500</strong><small>2.500 min Voice LIVE</small></button>
+        <button class="continuity-pack" type="button" data-pack="qvit-ai-credit-1000"><strong>USD 1.000</strong><small>5.000 min Voice LIVE</small></button>
       </div>
       <small class="continuity-note">Sin renovación automática. El Marketplace mostrará el detalle antes del pago.</small>
     </section>
@@ -344,7 +346,7 @@
   paymentLater.addEventListener('click',()=>setPaymentMomentOpen(false));
   continuity.addEventListener('click',event=>{
     const pack=event.target.closest('[data-pack]')?.dataset.pack;
-    if(!/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(pack||''))return;
+    if(!/^qvit-ai-credit-(1|5|10|25|50|100|500|1000)$/.test(pack||''))return;
     setContinuityOpen(false);
     openTimeAiCheckout(timeAiCheckoutUrlFor(pack));
   });

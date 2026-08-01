@@ -558,12 +558,14 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     <button class="aggy-continuity-chat" id="aggyContinuityChat" type="button">Continuar por Chat seguro</button>
     <strong class="aggy-continuity-label">Tiempo IA · pago único</strong>
     <div class="aggy-continuity-packs">
-      <button class="aggy-continuity-pack recommended" type="button" data-time-ai-pack="qvit-ai-credit-1"><strong>USD 1</strong><small>≈ 4 min Voice LIVE</small></button>
-      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-5"><strong>USD 5</strong><small>20 min Voice LIVE</small></button>
-      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-10"><strong>USD 10</strong><small>≈ 40 min Voice LIVE</small></button>
-      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-25"><strong>USD 25</strong><small>Crédito IA flexible</small></button>
-      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-100"><strong>USD 100</strong><small>Uso ampliado</small></button>
-      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-500"><strong>USD 500</strong><small>Equipos y proyectos</small></button>
+      <button class="aggy-continuity-pack recommended" type="button" data-time-ai-pack="qvit-ai-credit-1"><strong>USD 1</strong><small>5 min Voice LIVE</small></button>
+      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-5"><strong>USD 5</strong><small>25 min Voice LIVE</small></button>
+      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-10"><strong>USD 10</strong><small>50 min Voice LIVE</small></button>
+      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-25"><strong>USD 25</strong><small>125 min Voice LIVE</small></button>
+      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-50"><strong>USD 50</strong><small>250 min Voice LIVE</small></button>
+      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-100"><strong>USD 100</strong><small>500 min Voice LIVE</small></button>
+      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-500"><strong>USD 500</strong><small>2.500 min Voice LIVE</small></button>
+      <button class="aggy-continuity-pack" type="button" data-time-ai-pack="qvit-ai-credit-1000"><strong>USD 1.000</strong><small>5.000 min Voice LIVE</small></button>
     </div>
     <small class="aggy-continuity-note">Sin renovación automática. El Marketplace mostrará el detalle antes del pago.</small>
   </div>
@@ -820,7 +822,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
   document.getElementById('assistantHead').onclick=e=>{if(e.target.closest('button'))return;setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantToggle.onclick=e=>{e.stopPropagation();setAssistantState(assistant.dataset.state==='expanded'?'minimized':'expanded')};assistantHide.onclick=e=>{e.stopPropagation();setAssistantState('hidden')};assistantLauncher.onclick=()=>{assistantLauncher.dataset.guideDismissed='true';const continuityRequired=assistantLauncher.dataset.continuityRequired==='true'||assistantLauncher.dataset.expired==='true'||/agotado|finaliz/i.test(assistantLauncher.querySelector('small')?.textContent||'');if(continuityRequired){openAggyContinuity();return}if(assistantLauncher.dataset.paidAvailable==='true'){openAggyVoice({reveal:true});return}openAgent()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&assistant.dataset.state==='expanded')setAssistantState('minimized')});
   aggyContinuityClose.onclick=()=>aggyContinuityDialog.close();
   aggyContinuityChat.onclick=()=>{aggyContinuityDialog.close();openAgent();document.querySelector('[data-open-aggy-panel="chat"]')?.click()};
-  aggyContinuityDialog.addEventListener('click',event=>{const pack=event.target.closest('[data-time-ai-pack]')?.dataset.timeAiPack;if(!/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(pack||''))return;aggyContinuityDialog.close();const checkoutUrl=timeAiUrl(pack);if(window.parent!==window){try{window.parent.postMessage({type:'secquoia:aggy:open-time-ai',marketplaceUrl:checkoutUrl},new URL(document.referrer).origin)}catch{window.location.assign(checkoutUrl)}}else{aggyPaymentWindow=window.open(checkoutUrl,'secquoia-aggy-payment','popup,width=540,height=760');if(!aggyPaymentWindow)window.location.assign(checkoutUrl)}});
+  aggyContinuityDialog.addEventListener('click',event=>{const pack=event.target.closest('[data-time-ai-pack]')?.dataset.timeAiPack;if(!/^qvit-ai-credit-(1|5|10|25|50|100|500|1000)$/.test(pack||''))return;aggyContinuityDialog.close();const checkoutUrl=timeAiUrl(pack);if(window.parent!==window){try{window.parent.postMessage({type:'secquoia:aggy:open-time-ai',marketplaceUrl:checkoutUrl},new URL(document.referrer).origin)}catch{window.location.assign(checkoutUrl)}}else{aggyPaymentWindow=window.open(checkoutUrl,'secquoia-aggy-payment','popup,width=540,height=760');if(!aggyPaymentWindow)window.location.assign(checkoutUrl)}});
   aggyPaymentContinue.onclick=()=>{aggyPaymentContinue.hidden=true;aggyPaymentCopy.textContent='Reintentando Voice LIVE sin realizar otro pago.';openAggyVoice({focus:false,reveal:false})};
   aggyPaymentLater.onclick=()=>setAggyPaymentMoment(false);
   window.addEventListener('message',event=>{const trustedParents=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);if(event.source!==window.parent||!trustedParents.has(event.origin))return;if(event.data?.type==='secquoia:aggy:start-voice'){openAggyVoice({focus:false,reveal:false});return}if(event.data?.type==='secquoia:aggy:open-chat'){openAgent();document.querySelector('[data-open-aggy-panel="chat"]')?.click()}});
@@ -856,7 +858,7 @@ h1{max-width:15ch;font-size:clamp(38px,4.35vw,62px);line-height:1.01;letter-spac
     if(qupayCheckoutPending)return;
     const order=orderPayload();
     if(order.items.length===0){agentSay(lang()==='es'?'Primero agrega al menos un producto al carrito.':'Add at least one product to the cart first.');return}
-    const qvitItems=order.items.filter(item=>item.kind==='addon'&&/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(item.id));
+    const qvitItems=order.items.filter(item=>item.kind==='addon'&&/^qvit-ai-credit-(1|5|10|25|50|100|500|1000)$/.test(item.id));
     if(order.items.length===1&&qvitItems.length===1){
       const params=new URLSearchParams(location.search),pack=qvitItems[0];
       const walletReference=await resolveTimeAiWalletReference(params.get('wallet_ref'));

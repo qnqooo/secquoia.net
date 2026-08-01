@@ -8,14 +8,37 @@ const STRIPE_TRANSPORT_BOUNDARY=Object.freeze({
   stripeNativePqcClaimed:false
 });
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
+const TIME_AI_QVIT_PER_MINUTE=200_000;
+const TIME_AI_PROVIDER_RESERVE_USD_PER_MINUTE=.125;
+// Conservative QuCFA envelope, not a claim about SECQUOIA's negotiated Stripe
+// rate. It protects the smallest pack against a 4.5% + USD 0.30 payment cost.
+const TIME_AI_PROCESSOR_PERCENT_BPS=450;
+const TIME_AI_PROCESSOR_FIXED_USD=.30;
 const PACKS=Object.freeze({
   'qvit-ai-credit-1':Object.freeze({usdCents:100,qvitAmount:1_000_000,label:'Aggy Time AI starter · $1'}),
   'qvit-ai-credit-5':Object.freeze({usdCents:500,qvitAmount:5_000_000,label:'Aggy Time AI · $5'}),
   'qvit-ai-credit-10':Object.freeze({usdCents:1000,qvitAmount:10_000_000,label:'Aggy Time AI · $10'}),
   'qvit-ai-credit-25':Object.freeze({usdCents:2500,qvitAmount:25_000_000,label:'QVit AI resource credit · $25'}),
+  'qvit-ai-credit-50':Object.freeze({usdCents:5000,qvitAmount:50_000_000,label:'QVit AI resource credit · $50'}),
   'qvit-ai-credit-100':Object.freeze({usdCents:10_000,qvitAmount:100_000_000,label:'QVit AI resource credit · $100'}),
-  'qvit-ai-credit-500':Object.freeze({usdCents:50_000,qvitAmount:500_000_000,label:'QVit AI resource credit · $500'})
+  'qvit-ai-credit-500':Object.freeze({usdCents:50_000,qvitAmount:500_000_000,label:'QVit AI resource credit · $500'}),
+  'qvit-ai-credit-1000':Object.freeze({usdCents:100_000,qvitAmount:1_000_000_000,label:'QVit AI resource credit · $1000'})
 });
+const timeAiPackEconomics=pack=>{
+  const grossUsd=Number(pack?.usdCents||0)/100;
+  const voiceLiveMinutes=Math.floor(Number(pack?.qvitAmount||0)/TIME_AI_QVIT_PER_MINUTE);
+  const providerReserveUsd=voiceLiveMinutes*TIME_AI_PROVIDER_RESERVE_USD_PER_MINUTE;
+  const processorReserveUsd=grossUsd*TIME_AI_PROCESSOR_PERCENT_BPS/10_000+TIME_AI_PROCESSOR_FIXED_USD;
+  const contributionUsd=grossUsd-providerReserveUsd-processorReserveUsd;
+  return Object.freeze({
+    grossUsd,
+    voiceLiveMinutes,
+    providerReserveUsd:Number(providerReserveUsd.toFixed(3)),
+    processorReserveUsd:Number(processorReserveUsd.toFixed(3)),
+    contributionUsd:Number(contributionUsd.toFixed(3)),
+    viable:contributionUsd>=0
+  });
+};
 const encoder=new TextEncoder();
 const cors=request=>{
   const origin=request.headers.get('Origin');
@@ -271,7 +294,7 @@ const confirmCheckout=async(request,env)=>{
       packId,
       amountUsd:pack.usdCents/100,
       qvitAmount:pack.qvitAmount,
-      voiceLiveMinutes:Math.floor(pack.qvitAmount/240_000),
+      voiceLiveMinutes:timeAiPackEconomics(pack).voiceLiveMinutes,
       creditStatus,
       voiceReady:creditStatus==='CREDITED',
       walletBinding
@@ -450,4 +473,4 @@ export default {
   }
 };
 
-export {PACKS,STRIPE_TRANSPORT_BOUNDARY,authorizeCheckoutWithQuFense,checkoutDigestInput,confirmCheckout,hmacHex,issueCheckoutConfirmationCapability,issueWalletBinding,qufenseReceiptInvalidReason,stripeForm,validQuFenseReceipt,verifyCheckoutConfirmationCapability,verifyQuIdentifyCheckoutReceipt,verifyStripeSignature};
+export {PACKS,STRIPE_TRANSPORT_BOUNDARY,TIME_AI_QVIT_PER_MINUTE,authorizeCheckoutWithQuFense,checkoutDigestInput,confirmCheckout,hmacHex,issueCheckoutConfirmationCapability,issueWalletBinding,qufenseReceiptInvalidReason,stripeForm,timeAiPackEconomics,validQuFenseReceipt,verifyCheckoutConfirmationCapability,verifyQuIdentifyCheckoutReceipt,verifyStripeSignature};
