@@ -22,7 +22,7 @@ const fakeUsageMeters=()=>({
       if(path==='/activate')return new Response(JSON.stringify({authorized:true,expiresAt:'2026-07-27T05:00:00.000Z'}),{headers:{'Content-Type':'application/json'}});
       if(path==='/bind')return new Response(JSON.stringify({bound:true,expiresAt:'2026-07-27T05:00:00.000Z'}),{headers:{'Content-Type':'application/json'}});
       if(path==='/cancel')return new Response(JSON.stringify({cancelled:true}),{headers:{'Content-Type':'application/json'}});
-      if(path==='/status')return new Response(JSON.stringify({free:{remainingSeconds:600},wallet:{balance:0,topUpAvailable:false},continuation:{customerQVit:240000}}),{headers:{'Content-Type':'application/json'}});
+      if(path==='/status')return new Response(JSON.stringify({free:{remainingSeconds:600},wallet:{balance:0,topUpAvailable:false},continuation:{customerQVit:200000}}),{headers:{'Content-Type':'application/json'}});
       return new Response(JSON.stringify({error:'unexpected_meter_path'}),{status:404,headers:{'Content-Type':'application/json'}});
     }
   })
@@ -337,8 +337,8 @@ test('QuPay status is non-invasive, deduplicated and sends one checkout request'
 test('QuCFA prices one prepaid Aggy Minute without overdraft',()=>{
   const quote=workerModule.aggyBlockQuote();
   assert.equal(quote.durationSeconds,60);
-  assert.equal(quote.customerQVit,240_000);
-  assert.equal(quote.providerReserveUsd,.15);
+  assert.equal(quote.customerQVit,200_000);
+  assert.equal(quote.providerReserveUsd,.125);
   assert.equal(quote.targetMarginBps,3500);
   assert.equal(quote.overdraftAllowed,false);
   assert.equal(quote.unit,'AGGY_MINUTE');
@@ -407,7 +407,7 @@ test('Usage API forwards paid continuation only after an explicit user confirmat
           consentRequired:true,
           wallet:{balance:1_000_000},
           free:{remainingSeconds:0},
-          continuation:{customerQVit:240_000}
+          continuation:{customerQVit:200_000}
         }),{status:402,headers:{'Content-Type':'application/json'}});
       }
     })
@@ -463,7 +463,7 @@ test('Marketplace exhausted state opens a focused continuity dialog and a direct
   assert.match(html,/url\.searchParams\.set\('pack',packId\)/);
   assert.match(html,/type:'secquoia:aggy:open-time-ai'/);
   assert.match(html,/Sin renovación automática/);
-  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-100','qvit-ai-credit-500']){
+  for(const pack of ['qvit-ai-credit-1','qvit-ai-credit-5','qvit-ai-credit-10','qvit-ai-credit-25','qvit-ai-credit-50','qvit-ai-credit-100','qvit-ai-credit-500','qvit-ai-credit-1000']){
     assert.match(html,new RegExp(`data-time-ai-pack="${pack}"`));
   }
 });
@@ -539,7 +539,7 @@ test('Time AI purchase preserves one explicit continuation action and all govern
   assert.match(html,/let qupayCheckoutPending=false/);
   assert.match(html,/aria-busy/);
   assert.match(html,/QuPay–QuFense no respondió/);
-  assert.match(html,/qvit-ai-credit-\(1\|5\|10\|25\|100\|500\)/);
+  assert.match(html,/qvit-ai-credit-\(1\|5\|10\|25\|50\|100\|500\|1000\)/);
   assert.match(html,/id="ai-services"/);
   assert.match(html,/id="aggyUsageMarketplace"[^>]+target="_top"[^>]+rel="noopener"/);
   assert.match(voice,/usageMarketplaceLink\.href=usageMarketplaceUrl/);

@@ -11,7 +11,11 @@ const AGGY_PAID_BLOCK_MS=60*1000;
 const AGGY_MAX_PAID_BLOCKS_DAY=240;
 const AGGY_MAX_PAID_BLOCKS_MONTH=3000;
 const AGGY_PENDING_LEASE_MS=30*1000;
-const AGGY_PROVIDER_RESERVE_USD=.15;
+// QuCFA 2026-08-01: a five-minute/USD retail unit reserves USD 0.125 of
+// provider spend per minute.  QuOptio stops a paid lease at 90% of this
+// ceiling, while the 35% governed gross-margin target rounds the customer
+// debit to exactly 200,000 QVit per minute.
+const AGGY_PROVIDER_RESERVE_USD=.125;
 const AGGY_QUOPTIO_STOP_RATIO=.9;
 const AGGY_RATE_CARD=Object.freeze({
   provider:'openai',
@@ -38,7 +42,7 @@ const AGGY_PAID_BLOCK_QVIT=roundUp(
 );
 const AGGY_QUOPTIO_POLICY=Object.freeze({
   schema:'secquoia.quoptio.aggy-pricing-policy.v1',
-  version:'2026-07-31.1',
+  version:'2026-08-01.1',
   mode:'PREPAID_ONE_MINUTE_MICROLEASE',
   freeSeconds:AGGY_FREE_MS/1000,
   freeScope:'SECQUOIA_ECOSYSTEM_USER',
@@ -882,7 +886,7 @@ const verifyAggyWalletBinding=async(request,secret)=>{
   if(
     payload.schema!=='secquoia.qupay.aggy-wallet-binding.v1'||
     !validRoomId(payload.walletReference)||
-    !/^qvit-ai-credit-(1|5|10|25|100|500)$/.test(String(payload.packId||''))||
+    !/^qvit-ai-credit-(1|5|10|25|50|100|500|1000)$/.test(String(payload.packId||''))||
     !/^cs_live_[A-Za-z0-9_]{16,200}$/.test(String(payload.providerSessionId||''))||
     !Number.isFinite(Number(payload.issuedAt))||
     !Number.isFinite(Number(payload.expiresAt))||

@@ -1,5 +1,20 @@
 # Aggy changelog
 
+## QuCFA policy 2026-08-01.1 (Aggy 1.3.0-rc.1) - 2026-08-01
+
+### QuCFA-normalized Time AI packs
+
+- Normalizes prepaid Voice LIVE time to five minutes per USD for USD 1, 5,
+  10, 25, 50, 100, 500 and 1,000 packages.
+- Lowers the governed per-minute provider reserve to USD 0.125 while retaining
+  the 35% gross-margin target through a 200,000-QVit minute.
+- Keeps QuOptio's 90% provider-cost stop, explicit paid-continuation consent,
+  no overdraft and no silent model downgrade.
+- Adds a conservative QuCFA checkout model (4.5% plus USD 0.30) that proves
+  every package remains contribution-positive; the USD 1 entry pack retains a
+  USD 0.03 modeled buffer and must be re-priced if provider or processor rates
+  exceed the recorded envelope.
+
 All notable Aggy releases are recorded here. Versions follow [Semantic Versioning 2.0.0](https://semver.org/).
 
 ## 1.3.0-rc.1 - 2026-07-31

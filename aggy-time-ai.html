@@ -42,12 +42,14 @@
   'use strict';
   const RELEASE='1.2.12';
   const PACKS=Object.freeze({
-    'qvit-ai-credit-1':Object.freeze({amountUsd:1,minutes:4,label:'Tiempo IA · Inicio'}),
-    'qvit-ai-credit-5':Object.freeze({amountUsd:5,minutes:20,label:'Tiempo IA · Conversación'}),
-    'qvit-ai-credit-10':Object.freeze({amountUsd:10,minutes:41,label:'Tiempo IA · Extendido'}),
-    'qvit-ai-credit-25':Object.freeze({amountUsd:25,minutes:104,label:'Tiempo IA · Flexible'}),
-    'qvit-ai-credit-100':Object.freeze({amountUsd:100,minutes:416,label:'Tiempo IA · Ampliado'}),
-    'qvit-ai-credit-500':Object.freeze({amountUsd:500,minutes:2083,label:'Tiempo IA · Equipos'})
+    'qvit-ai-credit-1':Object.freeze({amountUsd:1,minutes:5,label:'Tiempo IA · Inicio'}),
+    'qvit-ai-credit-5':Object.freeze({amountUsd:5,minutes:25,label:'Tiempo IA · Conversación'}),
+    'qvit-ai-credit-10':Object.freeze({amountUsd:10,minutes:50,label:'Tiempo IA · Extendido'}),
+    'qvit-ai-credit-25':Object.freeze({amountUsd:25,minutes:125,label:'Tiempo IA · Flexible'}),
+    'qvit-ai-credit-50':Object.freeze({amountUsd:50,minutes:250,label:'Tiempo IA · Profesional'}),
+    'qvit-ai-credit-100':Object.freeze({amountUsd:100,minutes:500,label:'Tiempo IA · Ampliado'}),
+    'qvit-ai-credit-500':Object.freeze({amountUsd:500,minutes:2500,label:'Tiempo IA · Equipos'}),
+    'qvit-ai-credit-1000':Object.freeze({amountUsd:1000,minutes:5000,label:'Tiempo IA · Enterprise'})
   });
   const TRUSTED_RETURN_ORIGINS=new Set(['https://secquoia.group','https://www.secquoia.group','https://secquoia.net','https://www.secquoia.net','https://qnq.ooo','https://www.qnq.ooo']);
   const PENDING_KEY='secquoia.aggy.time-ai.pending.v1';
