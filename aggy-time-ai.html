@@ -159,7 +159,9 @@
     const identityReceipt=String(params.get('quidentify_receipt')||existing?.identityReceipt||'');
     if(!/^[A-Za-z0-9_-]{80,1600}\.[a-f0-9]{64}$/i.test(identityReceipt)){
       setStep(2);
-      setStatus('Verifica tu identidad','Abriremos QuIdentify/Okta. Al regresar, Stripe se abrirá automáticamente.');
+      setStatus('Verifica tu identidad','Abriremos QuIdentify/Okta. Al regresar, Stripe se abrirá automáticamente.',{
+        retry:{label:'Continuar con QuIdentify',action:()=>location.assign(identityUrl(pending))}
+      });
       location.assign(identityUrl(pending));
       return;
     }
