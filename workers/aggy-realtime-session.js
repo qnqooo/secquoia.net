@@ -8,6 +8,8 @@ const AGGY_PREVIEW_MAX_MS=90*24*60*60*1000;
 const UNMETERED_ACCESS_MODES=new Set(['CONTRACT_INCLUDED','ECOSYSTEM_PREVIEW']);
 const AGGY_CONTRACT_PROVIDER_BUDGET_USD=2.5;
 const AGGY_PAID_BLOCK_MS=60*1000;
+const AGGY_TIME_AI_QVIT_PER_USD=1_000_000;
+const AGGY_TIME_AI_PACK_USD=new Set([1,5,10,25,50,100,500,1000]);
 const AGGY_MAX_PAID_BLOCKS_DAY=240;
 const AGGY_MAX_PAID_BLOCKS_MONTH=3000;
 const AGGY_PENDING_LEASE_MS=30*1000;
@@ -217,6 +219,20 @@ const aggyBlockQuote=()=>Object.freeze({
   optimizer:{name:'QuOptio',policyVersion:AGGY_QUOPTIO_POLICY.version},
   rateCard:{provider:AGGY_RATE_CARD.provider,model:AGGY_RATE_CARD.model,version:AGGY_RATE_CARD.version,sourceRef:AGGY_RATE_CARD.sourceRef}
 });
+const paymentTermsFromQVit=(qvitAmount,packId='')=>{
+  const qvit=Math.floor(Number(qvitAmount));
+  const amountUsd=qvit/AGGY_TIME_AI_QVIT_PER_USD;
+  if(!Number.isSafeInteger(qvit)||qvit<=0||!Number.isInteger(amountUsd)||!AGGY_TIME_AI_PACK_USD.has(amountUsd))return null;
+  const expectedPackId=`qvit-ai-credit-${amountUsd}`;
+  if(packId&&String(packId)!==expectedPackId)return null;
+  return Object.freeze({
+    amountUsd,
+    amountUsdCents:amountUsd*100,
+    voiceLiveMinutes:qvit/AGGY_PAID_BLOCK_QVIT,
+    packId:expectedPackId,
+    qvitAmount:qvit
+  });
+};
 const evaluateQuOptioDecision=({account,entitlement,freeRemainingMs,paidContinuationConfirmed=false,now=Date.now()})=>{
   const contractActive=UNMETERED_ACCESS_MODES.has(entitlement?.accessMode)&&Number(entitlement?.expiresAtMs)>now;
   let mode='TOP_UP_REQUIRED';
@@ -560,6 +576,15 @@ class AggyUsageMeter {
           payload TEXT NOT NULL,
           created_at_ms INTEGER NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS payment_acknowledgments (
+          event_id TEXT PRIMARY KEY,
+          acknowledgment_id TEXT NOT NULL UNIQUE,
+          amount_usd_cents INTEGER NOT NULL,
+          voice_live_minutes INTEGER NOT NULL,
+          pack_id TEXT NOT NULL,
+          confirmed_at_ms INTEGER NOT NULL,
+          acknowledged_at_ms INTEGER
+        );
       `);
       for(const migration of [
         "ALTER TABLE leases ADD COLUMN access_mode TEXT NOT NULL DEFAULT 'VISITOR_TRIAL'",
@@ -609,6 +634,40 @@ class AggyUsageMeter {
       eventId,eventType,qvitDelta,balance,JSON.stringify(payload||{}),now
     );
   }
+  pendingPaymentAcknowledgment(){
+    const latest=[...this.sql.exec(
+      "SELECT event_id,qvit_delta,created_at_ms FROM ledger WHERE event_type = 'QUPAY_CONFIRMED_QVIT_CREDIT' ORDER BY created_at_ms DESC LIMIT 1"
+    )][0];
+    if(!latest)return null;
+    let acknowledgment=[...this.sql.exec('SELECT * FROM payment_acknowledgments WHERE event_id = ?',latest.event_id)][0];
+    if(!acknowledgment){
+      const terms=paymentTermsFromQVit(Number(latest.qvit_delta));
+      if(!terms)return null;
+      const acknowledgmentId=crypto.randomUUID();
+      this.sql.exec(
+        'INSERT INTO payment_acknowledgments (event_id,acknowledgment_id,amount_usd_cents,voice_live_minutes,pack_id,confirmed_at_ms) VALUES (?,?,?,?,?,?)',
+        latest.event_id,acknowledgmentId,terms.amountUsdCents,terms.voiceLiveMinutes,terms.packId,Number(latest.created_at_ms)
+      );
+      acknowledgment={
+        event_id:latest.event_id,
+        acknowledgment_id:acknowledgmentId,
+        amount_usd_cents:terms.amountUsdCents,
+        voice_live_minutes:terms.voiceLiveMinutes,
+        pack_id:terms.packId,
+        confirmed_at_ms:Number(latest.created_at_ms),
+        acknowledged_at_ms:null
+      };
+    }
+    if(acknowledgment.acknowledged_at_ms)return null;
+    return {
+      schema:'secquoia.aggy.payment-acknowledgment.v1',
+      acknowledgmentId:String(acknowledgment.acknowledgment_id),
+      amountUsd:Number(acknowledgment.amount_usd_cents)/100,
+      voiceLiveMinutes:Number(acknowledgment.voice_live_minutes),
+      packId:String(acknowledgment.pack_id),
+      confirmedAt:new Date(Number(acknowledgment.confirmed_at_ms)).toISOString()
+    };
+  }
   closeExpired(now){
     const leases=[...this.sql.exec("SELECT * FROM leases WHERE status IN ('PENDING','ACTIVE') AND expires_at_ms <= ?",now)];
     for(const lease of leases){
@@ -630,7 +689,7 @@ class AggyUsageMeter {
       this.ledger(`settle:${lease.lease_id}`,'QUCFA_QVIT_LEASE_SETTLED',0,{kind:lease.kind,reason:'TIME_LIMIT',chargedQVit:lease.reserved_qvit},now);
     }
   }
-  status(now=Date.now(),entitlement=null){
+  status(now=Date.now(),entitlement=null,includePendingPaymentAcknowledgment=false){
     this.rollover(now);
     this.closeExpired(now);
     const account=this.account();
@@ -639,6 +698,7 @@ class AggyUsageMeter {
     const includedActive=UNMETERED_ACCESS_MODES.has(entitlement?.accessMode)&&Number(entitlement.expiresAtMs)>now;
     const publicLeaseKind=UNMETERED_ACCESS_MODES.has(lease?.access_mode)?'CONTRACT':lease?.kind;
     const quOptioDecision=evaluateQuOptioDecision({account,entitlement,freeRemainingMs,now});
+    const pendingPaymentAcknowledgment=includePendingPaymentAcknowledgment?this.pendingPaymentAcknowledgment():null;
     return {
       schema:'secquoia.aggy.usage-status.v1',
       status:lease?'LEASE_ACTIVE':includedActive?entitlement.accessMode:freeRemainingMs?'FREE_AVAILABLE':Number(account.qvit_balance)>=AGGY_PAID_BLOCK_QVIT?'PAID_AVAILABLE':'TOP_UP_REQUIRED',
@@ -667,7 +727,8 @@ class AggyUsageMeter {
       },
       activeLease:lease?{leaseId:lease.lease_id,kind:publicLeaseKind,status:lease.status,expiresAt:new Date(Number(lease.expires_at_ms)).toISOString()}:null,
       engines:['QuOptio','QuCFA','QVit','QuPay','QuIdentify','QuFense','QuAudit'],
-      audit:'SERVER_SIDE_SQLITE_LEDGER'
+      audit:'SERVER_SIDE_SQLITE_LEDGER',
+      ...(includePendingPaymentAcknowledgment?{pendingPaymentAcknowledgment}:{})
     };
   }
   async openLease(body,now){
@@ -814,18 +875,41 @@ class AggyUsageMeter {
   credit(body,now){
     const amount=Math.floor(Number(body.qvitAmount));
     const eventId=String(body.eventId||'').slice(0,180);
-    if(!eventId||!Number.isSafeInteger(amount)||amount<=0||amount>1_000_000_000)return this.reply({error:'invalid_credit'},400);
+    const terms=paymentTermsFromQVit(amount,body.packId);
+    if(
+      !eventId||!terms||
+      (body.amountUsd!==undefined&&Number(body.amountUsd)!==terms.amountUsd)||
+      (body.voiceLiveMinutes!==undefined&&Number(body.voiceLiveMinutes)!==terms.voiceLiveMinutes)
+    )return this.reply({error:'invalid_credit'},400);
     const existing=[...this.sql.exec('SELECT event_id FROM ledger WHERE event_id = ?',eventId)][0];
     if(existing)return this.reply({credited:true,duplicate:true,balanceQVit:Number(this.account().qvit_balance)});
     this.sql.exec('UPDATE account SET qvit_balance = qvit_balance + ? WHERE id = 1',amount);
-    this.ledger(eventId,'QUPAY_CONFIRMED_QVIT_CREDIT',amount,{receiptId:String(body.receiptId||'').slice(0,180)},now);
+    this.ledger(eventId,'QUPAY_CONFIRMED_QVIT_CREDIT',amount,{packId:terms.packId,amountUsd:terms.amountUsd,voiceLiveMinutes:terms.voiceLiveMinutes},now);
+    this.sql.exec(
+      'INSERT INTO payment_acknowledgments (event_id,acknowledgment_id,amount_usd_cents,voice_live_minutes,pack_id,confirmed_at_ms) VALUES (?,?,?,?,?,?)',
+      eventId,crypto.randomUUID(),terms.amountUsdCents,terms.voiceLiveMinutes,terms.packId,now
+    );
     return this.reply({credited:true,duplicate:false,balanceQVit:Number(this.account().qvit_balance)});
+  }
+  acknowledgePayment(body,now){
+    const acknowledgmentId=String(body.acknowledgmentId||'');
+    if(
+      !/^[0-9a-f-]{36}$/i.test(acknowledgmentId)||
+      body.audiblePlaybackStarted!==true||
+      body.responseCompleted!==true
+    )return this.reply({error:'invalid_payment_acknowledgment'},400);
+    const row=[...this.sql.exec('SELECT * FROM payment_acknowledgments WHERE acknowledgment_id = ?',acknowledgmentId)][0];
+    if(!row)return this.reply({error:'payment_acknowledgment_not_found'},404);
+    if(row.acknowledged_at_ms)return this.reply({acknowledged:true,duplicate:true});
+    this.sql.exec('UPDATE payment_acknowledgments SET acknowledged_at_ms = ? WHERE acknowledgment_id = ?',now,acknowledgmentId);
+    this.ledger(`payment-ack:${acknowledgmentId}`,'AGGY_PAYMENT_GREETING_AUDIBLE',0,{acknowledgmentId},now);
+    return this.reply({acknowledged:true,duplicate:false});
   }
   async fetch(request){
     const url=new URL(request.url);
     const now=Date.now();
     const body=await this.body(request);
-    if(url.pathname==='/status'&&(request.method==='GET'||request.method==='POST'))return this.reply(this.status(now,body.entitlement));
+    if(url.pathname==='/status'&&(request.method==='GET'||request.method==='POST'))return this.reply(this.status(now,body.entitlement,body.includePendingPaymentAcknowledgment===true));
     if(url.pathname==='/lease'&&request.method==='POST')return this.openLease(body,now);
     if(url.pathname==='/activate'&&request.method==='POST')return this.activate(body,now);
     if(url.pathname==='/bind'&&request.method==='POST')return this.bindProvider(body,now);
@@ -834,6 +918,7 @@ class AggyUsageMeter {
     if(url.pathname==='/usage'&&request.method==='POST')return this.usage(body,now);
     if(url.pathname==='/settle'&&request.method==='POST')return this.settle(body,now);
     if(url.pathname==='/credit'&&request.method==='POST')return this.credit(body,now);
+    if(url.pathname==='/payment-ack'&&request.method==='POST')return this.acknowledgePayment(body,now);
     return this.reply({error:'not_found'},404);
   }
   async alarm(){
@@ -1104,7 +1189,7 @@ export default {
       const meter=await meterStub(env,request,walletBinding?.walletReference,entitlement);
       if(!meter)return json({error:'invalid_usage_subject'},400,request);
       if(url.pathname==='/api/aggy/usage/status'&&request.method==='GET'){
-        const response=await meterRequest(meter.stub,'/status','POST',{entitlement});
+        const response=await meterRequest(meter.stub,'/status','POST',{entitlement,includePendingPaymentAcknowledgment:Boolean(walletBinding)});
         const body=await response.json();
         body.wallet.reference=meter.reference;
         body.wallet.topUpAvailable=Boolean(env.AGGY_QUPAY_WEBHOOK_SECRET);
@@ -1119,6 +1204,16 @@ export default {
           paidContinuationRequiresVerifiedQuPayWebhook:!entitlement
         };
         return json(body,response.status,request);
+      }
+      if(url.pathname==='/api/aggy/usage/payment-ack'&&request.method==='POST'){
+        if(!walletBinding)return json({error:'signed_wallet_binding_required',failClosed:true},401,request);
+        let acknowledgment;
+        try{acknowledgment=await safeJson(request)}catch(error){return json({error:error.message},400,request)}
+        return roomResponse(await meterRequest(meter.stub,'/payment-ack','POST',{
+          acknowledgmentId:String(acknowledgment.acknowledgmentId||''),
+          audiblePlaybackStarted:acknowledgment.audiblePlaybackStarted===true,
+          responseCompleted:acknowledgment.responseCompleted===true
+        }),request);
       }
       if(url.pathname==='/api/aggy/usage/lease'&&request.method==='POST'){
         let leaseRequest;
@@ -1318,6 +1413,7 @@ export {
   aggyBlockQuote,
   evaluateQuOptioDecision,
   normalizeRealtimeUsage,
+  paymentTermsFromQVit,
   issueAggyEntitlement,
   quoteRealtimeUsage,
   qugeo,

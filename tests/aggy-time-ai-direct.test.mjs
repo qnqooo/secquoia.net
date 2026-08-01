@@ -67,7 +67,7 @@ test('post-payment confirmation crosses the Stripe return and is consumed only a
   assert.match(voice,/paymentGreetingAwaitingCompletion=Boolean\(paid\)/);
   assert.match(voice,/paymentGreetingResponseCompleted=true/);
   assert.match(voice,/remoteAudioPlaybackStarted=true/);
-  assert.match(voice,/if\(!paymentGreetingAwaitingCompletion\|\|!paymentGreetingResponseCompleted\|\|!remoteAudioPlaybackStarted\)return/);
+  assert.match(voice,/if\(!paymentGreetingAwaitingCompletion\|\|!paymentGreetingResponseCompleted\|\|!remoteAudioPlaybackStarted\|\|paymentGreetingAckInFlight\)return/);
   assert.match(voice,/remoteAudio\.play\(\)\.then\(confirmPlayback\)/);
   assert.match(voice,/if\(paymentGreetingAwaitingCompletion\)\{/);
   assert.doesNotMatch(voice,/if\(paid\)\{\s*sessionStorage\.removeItem\(paymentThankYouKey\)/);
@@ -88,7 +88,7 @@ test('post-payment confirmation crosses the Stripe return and is consumed only a
   assert.match(embed,/history\.replaceState\(history\.state,'',sanitized\.href\)/);
   assert.match(market,/function setAggyPaymentMoment\(open\)\{aggyPaymentMoment\.hidden=!open;clearTimeout\(aggyPaymentTimer\);aggyPaymentTimer=0\}/);
   assert.doesNotMatch(market,/aggyPaymentTimer=setTimeout/);
-  assert.match(market,/aggy-realtime-voice\.js\?v=1\.3\.0-rc\.1-postpay-20260801/);
+  assert.match(market,/aggy-realtime-voice\.js\?v=1\.3\.0-rc\.1-serverack-20260801/);
 });
 
 test('cross-site payment handoff preserves wallet, exact amount and minutes without URL secrets',()=>{

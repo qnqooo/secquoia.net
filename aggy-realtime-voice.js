@@ -95,6 +95,8 @@
   let postPaymentGreeting=storedPaymentGreeting();
   let paymentGreetingAwaitingCompletion=false;
   let paymentGreetingResponseCompleted=false;
+  let paymentGreetingInFlight=null;
+  let paymentGreetingAckInFlight=false;
   let remoteAudioPlaybackStarted=false;
   let pendingReadAloud='';
   let usageLease=null;
@@ -158,12 +160,49 @@
     window.dispatchEvent(new CustomEvent('secquoia:aggy:payment-confirmed',{detail}));
     if(window.parent!==window&&parentOrigin)window.parent.postMessage(detail,parentOrigin);
   };
-  const completePaymentGreetingIfAudible=()=>{
-    if(!paymentGreetingAwaitingCompletion||!paymentGreetingResponseCompleted||!remoteAudioPlaybackStarted)return;
-    paymentGreetingAwaitingCompletion=false;
-    paymentGreetingResponseCompleted=false;
-    sessionStorage.removeItem(paymentThankYouKey);
-    localStorage.removeItem(paymentThankYouFallbackKey);
+  const paymentGreetingFromStatus=status=>{
+    const value=status?.pendingPaymentAcknowledgment;
+    if(
+      value?.schema!=='secquoia.aggy.payment-acknowledgment.v1'||
+      !/^[0-9a-f-]{36}$/i.test(String(value.acknowledgmentId||''))||
+      !(Number(value.amountUsd)>0)||
+      !(Number(value.voiceLiveMinutes)>0)
+    )return null;
+    return Object.freeze({
+      acknowledgmentId:String(value.acknowledgmentId),
+      amountUsd:Number(value.amountUsd),
+      voiceLiveMinutes:Number(value.voiceLiveMinutes),
+      packId:String(value.packId||'')
+    });
+  };
+  const completePaymentGreetingIfAudible=async()=>{
+    if(!paymentGreetingAwaitingCompletion||!paymentGreetingResponseCompleted||!remoteAudioPlaybackStarted||paymentGreetingAckInFlight)return;
+    paymentGreetingAckInFlight=true;
+    const greeting=paymentGreetingInFlight;
+    try{
+      if(greeting?.acknowledgmentId){
+        const response=await fetchWithTimeout(`${usageEndpoint}/payment-ack`,{
+          method:'POST',
+          credentials:'omit',
+          headers:authorizedHeaders({'Content-Type':'application/json'}),
+          body:JSON.stringify({
+            acknowledgmentId:greeting.acknowledgmentId,
+            audiblePlaybackStarted:true,
+            responseCompleted:true
+          })
+        },6000);
+        if(!response.ok)throw new Error('payment_acknowledgment_failed');
+      }
+      paymentGreetingAwaitingCompletion=false;
+      paymentGreetingResponseCompleted=false;
+      paymentGreetingInFlight=null;
+      sessionStorage.removeItem(paymentThankYouKey);
+      localStorage.removeItem(paymentThankYouFallbackKey);
+    }catch(error){
+      console.warn('Aggy audible payment acknowledgment pending',String(error?.message||'unknown'));
+    }finally{
+      paymentGreetingAckInFlight=false;
+    }
   };
   if(postPaymentGreeting)setTimeout(()=>publishPaymentConfirmation(postPaymentGreeting),0);
   const recoverPaidCheckout=async()=>{
@@ -232,6 +271,12 @@
 
   const renderUsageStatus=status=>{
     lastUsageStatus=status;
+    const recoveredPayment=paymentGreetingFromStatus(status);
+    if(recoveredPayment&&!postPaymentGreeting&&!paymentGreetingInFlight){
+      postPaymentGreeting=recoveredPayment;
+      sessionStorage.setItem(paymentThankYouKey,JSON.stringify(recoveredPayment));
+      publishPaymentConfirmation(recoveredPayment);
+    }
     const accessMode=status?.access?.mode||'VISITOR_TRIAL';
     const contractIncluded=isUnmeteredAccess(accessMode);
     const previewAccess=accessMode==='ECOSYSTEM_PREVIEW';
@@ -558,6 +603,7 @@
     postPaymentGreeting=null;
     paymentGreetingAwaitingCompletion=Boolean(paid);
     paymentGreetingResponseCompleted=false;
+    paymentGreetingInFlight=paid||null;
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
@@ -650,7 +696,7 @@
       caption.dataset.transcript='';
       if(paymentGreetingAwaitingCompletion){
         paymentGreetingResponseCompleted=true;
-        completePaymentGreetingIfAudible();
+        void completePaymentGreetingIfAudible();
       }
       setState('listening','Continúa cuando quieras',completedTranscript||'La sesión permanece abierta y lista para escucharte.','EN VIVO');
       if(pendingReadAloud)setTimeout(sendPendingReadAloud,120);
@@ -727,7 +773,7 @@
         remoteAudio.srcObject=event.streams[0];
         const confirmPlayback=()=>{
           remoteAudioPlaybackStarted=true;
-          completePaymentGreetingIfAudible();
+          void completePaymentGreetingIfAudible();
         };
         remoteAudio.play().then(confirmPlayback).catch(()=>{
           document.addEventListener('pointerdown',()=>remoteAudio?.play().then(confirmPlayback).catch(()=>{}),{once:true});
@@ -858,7 +904,7 @@
   const prewarmVoice=async()=>{
     setState('connecting','Aggy Voice se está preparando','Verificando el servicio seguro sin abrir el micrófono ni consumir una sesión del proveedor.','ACTIVANDO');
     try{
-      const paidConfirmation=(await paymentReturnPromise)||postPaymentGreeting;
+      let paidConfirmation=(await paymentReturnPromise)||postPaymentGreeting;
       const [voiceResult,qugeoResult,knowledgeResult,usageResult]=await Promise.allSettled([
         fetchVoiceHealth(),
         fetchWithTimeout(qugeoEndpoint,{method:'GET',credentials:'omit',cache:'no-store'},4500),
@@ -867,6 +913,11 @@
       ]);
       if(voiceResult.status!=='fulfilled')throw new Error('voice_service_unavailable');
       if(usageResult.status!=='fulfilled')throw new Error('usage_meter_unavailable');
+      const serverPayment=paymentGreetingFromStatus(usageResult.value);
+      if(serverPayment&&(!paidConfirmation||(
+        Number(paidConfirmation.amountUsd)===serverPayment.amountUsd&&
+        Number(paidConfirmation.voiceLiveMinutes)===serverPayment.voiceLiveMinutes
+      )))paidConfirmation=Object.freeze({...serverPayment,...(paidConfirmation||{})});
       const response=voiceResult.value;
       const status=await response.json();
       if(!response.ok||status.status!=='ready')throw new Error('voice_service_unavailable');

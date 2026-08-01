@@ -223,8 +223,12 @@ test('Authorized Checkout carries QuFense evidence into Stripe metadata',async()
 
 test('Paid Checkout confirmation returns a signed wallet binding and 25-minute USD 5 pack',async()=>{
   const originalFetch=globalThis.fetch;
-  globalThis.fetch=async url=>{
-    if(String(url).startsWith('https://aggy.secquoia.group/'))return new Response(JSON.stringify({credited:true,duplicate:false}),{status:200,headers:{'Content-Type':'application/json'}});
+  let creditPayload=null;
+  globalThis.fetch=async(url,init)=>{
+    if(String(url).startsWith('https://aggy.secquoia.group/')){
+      creditPayload=JSON.parse(init.body);
+      return new Response(JSON.stringify({credited:true,duplicate:false}),{status:200,headers:{'Content-Type':'application/json'}});
+    }
     assert.match(String(url),/api\.stripe\.com\/v1\/checkout\/sessions\/cs_live_/);
     return new Response(JSON.stringify({
       id:'cs_live_paid_confirmation_123456',
@@ -258,6 +262,9 @@ test('Paid Checkout confirmation returns a signed wallet binding and 25-minute U
     assert.equal(body.qvitAmount,5_000_000);
     assert.equal(body.voiceLiveMinutes,25);
     assert.equal(body.creditStatus,'CREDITED');
+    assert.equal(creditPayload.amountUsd,5);
+    assert.equal(creditPayload.voiceLiveMinutes,25);
+    assert.equal(creditPayload.packId,'qvit-ai-credit-5');
     assert.match(body.walletBinding,/^[A-Za-z0-9_-]+\.[0-9a-f]{64}$/);
   }finally{
     globalThis.fetch=originalFetch;
