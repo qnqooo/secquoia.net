@@ -94,6 +94,8 @@
   let greetingSent=false;
   let postPaymentGreeting=storedPaymentGreeting();
   let paymentGreetingAwaitingCompletion=false;
+  let paymentGreetingResponseCompleted=false;
+  let remoteAudioPlaybackStarted=false;
   let pendingReadAloud='';
   let usageLease=null;
   let usageHeartbeat=null;
@@ -155,6 +157,13 @@
     });
     window.dispatchEvent(new CustomEvent('secquoia:aggy:payment-confirmed',{detail}));
     if(window.parent!==window&&parentOrigin)window.parent.postMessage(detail,parentOrigin);
+  };
+  const completePaymentGreetingIfAudible=()=>{
+    if(!paymentGreetingAwaitingCompletion||!paymentGreetingResponseCompleted||!remoteAudioPlaybackStarted)return;
+    paymentGreetingAwaitingCompletion=false;
+    paymentGreetingResponseCompleted=false;
+    sessionStorage.removeItem(paymentThankYouKey);
+    localStorage.removeItem(paymentThankYouFallbackKey);
   };
   if(postPaymentGreeting)setTimeout(()=>publishPaymentConfirmation(postPaymentGreeting),0);
   const recoverPaidCheckout=async()=>{
@@ -548,6 +557,7 @@
     const paidMinutes=Math.max(1,Math.round(Number(paid?.voiceLiveMinutes||0)));
     postPaymentGreeting=null;
     paymentGreetingAwaitingCompletion=Boolean(paid);
+    paymentGreetingResponseCompleted=false;
     channel.send(JSON.stringify({
       type:'response.create',
       response:{
@@ -639,9 +649,8 @@
       const completedTranscript=(caption.dataset.transcript||'').trim();
       caption.dataset.transcript='';
       if(paymentGreetingAwaitingCompletion){
-        paymentGreetingAwaitingCompletion=false;
-        sessionStorage.removeItem(paymentThankYouKey);
-        localStorage.removeItem(paymentThankYouFallbackKey);
+        paymentGreetingResponseCompleted=true;
+        completePaymentGreetingIfAudible();
       }
       setState('listening','Continúa cuando quieras',completedTranscript||'La sesión permanece abierta y lista para escucharte.','EN VIVO');
       if(pendingReadAloud)setTimeout(sendPendingReadAloud,120);
@@ -673,6 +682,7 @@
 
     connecting=true;
     greetingSent=false;
+    remoteAudioPlaybackStarted=false;
     postPaymentGreeting=postPayment||postPaymentGreeting||storedPaymentGreeting();
     startButton.disabled=true;
     setState('connecting','Conectando con Aggy','Solicitando una sesión WebRTC efímera al backend seguro.','CONECTANDO');
@@ -715,8 +725,12 @@
       document.body.append(remoteAudio);
       peer.ontrack=event=>{
         remoteAudio.srcObject=event.streams[0];
-        remoteAudio.play().catch(()=>{
-          document.addEventListener('pointerdown',()=>remoteAudio?.play().catch(()=>{}),{once:true});
+        const confirmPlayback=()=>{
+          remoteAudioPlaybackStarted=true;
+          completePaymentGreetingIfAudible();
+        };
+        remoteAudio.play().then(confirmPlayback).catch(()=>{
+          document.addEventListener('pointerdown',()=>remoteAudio?.play().then(confirmPlayback).catch(()=>{}),{once:true});
         });
       };
       peer.onconnectionstatechange=()=>{

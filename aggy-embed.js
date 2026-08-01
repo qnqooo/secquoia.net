@@ -7,6 +7,7 @@
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
   const version='1.3.0-rc.1';
+  const assetRevision='1.3.0-rc.1-postpay-20260801';
   const paymentReturn=(()=>{
     try{
       const values=new URLSearchParams(location.hash.replace(/^#/,''));
@@ -23,7 +24,7 @@
     url.searchParams.set('embed','1');
     url.searchParams.set('aggy','1');
     url.searchParams.set('site',site);
-    url.searchParams.set('v',version);
+    url.searchParams.set('v',assetRevision);
     if(paymentReturn)url.hash=new URLSearchParams({payment:'success',session_id:paymentReturn}).toString();
     return url.href;
   })();
