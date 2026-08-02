@@ -14,6 +14,12 @@
   "vars": {
     "SQAILE_LLM_POLICY": "FAIL_CLOSED_CONFIGURED_PROVIDERS_ONLY"
   },
+  "services": [
+    {
+      "binding": "QUFENSE",
+      "service": "qufense-edge"
+    }
+  ],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 0.1

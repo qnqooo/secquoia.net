@@ -2,6 +2,7 @@ import {AGGY_CONSULTANT_PLAYBOOK,consultantSystemMessage} from './aggy-consultan
 
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
 const MAX_BODY_BYTES=64*1024;
+const MAX_CDR_BYTES=32*1024*1024;
 const MAX_MESSAGE_CHARS=24_000;
 const MAX_WEBSITE_BYTES=1_250_000;
 const MAX_WEBSITE_TEXT_CHARS=60_000;
@@ -59,6 +60,78 @@ const json=(request,body,status=200)=>new Response(JSON.stringify(body),{
   status,
   headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...cors(request)}
 });
+const sha256Hex=async value=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',value))].map(byte=>byte.toString(16).padStart(2,'0')).join('');
+const safeEqual=(left,right)=>{
+  const a=new TextEncoder().encode(String(left||''));
+  const b=new TextEncoder().encode(String(right||''));
+  if(a.length!==b.length)return false;
+  let mismatch=0;
+  for(let index=0;index<a.length;index++)mismatch|=a[index]^b[index];
+  return mismatch===0;
+};
+const cdrConfigured=env=>Boolean(
+  String(env?.QUHUB_MESH_TOKEN||'').length>=32&&
+  String(env?.GLASSWALL_BASE_URL||'').startsWith('https://')&&
+  (env?.GLASSWALL_API_TOKEN||(env?.GLASSWALL_USERNAME&&env?.GLASSWALL_PASSWORD))&&
+  env?.QUFENSE
+);
+const glasswallEndpoint=value=>{
+  const base=new URL(String(value||''));
+  if(base.protocol!=='https:')throw new Error('glasswall_endpoint_rejected');
+  return new URL('/api/v3/cdr-file?response-content=noAnalysisReport&generate-hash-types=SHA256',base);
+};
+const glasswallAuth=env=>{
+  if(env.GLASSWALL_API_TOKEN)return `Bearer ${env.GLASSWALL_API_TOKEN}`;
+  if(env.GLASSWALL_USERNAME&&env.GLASSWALL_PASSWORD)return `Basic ${btoa(`${env.GLASSWALL_USERNAME}:${env.GLASSWALL_PASSWORD}`)}`;
+  throw new Error('glasswall_credentials_not_configured');
+};
+const safeCdrFilename=value=>{
+  const name=String(value||'').trim();
+  if(!/^[A-Za-z0-9][A-Za-z0-9._ -]{0,179}$/.test(name)||name.includes('..'))throw new Error('cdr_filename_invalid');
+  return name;
+};
+async function sanitizeCdr(request,env,{fetchImpl=fetch}={}){
+  const bearer=String(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
+  if(!safeEqual(bearer,env.QUHUB_MESH_TOKEN)||bearer.length<32)return json(request,{error:'mesh_authorization_rejected',failClosed:true},401);
+  if(!cdrConfigured(env))return json(request,{error:'cdr_provider_not_configured',failClosed:true},503);
+  const declared=Number(request.headers.get('Content-Length')||0);
+  if(declared>MAX_CDR_BYTES)return json(request,{error:'payload_too_large',failClosed:true},413);
+  let input;
+  try{input=new Uint8Array(await request.arrayBuffer())}catch{return json(request,{error:'cdr_body_unreadable',failClosed:true},400)}
+  if(!input.length)return json(request,{error:'cdr_body_empty',failClosed:true},400);
+  if(input.length>MAX_CDR_BYTES)return json(request,{error:'payload_too_large',failClosed:true},413);
+  let filename;
+  try{filename=safeCdrFilename(request.headers.get('X-File-Name'))}catch(error){return json(request,{error:error.message,failClosed:true},400)}
+  const inputSha256=await sha256Hex(input);
+  const form=new FormData();
+  form.append('file',new Blob([input],{type:request.headers.get('Content-Type')||'application/octet-stream'}),filename);
+  let providerResponse;
+  try{
+    providerResponse=await fetchImpl(glasswallEndpoint(env.GLASSWALL_BASE_URL),{
+      method:'POST',headers:{Authorization:glasswallAuth(env),Accept:'application/octet-stream'},body:form,signal:AbortSignal.timeout(90_000)
+    });
+  }catch{return json(request,{error:'cdr_provider_unavailable',failClosed:true},503)}
+  if(!providerResponse.ok)return json(request,{error:'cdr_provider_rejected',providerStatus:providerResponse.status,failClosed:true},providerResponse.status===422?422:503);
+  const rebuilt=new Uint8Array(await providerResponse.arrayBuffer());
+  if(!rebuilt.length||rebuilt.length>MAX_CDR_BYTES)return json(request,{error:'cdr_output_invalid',failClosed:true},503);
+  const outputSha256=await sha256Hex(rebuilt);
+  let authorization;
+  try{
+    const decision=await env.QUFENSE.fetch('https://qufense.internal/v1/cdr/authorize',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        schema:'secquoia.quhub.cdr.authorization-request.v1',provider:'glasswall-halo',inputSha256,outputSha256,inputBytes:input.length,outputBytes:rebuilt.length
+      })
+    });
+    authorization=await decision.json();
+    if(!decision.ok||authorization.allowed!==true||!/^QF-CDR-[A-Za-z0-9-]+$/.test(String(authorization.evidenceId||'')))throw new Error('qufense_denied');
+  }catch{return json(request,{error:'qufense_cdr_authorization_unavailable',failClosed:true},503)}
+  const lineage=`QH-CDR-${crypto.randomUUID()}`;
+  return new Response(rebuilt,{status:200,headers:{
+    'Content-Type':providerResponse.headers.get('Content-Type')||'application/octet-stream','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',
+    'X-QuHub-Lineage-Id':lineage,'X-QuHub-Input-Sha256':inputSha256,'X-QuHub-Output-Sha256':outputSha256,
+    'X-QuHub-Provider':'glasswall-halo','X-QuHub-Audit-Id':`QA-CDR-${crypto.randomUUID()}`,'X-QuHub-QuFense-Evidence-Id':authorization.evidenceId
+  }});
+}
 
 const clean=(value,max=MAX_MESSAGE_CHARS)=>String(value??'').replace(/\0/g,'').trim().slice(0,max);
 const outputText=data=>data?.output_text||data?.output?.flatMap(item=>item.content||[]).map(item=>item.text||item.output_text||'').join('')||'';
@@ -370,6 +443,10 @@ const selectProvider=(request,env)=>{
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
+    if(url.pathname==='/healthz'&&request.method==='GET')return json(request,{
+      service:'QuHub',status:'alive',productionReady:cdrConfigured(env),cdr:{provider:'glasswall-halo',configured:cdrConfigured(env),failClosed:true},llmProviders:catalog(env).filter(provider=>provider.available).map(provider=>provider.id)
+    },cdrConfigured(env)?200:503);
+    if(url.pathname==='/v1/cdr/sanitize'&&request.method==='POST')return sanitizeCdr(request,env);
     if(request.method==='OPTIONS'){
       if(!ALLOWED_ORIGINS.has(request.headers.get('Origin')))return json(request,{error:'origin_not_allowed'},403);
       return new Response(null,{status:204,headers:cors(request)});
@@ -449,4 +526,5 @@ export {
   relevantWebsiteText,
   selectProvider,
   websiteGroundingMessage
+  ,sanitizeCdr
 };

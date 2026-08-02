@@ -131,7 +131,7 @@ const corsHeaders=request=>{
   return {
     'Access-Control-Allow-Origin':origin,
     'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
-    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Visitor-ID, X-Aggy-Wallet-Binding, X-Aggy-Lease, X-Aggy-Lease-Capability, X-Aggy-File-Name, X-Aggy-Ingress-Kind, X-QuPay-Signature',
+    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Room-Capability, X-Aggy-Visitor-ID, X-Aggy-Wallet-Binding, X-Aggy-Lease, X-Aggy-Lease-Capability, X-Aggy-File-Name, X-Aggy-Ingress-Kind, X-QuPay-Signature',
     ...AGGY_LEASE_CORS,
     'Access-Control-Expose-Headers':`${AGGY_LEASE_CORS['Access-Control-Expose-Headers']}, X-QuHub-Lineage-Id, X-QuHub-Input-Sha256, X-QuHub-Output-Sha256, X-QuHub-Provider, X-QuHub-Audit-Id, X-QuHub-QuFense-Evidence-Id, X-Aggy-Next-Step`,
     'Access-Control-Max-Age':'86400',
@@ -537,7 +537,7 @@ class AggyChatRoom {
     });
   }
   async authorized(request){
-    const token=(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
+    const token=request.headers.get('X-Aggy-Room-Capability')||(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
     if(!validToken(token))return false;
     const hash=await sha256Hex(token);
     const row=[...this.sql.exec('SELECT value FROM room_config WHERE key = ?', 'capability_hash')][0];
@@ -594,6 +594,113 @@ class AggyChatRoom {
       return this.reply({schema:'secquoia.aggy.quvault-ciphertext-page.v1',messages});
     }
     return this.reply({error:'not_found'},404);
+  }
+}
+
+const MAX_VAULT_FILE_BYTES=32*1024*1024;
+const VAULT_CHUNK_BYTES=512*1024;
+const validVaultObjectId=value=>/^[0-9a-f-]{36}$/i.test(String(value||''));
+const validateVaultHeaders=headers=>{
+  const ciphertextSha256=String(headers.get('X-Aggy-Ciphertext-Sha256')||'').toLowerCase();
+  const cdrLineage=String(headers.get('X-QuHub-Lineage-Id')||'');
+  const qufenseEvidenceId=String(headers.get('X-QuFense-Evidence-Id')||'');
+  return headers.get('X-Aggy-Crypto-Profile')==='E2EE/PQC'&&
+    headers.get('Content-Type')==='application/octet-stream'&&
+    /^[0-9a-f]{64}$/.test(ciphertextSha256)&&
+    /^QH-CDR-[A-Za-z0-9-]+$/.test(cdrLineage)&&
+    /^QF-CDR-[A-Za-z0-9-]+$/.test(qufenseEvidenceId)
+      ?{ciphertextSha256,cdrLineage,qufenseEvidenceId}:null;
+};
+
+class AggyVault {
+  constructor(ctx){
+    this.ctx=ctx;
+    this.sql=ctx.storage.sql;
+    this.sql.exec(`
+      CREATE TABLE IF NOT EXISTS vault_config (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS objects (
+        object_id TEXT PRIMARY KEY,
+        ciphertext_sha256 TEXT NOT NULL,
+        byte_length INTEGER NOT NULL,
+        chunk_count INTEGER NOT NULL,
+        metadata TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS chunks (
+        object_id TEXT NOT NULL,
+        chunk_index INTEGER NOT NULL,
+        payload BLOB NOT NULL,
+        PRIMARY KEY (object_id, chunk_index)
+      );
+    `);
+  }
+  reply(body,status=200,headers={}){
+    return new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers}});
+  }
+  async authorized(request){
+    const token=request.headers.get('X-Aggy-Room-Capability')||(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
+    if(!validToken(token))return false;
+    const hash=await sha256Hex(token);
+    const row=[...this.sql.exec('SELECT value FROM vault_config WHERE key = ?', 'capability_hash')][0];
+    if(!row){this.sql.exec('INSERT INTO vault_config (key,value) VALUES (?,?)','capability_hash',hash);return true}
+    if(row.value.length!==hash.length)return false;
+    let mismatch=0;
+    for(let index=0;index<hash.length;index++)mismatch|=row.value.charCodeAt(index)^hash.charCodeAt(index);
+    return mismatch===0;
+  }
+  async fetch(request){
+    if(!await this.authorized(request))return this.reply({error:'invalid_vault_capability'},401);
+    const url=new URL(request.url);
+    const match=url.pathname.match(/^\/files\/([0-9a-f-]{36})$/i);
+    if(!match)return this.reply({error:'not_found'},404);
+    const objectId=match[1].toLowerCase();
+    if(request.method==='PUT'){
+      const evidence=validateVaultHeaders(request.headers);
+      if(!evidence)return this.reply({error:'vault_evidence_invalid',failClosed:true},422);
+      const declared=Number(request.headers.get('Content-Length')||0);
+      if(declared>MAX_VAULT_FILE_BYTES)return this.reply({error:'vault_object_too_large'},413);
+      let ciphertext;
+      try{ciphertext=new Uint8Array(await request.arrayBuffer())}catch{return this.reply({error:'vault_body_unreadable',failClosed:true},400)}
+      if(!ciphertext.length)return this.reply({error:'vault_object_empty'},400);
+      if(ciphertext.length>MAX_VAULT_FILE_BYTES)return this.reply({error:'vault_object_too_large'},413);
+      let actualSha256;
+      try{actualSha256=await sha256Hex(ciphertext)}catch{return this.reply({error:'vault_hash_failed',failClosed:true},503)}
+      if(actualSha256!==evidence.ciphertextSha256)return this.reply({error:'vault_ciphertext_hash_mismatch',failClosed:true},422);
+      if([...this.sql.exec('SELECT object_id FROM objects WHERE object_id = ?',objectId)][0])return this.reply({error:'vault_object_exists'},409);
+      const chunkCount=Math.ceil(ciphertext.length/VAULT_CHUNK_BYTES);
+      try{
+        for(let index=0;index<chunkCount;index++){
+          const chunk=ciphertext.slice(index*VAULT_CHUNK_BYTES,Math.min(ciphertext.length,(index+1)*VAULT_CHUNK_BYTES));
+          this.sql.exec('INSERT INTO chunks (object_id,chunk_index,payload) VALUES (?,?,?)',objectId,index,chunk);
+        }
+        this.sql.exec('INSERT INTO objects (object_id,ciphertext_sha256,byte_length,chunk_count,metadata,created_at) VALUES (?,?,?,?,?,?)',
+          objectId,actualSha256,ciphertext.length,chunkCount,JSON.stringify(evidence),new Date().toISOString());
+      }catch(error){
+        try{this.sql.exec('DELETE FROM chunks WHERE object_id = ?',objectId)}catch{}
+        return this.reply({error:'vault_store_failed',failClosed:true},503);
+      }
+      return this.reply({
+        schema:'secquoia.quvault.ciphertext-receipt.v1',stored:true,objectId,ciphertextSha256:actualSha256,byteLength:ciphertext.length,
+        cryptoProfile:'E2EE/PQC',cdrLineage:evidence.cdrLineage,qufenseEvidenceId:evidence.qufenseEvidenceId,plaintextStored:false
+      },201);
+    }
+    if(request.method==='GET'){
+      const row=[...this.sql.exec('SELECT ciphertext_sha256,byte_length,chunk_count,metadata FROM objects WHERE object_id = ?',objectId)][0];
+      if(!row)return this.reply({error:'vault_object_not_found'},404);
+      const chunks=[...this.sql.exec('SELECT payload FROM chunks WHERE object_id = ? ORDER BY chunk_index',objectId)];
+      if(chunks.length!==Number(row.chunk_count))return this.reply({error:'vault_object_incomplete',failClosed:true},503);
+      const body=new Uint8Array(Number(row.byte_length));
+      let offset=0;
+      for(const chunk of chunks){const bytes=new Uint8Array(chunk.payload);body.set(bytes,offset);offset+=bytes.length}
+      if(await sha256Hex(body)!==row.ciphertext_sha256)return this.reply({error:'vault_integrity_failed',failClosed:true},503);
+      const metadata=JSON.parse(row.metadata);
+      return new Response(body,{status:200,headers:{
+        'Content-Type':'application/octet-stream','Content-Length':String(body.length),'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',
+        'Content-Disposition':`attachment; filename="${objectId}.aggy"`,'X-Aggy-Crypto-Profile':'E2EE/PQC','X-Aggy-Ciphertext-Sha256':row.ciphertext_sha256,
+        'X-QuHub-Lineage-Id':metadata.cdrLineage,'X-QuFense-Evidence-Id':metadata.qufenseEvidenceId,'X-QuVault-Plaintext-Stored':'false'
+      }});
+    }
+    return this.reply({error:'method_not_allowed'},405);
   }
 }
 
@@ -1181,6 +1288,19 @@ export default {
       target.pathname=roomMatch[2];
       return roomResponse(await stub.fetch(new Request(target,request)),request);
     }
+    const vaultMatch=url.pathname.match(/^\/api\/aggy\/vault\/rooms\/([A-Za-z0-9_-]{43})\/files\/([0-9a-f-]{36})$/i);
+    if(vaultMatch){
+      if(request.method==='OPTIONS'){
+        if(!ALLOWED_ORIGINS.has(request.headers.get('Origin')))return json({error:'origin_not_allowed'},403,request);
+        return new Response(null,{status:204,headers:corsHeaders(request)});
+      }
+      if(!env.AGGY_QUVAULT_FILES)return json({error:'quvault_files_not_configured',failClosed:true},503,request);
+      const id=env.AGGY_QUVAULT_FILES.idFromName(vaultMatch[1]);
+      const stub=env.AGGY_QUVAULT_FILES.get(id);
+      const target=new URL(request.url);
+      target.pathname=`/files/${vaultMatch[2].toLowerCase()}`;
+      return roomResponse(await stub.fetch(new Request(target,request)),request);
+    }
     if(url.pathname==='/api/aggy/messages/attachments'){
       if(request.method==='OPTIONS'){
         if(!ALLOWED_ORIGINS.has(request.headers.get('Origin')))return json({error:'origin_not_allowed'},403,request);
@@ -1472,6 +1592,7 @@ export {
   AGGY_PAID_BLOCK_QVIT,
   AGGY_QUOPTIO_POLICY,
   AggyChatRoom,
+  AggyVault,
   AggyUsageMeter,
   DEFAULT_REALTIME_MODEL,
   DEFAULT_REALTIME_VOICE,
@@ -1489,5 +1610,6 @@ export {
   verifyAggyWalletBinding,
   verifyAggyEntitlement,
   validateEnvelope,
+  validateVaultHeaders,
   validatePublicBundle
 };
