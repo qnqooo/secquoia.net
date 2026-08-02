@@ -31,7 +31,7 @@ test('QuHub publishes Aggy consultant context with evidence-safe commercial boun
     }),{});
     const body=await response.json();
     assert.equal(response.status,200);
-    assert.equal(body.consultantBrief.schema,'secquoia.aggy.consultant-playbook.v1');
+    assert.equal(body.consultantBrief.schema,'secquoia.aggy.consultant-playbook.v2');
     assert.equal(body.consultantBrief.lifecycle.length,8);
     assert.match(JSON.stringify(body.consultantBrief),/SQAILE Core/);
     assert.match(JSON.stringify(body.consultantBrief),/QRNG-contributed hybrid key derivation/);
