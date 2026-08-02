@@ -63,6 +63,9 @@ test('QuSOC receives a commander greeting without claiming institutional affilia
   assert.match(market,/sin representarlos ni estar afiliada a ellos/);
   assert.match(market,/QuCISO gobierna, QuFense autoriza y usted conserva el mando humano/);
   assert.match(market,/asesora técnica, comercial, de soporte e implementación/);
+  assert.match(market,/commandScope=normalizeText/);
+  assert.match(market,/qusoc\.\?command\|qusoc\.\{0,20\}360/);
+  assert.doesNotMatch(market,/\/qusoc\|cyber\.\?defen\|threat\|soc command\//);
 });
 
 test('Aggy compact launcher exposes a ten-link server-synchronized digital timer',()=>{
