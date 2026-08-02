@@ -28,8 +28,8 @@ test('Aggy embed is accessible, responsive and grants only required frame capabi
   assert.doesNotMatch(allow,/camera|geolocation|clipboard-write|payment/);
 });
 
-test('Aggy stays compact by default, supports contextual auto-open and starts Voice LIVE automatically',()=>{
-  assert.match(embed,/const autoOpen=script\?\.dataset\.aggyAutoOpen==='true'\|\|site==='qusoc-command-360'/);
+test('Aggy opens autonomously by default and starts Voice LIVE automatically',()=>{
+  assert.match(embed,/const autoOpen=script\?\.dataset\.aggyAutoOpen!=='false'/);
   assert.match(embed,/requestAnimationFrame\(\(\)=>setOpen\(autoOpen,\{focus:false\}\)\)/);
   assert.match(embed,/const setOpen=\(open,\{focus=true\}=\{\}\)=>/);
   assert.match(embed,/type:'secquoia:aggy:start-voice'/);
@@ -43,12 +43,26 @@ test('Aggy stays compact by default, supports contextual auto-open and starts Vo
   assert.match(embed,/secquoia:aggy:voice-state/);
 });
 
+test('Aggy sends minimized host context without form values, query strings or raw body content',()=>{
+  assert.match(embed,/schema:'secquoia\.aggy\.host-context\.v1'/);
+  assert.match(embed,/readHostContext/);
+  assert.match(embed,/publishHostContext/);
+  assert.match(embed,/secquoia:aggy:host-context/);
+  assert.match(embed,/formValuesCaptured:false/);
+  assert.match(embed,/bodyDumped:false/);
+  assert.match(embed,/queryStringCaptured:false/);
+  assert.match(embed,/closest\('form,\[contenteditable="true"\]'\)/);
+  assert.doesNotMatch(embed,/document\.body\.innerText/);
+  assert.doesNotMatch(embed,/location\.search/);
+});
+
 test('QuSOC receives a commander greeting without claiming institutional affiliation or autonomous authority',()=>{
   assert.match(market,/site==='qusoc-command-360'/);
   assert.match(market,/Soy la Comandante Aggy/);
   assert.match(market,/OTAN, USCYBERCOM y Five Eyes/);
   assert.match(market,/sin representarlos ni estar afiliada a ellos/);
   assert.match(market,/QuCISO gobierna, QuFense autoriza y usted conserva el mando humano/);
+  assert.match(market,/asesora técnica, comercial, de soporte e implementación/);
 });
 
 test('Aggy compact launcher exposes a ten-link server-synchronized digital timer',()=>{

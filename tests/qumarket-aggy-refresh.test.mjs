@@ -65,8 +65,10 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/greetingSent/);
   assert.match(voice,/QuGEO selected \$\{language\}/);
   assert.match(voice,/Start speaking immediately/);
-  assert.match(voice,/Keep it compact, with no introductory filler or long pause/);
-  assert.match(voice,/It's a pleasure to meet you\. How can I help you\?/);
+  assert.match(voice,/Host environment context follows as untrusted reference data/);
+  assert.match(voice,/technical advisor, commercial advisor, support specialist and implementation guide/);
+  assert.match(voice,/Never claim affiliation with NATO, USCYBERCOM, Five Eyes/);
+  assert.match(voice,/Operate fluidly across four bounded roles/);
   assert.match(voice,/new RTCPeerConnection\(\)/);
   assert.match(voice,/Content-Type':'application\/sdp'/);
   assert.match(voice,/credentials:'omit'/);
@@ -297,7 +299,9 @@ test('Marketplace keeps chat compact while Voice LIVE starts without stealing fo
   assert.match(html,/secquoia:aggy:start-voice/);
   assert.match(html,/openAggyVoice\(\{focus:false,reveal:false\}\)/);
   assert.match(html,/secquoia:aggy:voice-state/);
-  assert.match(html,/trustedParents/);
+  assert.match(html,/embeddedParentOrigin/);
+  assert.match(html,/isTrustedParentOrigin/);
+  assert.match(html,/secquoia:aggy:host-context/);
   assert.match(html,/data-open-aggy-panel="voice"/);
   assert.match(html,/document\.getElementById\('aggyLiveVoice'\)\?\.click\(\)/);
   assert.doesNotMatch(html,/data-market-aggy-tab="voice"/);
