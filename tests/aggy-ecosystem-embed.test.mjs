@@ -69,6 +69,12 @@ test('QuSOC receives a commander greeting without claiming institutional affilia
   assert.doesNotMatch(market,/\/qusoc\|cyber\.\?defen\|threat\|soc command\//);
 });
 
+test('QuSpace CRM receives a customer and opportunity specific greeting',()=>{
+  assert.match(market,/context\.site==='quspace-crm'/);
+  assert.match(market,/consultora contextual para QuSpace CRM/);
+  assert.match(market,/cuenta, oportunidad o resultado comercial/);
+});
+
 test('Aggy compact launcher exposes a ten-link server-synchronized digital timer',()=>{
   assert.match(embed,/class="minute-chain" role="meter"/);
   assert.match(embed,/repeat\(10\)/);
@@ -141,12 +147,12 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual2-20260802"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual2-20260802"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual3-20260802"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual3-20260802"[^>]*data-aggy-site="secquoia\.net"/);
 });
 
 test('SECQUOIA entry pages cache-bust the QuCFA-normalized Aggy distribution',()=>{
   assert.match(embed,/1\.3\.0-rc\.1/);
-  assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual2-20260802/);
-  assert.match(embed,/const assetRevision='1\.3\.0-rc\.1-contextual2-20260802'/);
+  assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual3-20260802/);
+  assert.match(embed,/const assetRevision='1\.3\.0-rc\.1-contextual3-20260802'/);
 });

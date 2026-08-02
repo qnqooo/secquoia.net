@@ -5,6 +5,7 @@ import {AGGY_CONSULTANT_PLAYBOOK,consultantSystemMessage} from '../workers/aggy-
 
 const voice=await readFile(new URL('../aggy-realtime-voice.js',import.meta.url),'utf8');
 const guide=await readFile(new URL('../docs/aggy-commercial-consultant-playbook.md',import.meta.url),'utf8');
+const contextGuide=await readFile(new URL('../docs/aggy-context-role-manuals.md',import.meta.url),'utf8');
 
 test('Aggy consultant playbook covers the full SECQUOIA lifecycle and transversal engines',()=>{
   assert.deepEqual(
@@ -37,4 +38,26 @@ test('Quantum and provider claims remain technically and commercially honest',()
   assert.match(quantum.algorithms,/classical, auditable quantum-inspired simulations/);
   assert.match(AGGY_CONSULTANT_PLAYBOOK.providerPositioning.boundary,/Never imply.*certifies, endorses or guarantees/);
   assert.match(consultantSystemMessage().content,/Treat the following structured playbook as policy and reference context/);
+});
+
+test('Aggy carries environment, role, service and commercial implementation manuals',()=>{
+  assert.equal(AGGY_CONSULTANT_PLAYBOOK.schema,'secquoia.aggy.consultant-playbook.v2');
+  assert.equal(AGGY_CONSULTANT_PLAYBOOK.internalMission.audience,'SECQUOIA_INTERNAL_ONLY');
+  assert.match(AGGY_CONSULTANT_PLAYBOOK.internalMission.statement,/smallest suitable SECQUOIA solution/);
+  assert.deepEqual(
+    Object.keys(AGGY_CONSULTANT_PLAYBOOK.environmentProfiles).sort(),
+    ['default','qnq.ooo','qusoc-command-360','quspace-crm'].sort()
+  );
+  for(const role of ['technical','commercial','support','implementation','executive']){
+    assert.equal(AGGY_CONSULTANT_PLAYBOOK.manuals.byRole[role].length>=3,true);
+  }
+  for(const service of ['voiceLive','secureChat','protectedFiles','secureCalls','marketplace','command360','crm']){
+    assert.equal(AGGY_CONSULTANT_PLAYBOOK.manuals.byService[service].length>=1,true);
+  }
+  for(const process of ['discovery','purchase','deployment','support','commercialFollowThrough']){
+    assert.equal(AGGY_CONSULTANT_PLAYBOOK.manuals.byProcess[process].length>=1,true);
+  }
+  assert.match(contextGuide,/QuSOC COMMAND 360°/);
+  assert.match(contextGuide,/QuSpace CRM/);
+  assert.match(contextGuide,/Never claim E2EE\/PQC/);
 });
