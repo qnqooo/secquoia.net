@@ -29,7 +29,7 @@ test('Aggy embed is accessible, responsive and grants only required frame capabi
 });
 
 test('Aggy stays compact by default, supports contextual auto-open and starts Voice LIVE automatically',()=>{
-  assert.match(embed,/const autoOpen=script\?\.dataset\.aggyAutoOpen==='true'/);
+  assert.match(embed,/const autoOpen=script\?\.dataset\.aggyAutoOpen==='true'\|\|site==='qusoc-command-360'/);
   assert.match(embed,/requestAnimationFrame\(\(\)=>setOpen\(autoOpen,\{focus:false\}\)\)/);
   assert.match(embed,/const setOpen=\(open,\{focus=true\}=\{\}\)=>/);
   assert.match(embed,/type:'secquoia:aggy:start-voice'/);

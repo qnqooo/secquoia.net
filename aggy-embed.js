@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const autoOpen=script?.dataset.aggyAutoOpen==='true';
+  const autoOpen=script?.dataset.aggyAutoOpen==='true'||site==='qusoc-command-360';
   const version='1.3.0-rc.1';
   const assetRevision='1.3.0-rc.1-paidresume-20260801';
   const paymentReturn=(()=>{
