@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const [embed,widget,index,notFound]=await Promise.all([
+const [embed,widget,index,notFound,market]=await Promise.all([
   '../aggy-embed.js',
   '../aggy-widget.html',
   '../index.html',
-  '../404.html'
+  '../404.html',
+  '../qu-market.html'
 ].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
 
 test('Aggy ecosystem embed has valid JavaScript and one-instance protection',()=>{
@@ -27,8 +28,9 @@ test('Aggy embed is accessible, responsive and grants only required frame capabi
   assert.doesNotMatch(allow,/camera|geolocation|clipboard-write|payment/);
 });
 
-test('Aggy stays compact without stealing focus and starts Voice LIVE automatically',()=>{
-  assert.match(embed,/requestAnimationFrame\(\(\)=>setOpen\(false,\{focus:false\}\)\)/);
+test('Aggy stays compact by default, supports contextual auto-open and starts Voice LIVE automatically',()=>{
+  assert.match(embed,/const autoOpen=script\?\.dataset\.aggyAutoOpen==='true'\|\|site==='qusoc-command-360'/);
+  assert.match(embed,/requestAnimationFrame\(\(\)=>setOpen\(autoOpen,\{focus:false\}\)\)/);
   assert.match(embed,/const setOpen=\(open,\{focus=true\}=\{\}\)=>/);
   assert.match(embed,/type:'secquoia:aggy:start-voice'/);
   assert.match(embed,/frame\.addEventListener\('load'/);
@@ -39,6 +41,14 @@ test('Aggy stays compact without stealing focus and starts Voice LIVE automatica
   assert.match(embed,/EN VIVO · 10 min gratis/);
   assert.match(embed,/aggy-live-halo/);
   assert.match(embed,/secquoia:aggy:voice-state/);
+});
+
+test('QuSOC receives a commander greeting without claiming institutional affiliation or autonomous authority',()=>{
+  assert.match(market,/site==='qusoc-command-360'/);
+  assert.match(market,/Soy la Comandante Aggy/);
+  assert.match(market,/OTAN, USCYBERCOM y Five Eyes/);
+  assert.match(market,/sin representarlos ni estar afiliada a ellos/);
+  assert.match(market,/QuCISO gobierna, QuFense autoriza y usted conserva el mando humano/);
 });
 
 test('Aggy compact launcher exposes a ten-link server-synchronized digital timer',()=>{
