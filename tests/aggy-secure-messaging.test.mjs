@@ -29,7 +29,8 @@ test('secure chat client assets have valid syntax and governed UI hooks',async()
   }
   assert.match(config,/"new_sqlite_classes"/);
   assert.match(config,/"AGGY_CHAT_ROOMS"/);
-  assert.match(config,/"AGGY_GLASSWALL_MODE": "STRUCTURE_READY_NOT_CONNECTED"/);
+  assert.match(config,/"AGGY_GLASSWALL_MODE": "QUHUB_CDR_CONFIGURED_FAIL_CLOSED"/);
+  assert.match(config,/"AGGY_QUHUB_CDR_URL": "https:\/\/quhub\.secquoia\.group\/v1\/cdr\/sanitize"/);
 });
 
 test('QuSOC text policy normalizes controls and blocks empty payloads',()=>{

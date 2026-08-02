@@ -17,3 +17,16 @@ test('QuFense edge exposes only readiness and Checkout authorization',async()=>{
   });
   assert.equal(response.status,404);
 });
+
+test('QuFense authorizes only hash-bound rebuilt CDR results',async()=>{
+  const env={SQAILE_MESH_SERVICE_TOKEN:'m'.repeat(32)};
+  const valid=await worker.default.fetch(new Request('https://qufense.internal/v1/cdr/authorize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    schema:'secquoia.quhub.cdr.authorization-request.v1',provider:'glasswall-halo',inputSha256:'a'.repeat(64),outputSha256:'b'.repeat(64),inputBytes:12,outputBytes:10
+  })}),env);
+  assert.equal(valid.status,200);
+  assert.equal((await valid.json()).allowed,true);
+  const unchanged=await worker.default.fetch(new Request('https://qufense.internal/v1/cdr/authorize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    schema:'secquoia.quhub.cdr.authorization-request.v1',provider:'glasswall-halo',inputSha256:'a'.repeat(64),outputSha256:'a'.repeat(64),inputBytes:12,outputBytes:12
+  })}),env);
+  assert.equal(unchanged.status,422);
+});

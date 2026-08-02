@@ -13,7 +13,8 @@
   ],
   "vars": {
     "OPENAI_REALTIME_MODEL": "gpt-realtime-2.1",
-    "AGGY_GLASSWALL_MODE": "STRUCTURE_READY_NOT_CONNECTED",
+    "AGGY_GLASSWALL_MODE": "QUHUB_CDR_CONFIGURED_FAIL_CLOSED",
+    "AGGY_QUHUB_CDR_URL": "https://quhub.secquoia.group/v1/cdr/sanitize",
     "AGGY_PREVIEW_POLICY_EPOCH": "2026-07-27.1"
   },
   "durable_objects": {
