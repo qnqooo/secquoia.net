@@ -10,6 +10,7 @@ import {
 } from '../src/aggy-secure-chat-crypto.js';
 import {
   sanitizeChatText,
+  sanitizeAttachmentThroughQuHub,
   validateEnvelope,
   validatePublicBundle
 } from '../workers/aggy-realtime-session.js';
@@ -67,7 +68,7 @@ test('Aggy creates verifiable hybrid E2EE/PQC envelopes and rejects tampering',(
   assert.throws(()=>decryptMessage({roomId:room.roomId,envelope:tampered,recipient:bob}));
 });
 
-test('plaintext envelopes and active attachment scanning claims fail closed',async()=>{
+test('plaintext envelopes fail closed and attachment CDR is mediated only through QuHub',async()=>{
   assert.equal(validateEnvelope({
     header:{schema:'secquoia.aggy.quvault-e2ee-pqc.v1'},
     plaintext:'leak',
@@ -81,6 +82,27 @@ test('plaintext envelopes and active attachment scanning claims fail closed',asy
   }),false);
   const worker=await readFile(new URL('../workers/aggy-realtime-session.js',import.meta.url),'utf8');
   assert.match(worker,/GLASSWALL_NOT_CONNECTED/);
-  assert.match(worker,/externalCallsExecuted:false/);
-  assert.doesNotMatch(worker,/glasswall\.com|api\.glasswall/);
+  assert.match(worker,/quhub\.secquoia\.group/);
+  assert.doesNotMatch(worker,/glasswall\.com|api\.glasswall|api\.metadefender/);
+});
+
+test('attachment CDR verifies rebuilt hashes and requires client E2EE/PQC next',async()=>{
+  const input=new TextEncoder().encode('unsafe-source');
+  const rebuilt=new TextEncoder().encode('rebuilt-safe');
+  const digest=async value=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',value))].map(byte=>byte.toString(16).padStart(2,'0')).join('');
+  const inputHash=await digest(input),outputHash=await digest(rebuilt),calls=[];
+  const request=new Request('https://aggy.secquoia.group/api/aggy/messages/attachments',{method:'POST',headers:{Origin:'https://secquoia.group','Content-Type':'application/pdf','X-Aggy-File-Name':'proposal.pdf','X-Aggy-Ingress-Kind':'DOCUMENT'},body:input});
+  const response=await sanitizeAttachmentThroughQuHub({request,env:{AGGY_QUHUB_CDR_URL:'https://quhub.secquoia.group/v1/cdr/sanitize',AGGY_QUHUB_MESH_TOKEN:'m'.repeat(32)},fetchImpl:async(url,options)=>{calls.push({url:String(url),options});return new Response(rebuilt,{status:200,headers:{'Content-Type':'application/octet-stream','X-QuHub-Lineage-Id':'QH-CDR-1234','X-QuHub-Input-Sha256':inputHash,'X-QuHub-Output-Sha256':outputHash,'X-QuHub-Provider':'opswat-metadefender-core','X-QuHub-Audit-Id':'QA-CDR-1','X-QuHub-QuFense-Evidence-Id':'QF-CDR-1'}})}});
+  assert.equal(response.status,200);
+  assert.equal(response.headers.get('X-Aggy-Next-Step'),'CLIENT_E2EE_PQC_ENCRYPTION_REQUIRED');
+  assert.deepEqual(new Uint8Array(await response.arrayBuffer()),rebuilt);
+  assert.equal(calls[0].url,'https://quhub.secquoia.group/v1/cdr/sanitize');
+  assert.match(calls[0].options.headers.authorization,/^Bearer /);
+  assert.equal(JSON.stringify([...response.headers]).includes('m'.repeat(32)),false);
+});
+
+test('attachment CDR rejects untrusted endpoint and mismatched evidence',async()=>{
+  const request=()=>new Request('https://aggy.secquoia.group/api/aggy/messages/attachments',{method:'POST',headers:{Origin:'https://secquoia.group','Content-Type':'application/pdf','X-Aggy-File-Name':'proposal.pdf'},body:'unsafe'});
+  await assert.rejects(()=>sanitizeAttachmentThroughQuHub({request:request(),env:{AGGY_QUHUB_CDR_URL:'https://attacker.example/v1/cdr/sanitize',AGGY_QUHUB_MESH_TOKEN:'m'.repeat(32)}}),/endpoint_rejected/);
+  await assert.rejects(()=>sanitizeAttachmentThroughQuHub({request:request(),env:{AGGY_QUHUB_CDR_URL:'https://quhub.secquoia.group/v1/cdr/sanitize',AGGY_QUHUB_MESH_TOKEN:'m'.repeat(32)},fetchImpl:async()=>new Response('unchanged',{status:200,headers:{'X-QuHub-Lineage-Id':'QH-CDR-1','X-QuHub-Input-Sha256':'0'.repeat(64),'X-QuHub-Output-Sha256':'1'.repeat(64),'X-QuHub-Provider':'opswat','X-QuHub-Audit-Id':'QA-1','X-QuHub-QuFense-Evidence-Id':'QF-1'}})}),/evidence_invalid/);
 });

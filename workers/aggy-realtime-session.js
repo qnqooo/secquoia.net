@@ -91,6 +91,7 @@ const AGGY_RELEASE=Object.freeze({
 const MAX_SDP_BYTES=64*1024;
 const MAX_CHAT_TEXT_BYTES=4*1024;
 const MAX_CHAT_BODY_BYTES=160*1024;
+const MAX_ATTACHMENT_BYTES=32*1024*1024;
 const ALLOWED_ORIGINS=new Set([
   'https://secquoia.net',
   'https://www.secquoia.net',
@@ -107,6 +108,7 @@ const LANGUAGE_BY_COUNTRY=Object.freeze({
   FR:'fr',BE:'fr',MC:'fr',LU:'fr',DE:'de',AT:'de',CH:'de',IT:'it',SM:'it',VA:'it',PT:'pt',BR:'pt'
 });
 const LOCALE_BY_LANGUAGE=Object.freeze({es:'es-CO',en:'en-US',fr:'fr-FR',de:'de-DE',it:'it-IT',pt:'pt-BR'});
+const AGGY_LEASE_CORS=Object.freeze({'Access-Control-Expose-Headers':'X-Aggy-Lease-Expires-At'});
 
 const qugeo=request=>{
   const country=String(request.cf?.country||'').toUpperCase().slice(0,2);
@@ -129,8 +131,9 @@ const corsHeaders=request=>{
   return {
     'Access-Control-Allow-Origin':origin,
     'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
-    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Visitor-ID, X-Aggy-Wallet-Binding, X-Aggy-Lease, X-Aggy-Lease-Capability, X-QuPay-Signature',
-    'Access-Control-Expose-Headers':'X-Aggy-Lease-Expires-At',
+    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Visitor-ID, X-Aggy-Wallet-Binding, X-Aggy-Lease, X-Aggy-Lease-Capability, X-Aggy-File-Name, X-Aggy-Ingress-Kind, X-QuPay-Signature',
+    ...AGGY_LEASE_CORS,
+    'Access-Control-Expose-Headers':`${AGGY_LEASE_CORS['Access-Control-Expose-Headers']}, X-QuHub-Lineage-Id, X-QuHub-Input-Sha256, X-QuHub-Output-Sha256, X-QuHub-Provider, X-QuHub-Audit-Id, X-QuHub-QuFense-Evidence-Id, X-Aggy-Next-Step`,
     'Access-Control-Max-Age':'86400',
     'Vary':'Origin'
   };
@@ -233,6 +236,75 @@ const paymentTermsFromQVit=(qvitAmount,packId='')=>{
     qvitAmount:qvit
   });
 };
+
+const safeAttachmentName=value=>{
+  let decoded;
+  try{decoded=decodeURIComponent(String(value||''))}catch{throw new Error('attachment_filename_invalid')}
+  const name=decoded.trim();
+  if(!/^[A-Za-z0-9][A-Za-z0-9._ -]{0,179}$/.test(name)||name.includes('..'))throw new Error('attachment_filename_invalid');
+  return name;
+};
+
+const quhubCdrEndpoint=value=>{
+  let endpoint;
+  try{endpoint=new URL(String(value||''))}catch{throw new Error('quhub_cdr_not_configured')}
+  if(endpoint.protocol!=='https:'||endpoint.hostname!=='quhub.secquoia.group'||endpoint.pathname!=='/v1/cdr/sanitize'||endpoint.search||endpoint.hash){
+    throw new Error('quhub_cdr_endpoint_rejected');
+  }
+  return endpoint;
+};
+
+async function sanitizeAttachmentThroughQuHub({request,env,fetchImpl=fetch}={}){
+  const token=String(env?.AGGY_QUHUB_MESH_TOKEN||'');
+  if(new TextEncoder().encode(token).length<32)throw new Error('quhub_cdr_credentials_not_configured');
+  const endpoint=quhubCdrEndpoint(env?.AGGY_QUHUB_CDR_URL);
+  const declared=Number(request.headers.get('Content-Length')||0);
+  if(declared>MAX_ATTACHMENT_BYTES)throw new Error('attachment_too_large');
+  const filename=safeAttachmentName(request.headers.get('X-Aggy-File-Name'));
+  const ingressKind=String(request.headers.get('X-Aggy-Ingress-Kind')||'DOCUMENT').trim().toUpperCase();
+  if(!['DOCUMENT','SOURCE_CODE','ARCHIVE','BINARY','API_ATTACHMENT'].includes(ingressKind))throw new Error('attachment_ingress_kind_invalid');
+  const original=new Uint8Array(await request.arrayBuffer());
+  if(!original.length)throw new Error('attachment_empty');
+  if(original.length>MAX_ATTACHMENT_BYTES)throw new Error('attachment_too_large');
+  const inputHash=await sha256Hex(original);
+  let response;
+  try{
+    response=await fetchImpl(endpoint,{method:'POST',headers:{
+      authorization:`Bearer ${token}`,
+      'content-type':request.headers.get('Content-Type')||'application/octet-stream',
+      'x-file-name':filename,
+      'x-ingress-kind':ingressKind,
+      'x-data-class':'CONFIDENTIAL'
+    },body:original,signal:AbortSignal.timeout(90000)});
+  }catch{throw new Error('quhub_cdr_unavailable')}
+  if(!response.ok)throw new Error(response.status===422?'attachment_quarantined':'quhub_cdr_unavailable');
+  const rebuilt=new Uint8Array(await response.arrayBuffer());
+  if(!rebuilt.length||rebuilt.length>MAX_ATTACHMENT_BYTES)throw new Error('quhub_cdr_artifact_invalid');
+  const outputHash=await sha256Hex(rebuilt);
+  const expectedInput=String(response.headers.get('X-QuHub-Input-Sha256')||'').toLowerCase();
+  const expectedOutput=String(response.headers.get('X-QuHub-Output-Sha256')||'').toLowerCase();
+  const lineage=String(response.headers.get('X-QuHub-Lineage-Id')||'');
+  const provider=String(response.headers.get('X-QuHub-Provider')||'');
+  const auditId=String(response.headers.get('X-QuHub-Audit-Id')||'');
+  const evidenceId=String(response.headers.get('X-QuHub-QuFense-Evidence-Id')||'');
+  if(expectedInput!==inputHash||expectedOutput!==outputHash||inputHash===outputHash||!/^QH-CDR-[A-Za-z0-9-]+$/.test(lineage)||!provider||!auditId||!evidenceId){
+    throw new Error('quhub_cdr_evidence_invalid');
+  }
+  return new Response(rebuilt,{status:200,headers:{
+    'Content-Type':response.headers.get('Content-Type')||'application/octet-stream',
+    'Content-Length':String(rebuilt.length),
+    'Cache-Control':'no-store',
+    'X-Content-Type-Options':'nosniff',
+    'X-QuHub-Lineage-Id':lineage,
+    'X-QuHub-Input-Sha256':inputHash,
+    'X-QuHub-Output-Sha256':outputHash,
+    'X-QuHub-Provider':provider,
+    'X-QuHub-Audit-Id':auditId,
+    'X-QuHub-QuFense-Evidence-Id':evidenceId,
+    'X-Aggy-Next-Step':'CLIENT_E2EE_PQC_ENCRYPTION_REQUIRED',
+    ...corsHeaders(request)
+  }});
+}
 const evaluateQuOptioDecision=({account,entitlement,freeRemainingMs,paidContinuationConfirmed=false,now=Date.now()})=>{
   const contractActive=UNMETERED_ACCESS_MODES.has(entitlement?.accessMode)&&Number(entitlement?.expiresAtMs)>now;
   let mode='TOP_UP_REQUIRED';
@@ -1054,8 +1126,9 @@ export default {
         textSanitizer:'QuSOC internal text policy',
         attachments:{
           enabled:false,
-          provider:'Glasswall',
-          mode:env.AGGY_GLASSWALL_MODE||'STRUCTURE_READY_NOT_CONNECTED',
+          cdrStageConfigured:Boolean(env.AGGY_QUHUB_CDR_URL&&env.AGGY_QUHUB_MESH_TOKEN),
+          provider:'QuHub governed CDR · Glasswall primary · OPSWAT secondary',
+          mode:env.AGGY_QUHUB_CDR_URL&&env.AGGY_QUHUB_MESH_TOKEN?'QUHUB_CDR_CONFIGURED_FAIL_CLOSED':env.AGGY_GLASSWALL_MODE||'STRUCTURE_READY_NOT_CONNECTED',
           externalCallsExecuted:false
         },
         identityBinding:'MANUAL_FINGERPRINT',
@@ -1109,24 +1182,16 @@ export default {
       return roomResponse(await stub.fetch(new Request(target,request)),request);
     }
     if(url.pathname==='/api/aggy/messages/attachments'){
-      return json({
-        error:'attachments_fail_closed',
-        schema:'secquoia.aggy.attachment-admission.v2',
-        provider:'Glasswall',
-        mode:env.AGGY_GLASSWALL_MODE||'STRUCTURE_READY_NOT_CONNECTED',
-        externalCallsExecuted:false,
-        selectionPolicy:'ANY_FORMAT_MAY_BE_SELECTED',
-        admissionPolicy:'ONLY_CDR_SUPPORTED_AND_CLEAN_CONTENT_MAY_PROGRESS',
-        encryptedInputPolicy:'BLOCK_AND_QUARANTINE',
-        requiredReceipts:[
-          'CDR_PROVIDER_CLEAN_WITH_ORIGINAL_AND_REBUILT_SHA256',
-          'QUFENSE_ALLOW',
-          'E2EE_PQC_ENVELOPE_VERIFIED',
-          'QUVAULT_STORED'
-        ],
-        operationsBlocked:['send','receive_release','download','store'],
-        quarantine:true
-      },503,request);
+      if(request.method==='OPTIONS'){
+        if(!ALLOWED_ORIGINS.has(request.headers.get('Origin')))return json({error:'origin_not_allowed'},403,request);
+        return new Response(null,{status:204,headers:corsHeaders(request)});
+      }
+      if(request.method!=='POST')return json({error:'method_not_allowed'},405,request);
+      try{return await sanitizeAttachmentThroughQuHub({request,env})}catch(error){
+        const message=String(error?.message||'attachments_fail_closed');
+        const status=/filename|kind|empty/.test(message)?400:/too_large/.test(message)?413:/quarantined/.test(message)?422:503;
+        return json({error:message,schema:'secquoia.aggy.attachment-cdr-stage.v1',quarantine:true,requiredReceipts:['CDR_PROVIDER_CLEAN','QUFENSE_ALLOW','E2EE_PQC_ENVELOPE_VERIFIED','QUVAULT_STORED'],operationsBlocked:['send','receive_release','download','store'],nextRequired:['CLIENT_E2EE_PQC_ENCRYPTION','QUVAULT_STORED_RECEIPT']},status,request);
+      }
     }
     if(url.pathname==='/api/aggy/calls/preflight'){
       if(request.method==='OPTIONS'){
@@ -1419,6 +1484,7 @@ export {
   qugeo,
   rateCardIsCurrent,
   sanitizeChatText,
+  sanitizeAttachmentThroughQuHub,
   usageSubject,
   verifyAggyWalletBinding,
   verifyAggyEntitlement,
