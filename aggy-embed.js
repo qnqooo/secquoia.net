@@ -6,7 +6,7 @@
 
   const script=document.currentScript;
   const site=script?.dataset.aggySite||location.hostname||'unknown';
-  const autoOpen=script?.dataset.aggyAutoOpen==='true'||site==='qusoc-command-360';
+  const autoOpen=script?.dataset.aggyAutoOpen!=='false';
   const version='1.3.0-rc.1';
   const assetRevision='1.3.0-rc.1-paidresume-20260801';
   const paymentReturn=(()=>{
@@ -25,6 +25,44 @@
       return sessionId;
     }catch{return ''}
   })();
+  const compactContextText=(value,max=180)=>String(value||'')
+    .replace(/\s+/g,' ')
+    .replace(/(?:bearer|api[_ -]?key|access[_ -]?token|secret|password|contraseña|cvv|cvc)\s*[:=]\s*\S+/ig,'[REDACTED]')
+    .trim()
+    .slice(0,max);
+  const uniqueContextValues=(values,limit=12)=>[...new Set(values.map(value=>compactContextText(value)).filter(Boolean))].slice(0,limit);
+  const readHostContext=()=>{
+    const read=(selector,limit)=>uniqueContextValues([...document.querySelectorAll(selector)]
+      .filter(element=>!element.closest('#secquoia-aggy-embed')&&!element.closest('form,[contenteditable="true"]'))
+      .map(element=>element.textContent),limit);
+    const title=compactContextText(document.title,140);
+    const description=compactContextText(document.querySelector('meta[name="description"]')?.content,240);
+    const headings=read('main h1,main h2,main h3,body>h1,body>h2,[data-aggy-context]',18);
+    const navigation=read('nav a,nav button,[role="navigation"] a,[role="navigation"] button',12);
+    const capabilities=uniqueContextValues([
+      script?.dataset.aggyProduct,
+      script?.dataset.aggyService,
+      script?.dataset.aggyCapability,
+      document.body?.dataset.aggyContext
+    ],8);
+    const corpus=normalizeContext(`${site} ${title} ${description} ${headings.join(' ')} ${capabilities.join(' ')}`);
+    const roles=[];
+    if(/deploy|despleg|implement|install|instal|integrat|integra|connector|conector|onboard|provision/.test(corpus))roles.push('IMPLEMENTATION');
+    if(/support|soporte|help|ayuda|incident|incidente|alert|monitor|soc|operation|operacion|status|estado/.test(corpus))roles.push('SUPPORT');
+    if(/price|precio|pricing|plan|product|producto|service|servicio|market|mercado|buy|comprar|quote|cotiz|cost|costo|licen|venta/.test(corpus))roles.push('COMMERCIAL');
+    if(/technology|tecnologia|technical|tecnico|cyber|ciber|security|seguridad|pqc|api|architecture|arquitectura|platform|plataforma|dashboard|engine|motor/.test(corpus))roles.push('TECHNICAL');
+    if(!roles.length)roles.push('TECHNICAL','COMMERCIAL','SUPPORT','IMPLEMENTATION');
+    return Object.freeze({
+      schema:'secquoia.aggy.host-context.v1',
+      site:compactContextText(site,80),
+      page:Object.freeze({origin:location.origin,pathname:location.pathname.slice(0,180),title,description,language:compactContextText(document.documentElement.lang||navigator.language,16)}),
+      signals:Object.freeze({headings,navigation,capabilities}),
+      roles:Object.freeze([...new Set(roles)]),
+      capturedAt:new Date().toISOString(),
+      privacy:Object.freeze({formValuesCaptured:false,bodyDumped:false,queryStringCaptured:false,secretsRedacted:true})
+    });
+  };
+  const normalizeContext=value=>String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const frameUrl=(()=>{
     const url=new URL('https://secquoia.net/qu-market.html');
     url.searchParams.set('embed','1');
@@ -158,6 +196,7 @@
   const panel=root.querySelector('.panel');
   const close=root.querySelector('.close');
   const frame=root.querySelector('iframe');
+  const publishHostContext=()=>frame.contentWindow?.postMessage({type:'secquoia:aggy:host-context',context:readHostContext(),version},'https://secquoia.net');
   const frameState=root.querySelector('.frame-state');
   const frameStateCopy=frameState.querySelector('span');
   const frameRetry=frameState.querySelector('button');
@@ -364,6 +403,7 @@
     if(event.source!==frame.contentWindow||event.origin!=='https://secquoia.net')return;
     if(event.data?.type==='secquoia:aggy:frame-ready'){
       markFrameReady();
+      publishHostContext();
       requestVoiceStart();
       return;
     }
@@ -441,6 +481,7 @@
   });
   frame.addEventListener('load',()=>{
     frame.dataset.ready='true';
+    publishHostContext();
     requestVoiceStart();
     watchFrame();
   });
