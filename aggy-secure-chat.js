@@ -52,7 +52,7 @@
   };
   const request=async(path,init={})=>{
     const headers=new Headers(init.headers||{});
-    if(state.room)headers.set('Authorization',`Bearer ${state.room.capability}`);
+    if(state.room)headers.set('X-Aggy-Room-Capability',state.room.capability);
     if(init.body)headers.set('Content-Type','application/json');
     const response=await fetch(`${apiOrigin}${path}`,{...init,headers,cache:'no-store'});
     let body={};

@@ -24,6 +24,7 @@ test('secure chat client assets have valid syntax and governed UI hooks',async()
     readFile(new URL('../wrangler.aggy.jsonc',import.meta.url),'utf8')
   ]);
   new Function(client);
+  assert.match(client,/X-Aggy-Room-Capability/);
   for(const id of ['aggyCreateRoom','aggyJoinRoom','aggySecureComposer','aggyMyFingerprint','aggyPeerFingerprint']){
     assert.match(html,new RegExp(`id="${id}"`));
   }

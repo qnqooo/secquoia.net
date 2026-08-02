@@ -131,7 +131,7 @@ const corsHeaders=request=>{
   return {
     'Access-Control-Allow-Origin':origin,
     'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
-    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Visitor-ID, X-Aggy-Wallet-Binding, X-Aggy-Lease, X-Aggy-Lease-Capability, X-Aggy-File-Name, X-Aggy-Ingress-Kind, X-QuPay-Signature',
+    'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Aggy-Room-Capability, X-Aggy-Visitor-ID, X-Aggy-Wallet-Binding, X-Aggy-Lease, X-Aggy-Lease-Capability, X-Aggy-File-Name, X-Aggy-Ingress-Kind, X-QuPay-Signature',
     ...AGGY_LEASE_CORS,
     'Access-Control-Expose-Headers':`${AGGY_LEASE_CORS['Access-Control-Expose-Headers']}, X-QuHub-Lineage-Id, X-QuHub-Input-Sha256, X-QuHub-Output-Sha256, X-QuHub-Provider, X-QuHub-Audit-Id, X-QuHub-QuFense-Evidence-Id, X-Aggy-Next-Step`,
     'Access-Control-Max-Age':'86400',
@@ -537,7 +537,7 @@ class AggyChatRoom {
     });
   }
   async authorized(request){
-    const token=(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
+    const token=request.headers.get('X-Aggy-Room-Capability')||(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
     if(!validToken(token))return false;
     const hash=await sha256Hex(token);
     const row=[...this.sql.exec('SELECT value FROM room_config WHERE key = ?', 'capability_hash')][0];
@@ -638,7 +638,7 @@ class AggyVault {
     return new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers}});
   }
   async authorized(request){
-    const token=(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
+    const token=request.headers.get('X-Aggy-Room-Capability')||(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
     if(!validToken(token))return false;
     const hash=await sha256Hex(token);
     const row=[...this.sql.exec('SELECT value FROM vault_config WHERE key = ?', 'capability_hash')][0];
