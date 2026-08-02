@@ -63,6 +63,7 @@ test('QuSOC receives a commander greeting without claiming institutional affilia
   assert.match(market,/sin representarlos ni estar afiliada a ellos/);
   assert.match(market,/QuCISO gobierna, QuFense autoriza y usted conserva el mando humano/);
   assert.match(market,/asesora técnica, comercial, de soporte e implementación/);
+  assert.match(market,/roles=\[\.\.\.new Set\(\[\.\.\.\(context\.roles\|\|\[\]\),'TECHNICAL','COMMERCIAL','SUPPORT','IMPLEMENTATION'\]\)\]/);
   assert.match(market,/commandScope=normalizeText/);
   assert.match(market,/qusoc\.\?command\|qusoc\.\{0,20\}360/);
   assert.doesNotMatch(market,/\/qusoc\|cyber\.\?defen\|threat\|soc command\//);
@@ -140,12 +141,12 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual-20260802"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual-20260802"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual2-20260802"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual2-20260802"[^>]*data-aggy-site="secquoia\.net"/);
 });
 
 test('SECQUOIA entry pages cache-bust the QuCFA-normalized Aggy distribution',()=>{
   assert.match(embed,/1\.3\.0-rc\.1/);
-  assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual-20260802/);
-  assert.match(embed,/const assetRevision='1\.3\.0-rc\.1-contextual-20260802'/);
+  assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.1-contextual2-20260802/);
+  assert.match(embed,/const assetRevision='1\.3\.0-rc\.1-contextual2-20260802'/);
 });
