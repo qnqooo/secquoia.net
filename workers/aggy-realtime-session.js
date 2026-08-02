@@ -659,14 +659,15 @@ class AggyVault {
       if(!evidence)return this.reply({error:'vault_evidence_invalid',failClosed:true},422);
       const declared=Number(request.headers.get('Content-Length')||0);
       if(declared>MAX_VAULT_FILE_BYTES)return this.reply({error:'vault_object_too_large'},413);
-      const ciphertext=new Uint8Array(await request.arrayBuffer());
+      let ciphertext;
+      try{ciphertext=new Uint8Array(await request.arrayBuffer())}catch{return this.reply({error:'vault_body_unreadable',failClosed:true},400)}
       if(!ciphertext.length)return this.reply({error:'vault_object_empty'},400);
       if(ciphertext.length>MAX_VAULT_FILE_BYTES)return this.reply({error:'vault_object_too_large'},413);
-      const actualSha256=await sha256Hex(ciphertext);
+      let actualSha256;
+      try{actualSha256=await sha256Hex(ciphertext)}catch{return this.reply({error:'vault_hash_failed',failClosed:true},503)}
       if(actualSha256!==evidence.ciphertextSha256)return this.reply({error:'vault_ciphertext_hash_mismatch',failClosed:true},422);
       if([...this.sql.exec('SELECT object_id FROM objects WHERE object_id = ?',objectId)][0])return this.reply({error:'vault_object_exists'},409);
       const chunkCount=Math.ceil(ciphertext.length/VAULT_CHUNK_BYTES);
-      this.sql.exec('BEGIN TRANSACTION');
       try{
         for(let index=0;index<chunkCount;index++){
           const chunk=ciphertext.slice(index*VAULT_CHUNK_BYTES,Math.min(ciphertext.length,(index+1)*VAULT_CHUNK_BYTES));
@@ -674,8 +675,10 @@ class AggyVault {
         }
         this.sql.exec('INSERT INTO objects (object_id,ciphertext_sha256,byte_length,chunk_count,metadata,created_at) VALUES (?,?,?,?,?,?)',
           objectId,actualSha256,ciphertext.length,chunkCount,JSON.stringify(evidence),new Date().toISOString());
-        this.sql.exec('COMMIT');
-      }catch(error){this.sql.exec('ROLLBACK');return this.reply({error:'vault_store_failed',failClosed:true},503)}
+      }catch(error){
+        try{this.sql.exec('DELETE FROM chunks WHERE object_id = ?',objectId)}catch{}
+        return this.reply({error:'vault_store_failed',failClosed:true},503);
+      }
       return this.reply({
         schema:'secquoia.quvault.ciphertext-receipt.v1',stored:true,objectId,ciphertextSha256:actualSha256,byteLength:ciphertext.length,
         cryptoProfile:'E2EE/PQC',cdrLineage:evidence.cdrLineage,qufenseEvidenceId:evidence.qufenseEvidenceId,plaintextStored:false
