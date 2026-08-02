@@ -170,6 +170,13 @@ section[id]{scroll-margin-top:92px}
 @media(max-width:760px){.nav{grid-template-columns:minmax(0,1fr) auto}}
 .btn:not(.primary){color:#fff}.marketplace{display:none!important}
 
+/* COMMAND 360 secure launcher */
+.command360-launch{display:block;cursor:pointer;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.command360-launch:hover{transform:translateY(-3px);border-color:rgba(87,255,154,.55);box-shadow:0 34px 100px rgba(0,0,0,.46),0 0 42px rgba(87,255,154,.12)}
+.command360-launch:focus-visible{outline:3px solid #fff;outline-offset:5px}
+.command360-entry{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding-top:15px;border-top:1px solid rgba(87,255,154,.18);color:var(--g);font-size:12px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+.command360-entry strong{font-size:18px;line-height:1}
+
 </style>
 </head>
 <body class="en">
@@ -241,7 +248,7 @@ section[id]{scroll-margin-top:92px}
       </div>
 
     </div>
-    <aside class="panel">
+    <a class="panel command360-launch" href="https://qusoc.secquoia.group/admin" target="_blank" rel="noopener noreferrer" aria-label="Abrir QuSOC COMMAND 360° con acceso seguro">
       <div class="dash-head"><strong>QuSOC™</strong><span class="status">ONLINE</span></div>
       <div class="metrics">
         <div class="metric"><b>24×7</b><span data-en>Cyber operations</span><span data-es>Operación de ciberseguridad</span></div>
@@ -251,7 +258,8 @@ section[id]{scroll-margin-top:92px}
       </div>
       <div class="radar"></div>
       <div class="pillrow"><span class="pill">SIEM</span><span class="pill">XDR</span><span class="pill">SOAR</span><span class="pill">MDR</span><span class="pill">Threat Intel</span></div>
-    </aside>
+      <div class="command360-entry"><span data-en>Secure access to COMMAND 360°</span><span data-es>Acceso seguro a COMMAND 360°</span><strong aria-hidden="true">→</strong></div>
+    </a>
   </div>
 </section>
 
