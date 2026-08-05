@@ -20,7 +20,7 @@
   const knowledgeEndpoint='https://quhub.secquoia.group/v1/knowledge/context?q=SECQUOIA%20products%20services%20cybersecurity%20marketplace';
   const realtimeModel='gpt-realtime-2.1';
   const naturalVoice='marin';
-  const speechSpeed=1.08;
+  const speechSpeed=1.03;
   const aggyVersion='1.3.0-rc.2';
   const freeVoiceSeconds=600;
   const freeTimeNotices=Object.freeze([
@@ -677,7 +677,7 @@
           'Never claim a security validation, certification, purchase, deployment, or external action that was not actually completed.'
         ].join(' '),
         audio:{
-          input:{turn_detection:{type:'semantic_vad',eagerness:'high',create_response:true,interrupt_response:true}},
+          input:{turn_detection:{type:'semantic_vad',eagerness:'medium',create_response:true,interrupt_response:true}},
           output:{voice:naturalVoice,speed:speechSpeed}
         },
         truncation:{
