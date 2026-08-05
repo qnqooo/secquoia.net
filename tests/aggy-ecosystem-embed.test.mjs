@@ -28,8 +28,8 @@ test('Aggy embed is accessible, responsive and grants only required frame capabi
   assert.doesNotMatch(allow,/camera|geolocation|clipboard-write|payment/);
 });
 
-test('Aggy opens autonomously by default and starts Voice LIVE automatically',()=>{
-  assert.match(embed,/const autoOpen=script\?\.dataset\.aggyAutoOpen!=='false'/);
+test('Aggy keeps the panel closed by default while Voice LIVE starts automatically',()=>{
+  assert.match(embed,/const autoOpen=script\?\.dataset\.aggyAutoOpen==='true'/);
   assert.match(embed,/requestAnimationFrame\(\(\)=>setOpen\(autoOpen,\{focus:false\}\)\)/);
   assert.match(embed,/const setOpen=\(open,\{focus=true\}=\{\}\)=>/);
   assert.match(embed,/type:'secquoia:aggy:start-voice'/);
@@ -147,12 +147,12 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic-20260805"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic-20260805"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic2-20260805"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic2-20260805"[^>]*data-aggy-site="secquoia\.net"/);
 });
 
 test('SECQUOIA entry pages cache-bust the QuCFA-normalized Aggy distribution',()=>{
   assert.match(embed,/1\.3\.0-rc\.2/);
-  assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic-20260805/);
-  assert.match(embed,/const assetRevision='1\.3\.0-rc\.2-agentic-20260805'/);
+  assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic2-20260805/);
+  assert.match(embed,/const assetRevision='1\.3\.0-rc\.2-agentic2-20260805'/);
 });
