@@ -108,10 +108,10 @@ test('Every rendered module exposes its inclusions',()=>{
   assert.match(html,/p\.license\[l\]/);
 });
 
-test('Aggy Marketplace availability matches the blocked release candidate manifest',()=>{
+test('Aggy Marketplace availability matches the controlled validation manifest',()=>{
   assert.match(html,/aggy:\{code:'release-candidate',label:\{en:'RC/);
-  assert.match(html,/Aggy Core 1\.3\.0-rc\.1 is validating/);
-  assert.match(html,/Production promotion remains blocked/);
+  assert.match(html,/Aggy Core 1\.3\.0-rc\.2 validates/);
+  assert.match(html,/GA remains blocked/);
   assert.doesNotMatch(html,/guided conversational AI RC evaluation/i);
 });
 

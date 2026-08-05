@@ -100,7 +100,7 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/let qugeoLanguage='es'/);
   assert.match(voice,/let qugeoLocale='es-CO'/);
   assert.match(voice,/consistently feminine vocal presentation/);
-  assert.match(voice,/internationally neutral accent/);
+  assert.match(voice,/Colombian accent with broad international intelligibility/);
   assert.match(voice,/AUTHORIZED_SECQUOIA_WEBSITES_DATA_ONLY|Authorized SECQUOIA website reference data/);
   assert.match(voice,/Never require, force, delay, or block an answer because a source URL is not cited/);
   assert.match(voice,/Do not speak raw URLs by default/);
@@ -220,7 +220,7 @@ test('Aggy backend returns only a bounded provider error code',async()=>{
 
 test('Aggy publishes one consistent candidate version with promotion blocked',async()=>{
   assert.match(release.version,/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/);
-  assert.equal(release.version,'1.3.0-rc.1');
+  assert.equal(release.version,'1.3.0-rc.2');
   assert.equal(release.channel,'release-candidate');
   assert.equal(release.lifecycle,'release-candidate');
   assert.equal(release.productionApproved,false);
