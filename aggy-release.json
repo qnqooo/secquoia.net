@@ -1,9 +1,9 @@
 {
   "schema": "secquoia.aggy.release.v1",
   "product": "Aggy",
-  "version": "1.3.0-rc.1",
-  "releaseId": "aggy-1.3.0-rc.1-quoptio-durable-continuity",
-  "releasedAt": "2026-07-31T23:30:00-05:00",
+  "version": "1.3.0-rc.2",
+  "releaseId": "aggy-1.3.0-rc.2-governed-agentic-accompaniment",
+  "releasedAt": "2026-08-05T00:00:00-05:00",
   "channel": "release-candidate",
   "lifecycle": "release-candidate",
   "distribution": "ecosystem-hosted",
@@ -14,6 +14,7 @@
   "gaScope": [
     "AGGY_VOICE_LIVE",
     "AGGY_ASSISTANT_CHAT",
+    "AGGY_GOVERNED_AGENTIC_ACCOMPANIMENT",
     "VISITOR_TRIAL",
     "CONTRACT_ENTITLEMENTS",
     "TIME_AI_QVIT",
@@ -24,7 +25,7 @@
     "CDR_PROTECTED_ATTACHMENTS",
     "E2EE_PQC_CALLS"
   ],
-  "evidence": "https://secquoia.net/aggy-1.3.0-rc.1-evidence.json",
+  "evidence": "https://secquoia.net/aggy-1.3.0-rc.2-evidence.json",
   "releaseNotes": "https://secquoia.net/docs/aggy-changelog.md",
   "cryptoProfile": "E2EE/PQC"
 }

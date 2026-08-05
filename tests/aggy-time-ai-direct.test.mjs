@@ -88,7 +88,7 @@ test('post-payment confirmation crosses the Stripe return and is consumed only a
   assert.match(embed,/history\.replaceState\(history\.state,'',sanitized\.href\)/);
   assert.match(market,/function setAggyPaymentMoment\(open\)\{aggyPaymentMoment\.hidden=!open;clearTimeout\(aggyPaymentTimer\);aggyPaymentTimer=0\}/);
   assert.doesNotMatch(market,/aggyPaymentTimer=setTimeout/);
-  assert.match(market,/aggy-realtime-voice\.js\?v=1\.3\.0-rc\.1-contextual3-20260802/);
+  assert.match(market,/aggy-realtime-voice\.js\?v=1\.3\.0-rc\.2-agentic-20260805/);
 });
 
 test('cross-site payment handoff preserves wallet, exact amount and minutes without URL secrets',()=>{
