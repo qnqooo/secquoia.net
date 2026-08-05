@@ -83,8 +83,8 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/secquoia:aggy:payment-confirmed/);
   assert.match(voice,/publishPaymentConfirmation\(paidConfirmation\)/);
   assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
-  assert.match(voice,/turn_detection:\{type:'semantic_vad',eagerness:'high',create_response:true,interrupt_response:true\}/);
-  assert.match(voice,/const speechSpeed=1\.08/);
+  assert.match(voice,/turn_detection:\{type:'semantic_vad',eagerness:'medium',create_response:true,interrupt_response:true\}/);
+  assert.match(voice,/const speechSpeed=1\.03/);
   assert.match(voice,/output:\{voice:naturalVoice,speed:speechSpeed\}/);
   assert.match(voice,/Keep the conversation dynamic/);
   assert.match(voice,/keep pauses between ideas and sentences brief/);

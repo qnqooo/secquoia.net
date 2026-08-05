@@ -154,5 +154,5 @@ test('SECQUOIA public pages load the local Aggy distribution',()=>{
 test('SECQUOIA entry pages cache-bust the QuCFA-normalized Aggy distribution',()=>{
   assert.match(embed,/1\.3\.0-rc\.2/);
   assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic2-20260805/);
-  assert.match(embed,/const assetRevision='1\.3\.0-rc\.2-agentic2-20260805'/);
+  assert.match(embed,/const assetRevision='1\.3\.0-rc\.2-voice-stability1-20260805'/);
 });
