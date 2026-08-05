@@ -8,7 +8,7 @@
   const site=script?.dataset.aggySite||location.hostname||'unknown';
   const autoOpen=script?.dataset.aggyAutoOpen==='true';
   const version='1.3.0-rc.2';
-  const assetRevision='1.3.0-rc.2-voice-stability1-20260805';
+  const assetRevision='1.3.0-rc.2-languages11-20260805';
   const paymentReturn=(()=>{
     try{
       const values=new URLSearchParams(location.hash.replace(/^#/,''));

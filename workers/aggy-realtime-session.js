@@ -106,15 +106,17 @@ const ALLOWED_ORIGINS=new Set([
 ]);
 const LANGUAGE_BY_COUNTRY=Object.freeze({
   ES:'es',MX:'es',CO:'es',AR:'es',CL:'es',PE:'es',EC:'es',VE:'es',BO:'es',PY:'es',UY:'es',PA:'es',CR:'es',GT:'es',HN:'es',SV:'es',NI:'es',DO:'es',CU:'es',PR:'es',
-  FR:'fr',BE:'fr',MC:'fr',LU:'fr',DE:'de',AT:'de',CH:'de',IT:'it',SM:'it',VA:'it',PT:'pt',BR:'pt'
+  FR:'fr',BE:'fr',MC:'fr',LU:'fr',DE:'de',AT:'de',CH:'de',IT:'it',SM:'it',VA:'it',PT:'pt',BR:'pt',
+  US:'en',CA:'en',GB:'en',IE:'en',AU:'en',NZ:'en',JP:'ja',CN:'zh',TW:'zh',HK:'zh',MO:'zh',RU:'ru',IN:'hi',
+  SA:'ar',AE:'ar',BH:'ar',DZ:'ar',EG:'ar',IQ:'ar',JO:'ar',KW:'ar',LB:'ar',LY:'ar',MA:'ar',OM:'ar',PS:'ar',QA:'ar',SD:'ar',SO:'ar',SY:'ar',TN:'ar',YE:'ar'
 });
-const LOCALE_BY_LANGUAGE=Object.freeze({es:'es-CO',en:'en-US',fr:'fr-FR',de:'de-DE',it:'it-IT',pt:'pt-BR'});
+const LOCALE_BY_LANGUAGE=Object.freeze({es:'es-CO',en:'en-US',fr:'fr-FR',de:'de-DE',it:'it-IT',pt:'pt-BR',ja:'ja-JP',zh:'zh-CN',ru:'ru-RU',ar:'ar-SA',hi:'hi-IN'});
 const AGGY_LEASE_CORS=Object.freeze({'Access-Control-Expose-Headers':'X-Aggy-Lease-Expires-At'});
 
 const qugeo=request=>{
   const country=String(request.cf?.country||'').toUpperCase().slice(0,2);
   const accepted=(request.headers.get('Accept-Language')||'').toLowerCase();
-  const browserLanguage=(accepted.match(/\b(es|en|fr|de|it|pt)(?:-|;|,|$)/)||[])[1];
+  const browserLanguage=(accepted.match(/\b(es|en|fr|de|it|pt|ja|zh|ru|ar|hi)(?:-|;|,|$)/)||[])[1];
   const language=LANGUAGE_BY_COUNTRY[country]||browserLanguage||'es';
   return Object.freeze({
     language,

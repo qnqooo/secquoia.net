@@ -9,6 +9,10 @@ const LANGUAGE_BY_COUNTRY = Object.freeze({
   PE: 'es', PR: 'es', PY: 'es', SV: 'es', UY: 'es', VE: 'es',
   BR: 'pt', PT: 'pt',
   FR: 'fr', BE: 'fr', CH: 'de', DE: 'de', AT: 'de', IT: 'it',
+  JP: 'ja', CN: 'zh', TW: 'zh', HK: 'zh', MO: 'zh', RU: 'ru', IN: 'hi',
+  SA: 'ar', AE: 'ar', BH: 'ar', DZ: 'ar', EG: 'ar', IQ: 'ar', JO: 'ar',
+  KW: 'ar', LB: 'ar', LY: 'ar', MA: 'ar', OM: 'ar', PS: 'ar', QA: 'ar',
+  SD: 'ar', SO: 'ar', SY: 'ar', TN: 'ar', YE: 'ar',
   CA: 'en', GB: 'en', IE: 'en', AU: 'en', NZ: 'en', US: 'en'
 });
 
@@ -18,7 +22,12 @@ const LOCALE_BY_LANGUAGE = Object.freeze({
   fr: 'fr-FR',
   de: 'de-DE',
   it: 'it-IT',
-  pt: 'pt-BR'
+  pt: 'pt-BR',
+  ja: 'ja-JP',
+  zh: 'zh-CN',
+  ru: 'ru-RU',
+  ar: 'ar-SA',
+  hi: 'hi-IN'
 });
 
 const MAX_UPSTREAM_BYTES = 128 * 1024;
@@ -89,7 +98,7 @@ const validTimezone = value => {
 
 const browserLanguage = request => {
   const accepted = (request.headers.get('Accept-Language') || '').toLowerCase();
-  return (accepted.match(/\b(es|en|fr|de|it|pt)(?:-|;|,|$)/) || [])[1] || null;
+  return (accepted.match(/\b(es|en|fr|de|it|pt|ja|zh|ru|ar|hi)(?:-|;|,|$)/) || [])[1] || null;
 };
 
 const localizedCountryName = (countryCode, locale) => {

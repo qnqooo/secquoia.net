@@ -79,6 +79,25 @@ test('degrades safely when edge and country enrichment are unavailable', async (
   assert.equal(body.country.status, 'unavailable');
 });
 
+test('detects the five additional Voice LIVE languages from browser preferences', async () => {
+  globalThis.fetch = async () => new Response('unavailable', { status: 503 });
+  const cases = [
+    ['ja-JP,ja;q=0.9', 'ja', 'ja-JP'],
+    ['zh-CN,zh;q=0.9', 'zh', 'zh-CN'],
+    ['ru-RU,ru;q=0.9', 'ru', 'ru-RU'],
+    ['ar-SA,ar;q=0.9', 'ar', 'ar-SA'],
+    ['hi-IN,hi;q=0.9', 'hi', 'hi-IN']
+  ];
+  for (const [accepted, code, locale] of cases) {
+    const response = await worker.fetch(new Request('https://qugeo.secquoia.group/v1/context', {
+      headers: { 'Accept-Language': accepted }
+    }));
+    const body = await response.json();
+    assert.equal(body.language.code, code);
+    assert.equal(body.language.locale, locale);
+  }
+});
+
 test('uses the dated World Bank snapshot when the live population endpoint times out', async () => {
   globalThis.fetch = async url => {
     if (String(url).includes('/indicator/SP.POP.TOTL')) throw new DOMException('timeout', 'TimeoutError');
