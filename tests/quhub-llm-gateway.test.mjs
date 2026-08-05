@@ -5,6 +5,27 @@ import worker,{AGGY_CONSULTANT_PLAYBOOK,PROVIDERS,RATE_CARDS,WEBSITE_SOURCES,htm
 const endpoint='https://quhub.secquoia.group/v1/llm/chat';
 const origin='https://secquoia.net';
 
+test('QuHub accepts every production SECQUOIA web origin',async()=>{
+  for(const allowedOrigin of [
+    'https://secquoia.net',
+    'https://www.secquoia.net',
+    'https://secquoia.group',
+    'https://www.secquoia.group'
+  ]){
+    const response=await worker.fetch(new Request('https://quhub.secquoia.group/v1/llm/catalog',{
+      headers:{Origin:allowedOrigin}
+    }),{OPENAI_API_KEY:'test-key'});
+    assert.equal(response.status,200,allowedOrigin);
+    assert.equal(response.headers.get('Access-Control-Allow-Origin'),allowedOrigin);
+  }
+  const rejected=await worker.fetch(new Request('https://quhub.secquoia.group/v1/llm/chat',{
+    method:'POST',
+    headers:{Origin:'https://attacker.example','Content-Type':'application/json'},
+    body:'{}'
+  }),{OPENAI_API_KEY:'test-key'});
+  assert.equal(rejected.status,403);
+});
+
 test('QuHub publishes the current governed model catalog without secret names',async()=>{
   const response=await worker.fetch(new Request('https://quhub.secquoia.group/v1/llm/catalog',{
     headers:{Origin:origin}
