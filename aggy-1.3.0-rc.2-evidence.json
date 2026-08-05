@@ -21,7 +21,7 @@
     {"name": "quidentify_signed_receipt", "status": "INHERITED_PASS_FROM_RC1"},
     {"name": "qupay_immediate_reconciliation", "status": "INHERITED_PASS_FROM_RC1"},
     {"name": "quoptio_decision_policy", "status": "PASS", "evidence": "bounded operating modes, risk classification and explicit approval boundaries"},
-    {"name": "controlled_secquoia_group_browser_test", "status": "PENDING"},
+    {"name": "controlled_secquoia_group_browser_test", "status": "PASS", "evidence": "one launcher, panel closed by default, iframe ready, continuity dialog and secure-chat transition verified on 2026-08-05"},
     {"name": "human_audible_voice_confirmation", "status": "PENDING"}
   ],
   "technicalDeploymentAuthorized": true,
