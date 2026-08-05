@@ -34,9 +34,13 @@ test('Aggy exposes communication-first navigation and preserves advanced areas',
   assert.match(html,/http:\/\/127\.0\.0\.1:8793\//);
 });
 
-test('Aggy exposes the approved contextual roles and six languages',()=>{
+test('Aggy exposes the approved contextual roles and eleven Voice LIVE languages',()=>{
   for(const role of ['SUPPORT','COMMERCIAL','COO','CISO','CIO','CMO','CFO','PQC_CYBER','AI_TECH','EXECUTIVE_GENERAL'])assert.match(html,new RegExp(`value="${role}"`));
-  for(const language of ['EN','ES','FR','DE','IT','PT'])assert.match(html,new RegExp(`value="${language}"`));
+  for(const language of ['ES','EN','FR','DE','IT','PT','JA','ZH','RU','AR','HI'])assert.match(html,new RegExp(`value="${language}"`));
+  assert.match(html,/Idioma Voice LIVE/);
+  const voicePanel=html.match(/data-market-aggy-panel="voice"([\s\S]*?)data-market-aggy-panel="files"/)?.[1]||'';
+  assert.match(voicePanel,/id="aggyLanguage"/);
+  assert.match(bridge,/savedVoiceLanguage=sessionStorage\.getItem\('secquoia\.aggy\.language'\)/);
   assert.match(html,/advisoryRole:sessionStorage/);
 });
 

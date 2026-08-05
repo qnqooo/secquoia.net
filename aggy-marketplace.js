@@ -164,6 +164,8 @@
       $$('[data-aggy-provider]:not([data-aggy-provider="sqaile"]) small').forEach(label=>label.textContent='Estado no verificado');
     }
   };
+  const savedVoiceLanguage=sessionStorage.getItem('secquoia.aggy.language')||'AUTO';
+  if($('#aggyLanguage')?.querySelector(`option[value="${savedVoiceLanguage}"]`))$('#aggyLanguage').value=savedVoiceLanguage;
   const contextualUpdate=()=>{const role=$('#aggyRole')?.value||'SUPPORT',language=$('#aggyLanguage')?.value||'AUTO';sessionStorage.setItem('secquoia.aggy.role',role);sessionStorage.setItem('secquoia.aggy.language',language);const provider=sessionStorage.getItem('secquoia.aggy.provider')||'sqaile';$('#aggyContextState').textContent=`${language} · ${role} · ${provider==='sqaile'?'SQAILE Core orquesta':'selección manual: '+provider}`;agentState.textContent=`Aggy · ${role} · ${language}`};
   $('#aggyRole')?.addEventListener('change',contextualUpdate);$('#aggyLanguage')?.addEventListener('change',contextualUpdate);
   $$('[data-aggy-mode]').forEach(button=>button.addEventListener('click',()=>{$$('[data-aggy-mode]').forEach(item=>item.classList.toggle('active',item===button));sessionStorage.setItem('secquoia.aggy.taskMode',button.dataset.aggyMode);contextualUpdate()}));

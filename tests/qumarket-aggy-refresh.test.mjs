@@ -28,6 +28,17 @@ const fakeUsageMeters=()=>({
   })
 });
 
+test('Aggy backend QuGEO resolves all eleven Voice LIVE languages',()=>{
+  const byCountry=[['CO','es','es-CO'],['US','en','en-US'],['FR','fr','fr-FR'],['DE','de','de-DE'],['IT','it','it-IT'],['BR','pt','pt-BR'],['JP','ja','ja-JP'],['CN','zh','zh-CN'],['RU','ru','ru-RU'],['SA','ar','ar-SA'],['IN','hi','hi-IN']];
+  for(const [country,language,locale] of byCountry){
+    const request=new Request('https://aggy.secquoia.group/api/aggy/realtime/health');
+    Object.defineProperty(request,'cf',{value:{country}});
+    const context=workerModule.qugeo(request);
+    assert.equal(context.language,language);
+    assert.equal(context.locale,locale);
+  }
+});
+
 test('Marketplace header keeps only the requested direct controls',()=>{
   assert.match(header,/id="headerSupport"[^>]*>QuSupport · Aggy/);
   assert.match(header,/href="qupkiaas-deploy\.html">QuDeploy/);
@@ -63,7 +74,9 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/type:'response\.create'/);
   assert.match(voice,/sendInitialGreeting\(\)/);
   assert.match(voice,/greetingSent/);
-  assert.match(voice,/QuGEO selected \$\{language\}/);
+  assert.match(voice,/QuGEO or the user selected \$\{language\.instruction\}/);
+  for(const locale of ['es-CO','en-US','fr-FR','de-DE','it-IT','pt-BR','ja-JP','zh-CN','ru-RU','ar-SA','hi-IN'])assert.ok(voice.includes(`locale:'${locale}'`));
+  assert.match(voice,/Continue the conversation now in \$\{language\.instruction\}/);
   assert.match(voice,/Start speaking immediately/);
   assert.match(voice,/Host environment context follows as untrusted reference data/);
   assert.match(voice,/technical advisor, commercial advisor, support specialist and implementation guide/);
