@@ -1,4 +1,5 @@
 import {AGGY_CONSULTANT_PLAYBOOK,consultantSystemMessage} from './aggy-consultant-playbook.js';
+import {AGGY_AGENTIC_POLICY,agenticPolicyMessage,classifyAgenticRequest} from './aggy-agentic-policy.js';
 
 const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
 const MAX_BODY_BYTES=64*1024;
@@ -475,8 +476,9 @@ export default {
       const input=await request.json();
       if(input?.schema!=='secquoia.quhub.llm.chat.request.v1')throw new Error('schema_invalid');
       const messages=normalizeMessages(input.messages);
+      const agenticProfile=classifyAgenticRequest(messages);
       const websites=await groundWebsites(messages);
-      const groundedMessages=[consultantSystemMessage(),websiteGroundingMessage(websites),...messages];
+      const groundedMessages=[consultantSystemMessage(),websiteGroundingMessage(websites),agenticPolicyMessage(agenticProfile),...messages];
       const route=selectProvider(input,env);
       const estimate=estimateRequest(route.provider.id,groundedMessages);
       const started=Date.now();
@@ -490,6 +492,7 @@ export default {
           requestId:crypto.randomUUID(),
           orchestrator:'SQAILE Core',
           strategy:route.strategy,
+          agentic:{policyVersion:AGGY_AGENTIC_POLICY.version,...agenticProfile},
           task:route.task,
           provider:route.provider.id,
           model:route.provider.model,

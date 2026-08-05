@@ -68,7 +68,7 @@ const AGGY_QUOPTIO_POLICY=Object.freeze({
   staleRateCardAction:'FAIL_CLOSED'
 });
 const AGGY_RELEASE=Object.freeze({
-  version:'1.3.0-rc.1',
+  version:'1.3.0-rc.2',
   channel:'release-candidate',
   lifecycle:'release-candidate',
   distribution:'ecosystem-hosted',
@@ -77,6 +77,7 @@ const AGGY_RELEASE=Object.freeze({
   gaScope:Object.freeze([
     'AGGY_VOICE_LIVE',
     'AGGY_ASSISTANT_CHAT',
+    'AGGY_GOVERNED_AGENTIC_ACCOMPANIMENT',
     'VISITOR_TRIAL',
     'CONTRACT_ENTITLEMENTS',
     'TIME_AI_QVIT',
@@ -432,6 +433,7 @@ const verifyAggyEntitlement=async(request,secret,previewPolicyEpoch='v1')=>{
   const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
   const actual=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`)));
   const expected=decodeBase64Url(encodedSignature);
+  if(encodeBase64Url(expected)!==encodedSignature)throw new Error('invalid_entitlement_signature');
   if(actual.length!==expected.length)throw new Error('invalid_entitlement_signature');
   let mismatch=0;
   for(let index=0;index<actual.length;index++)mismatch|=actual[index]^expected[index];

@@ -4,10 +4,10 @@ import test from 'node:test';
 
 const release=JSON.parse(await readFile(new URL('../aggy-release.json',import.meta.url),'utf8'));
 const rollout=JSON.parse(await readFile(new URL('../aggy-rollout-targets.json',import.meta.url),'utf8'));
-const evidence=JSON.parse(await readFile(new URL('../aggy-1.3.0-rc.1-evidence.json',import.meta.url),'utf8'));
+const evidence=JSON.parse(await readFile(new URL('../aggy-1.3.0-rc.2-evidence.json',import.meta.url),'utf8'));
 
 test('Aggy release candidate and rollout inventory stay synchronized',()=>{
-  assert.equal(release.version,'1.3.0-rc.1');
+  assert.equal(release.version,'1.3.0-rc.2');
   assert.equal(release.channel,'release-candidate');
   assert.equal(release.lifecycle,'release-candidate');
   assert.equal(rollout.release,release.version);
@@ -37,7 +37,7 @@ test('All known ecosystem web surfaces have an Aggy integration contract',()=>{
   assert.equal(surfaces['QuSpace / QuHub'].status,'excluded-from-ga-owner-only');
 });
 
-test('Candidate remains blocked from production and third-party sale until approval',()=>{
+test('Candidate is technically deployed but remains blocked from GA and third-party sale pending validation',()=>{
   assert.equal(release.productionApproved,false);
   assert.equal(release.thirdPartySale,false);
   assert.equal(rollout.promotion.productionApproved,false);
@@ -45,6 +45,7 @@ test('Candidate remains blocked from production and third-party sale until appro
   assert.equal(release.approvedBy,null);
   assert.deepEqual(new Set(release.gaScope),new Set(evidence.candidateScope));
   assert.deepEqual(new Set(release.previewCapabilities),new Set(evidence.previewCapabilities));
-  assert.equal(evidence.decision,'BLOCK_PRODUCTION_PENDING_CONTROLLED_VALIDATION');
+  assert.equal(evidence.decision,'DEPLOYED_FOR_CONTROLLED_PRODUCTION_VALIDATION');
+  assert.equal(evidence.technicalDeploymentAuthorized,true);
   assert.equal(evidence.gates.some(gate=>gate.status!=='PASS'),true);
 });
