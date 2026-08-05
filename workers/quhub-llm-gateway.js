@@ -1,7 +1,12 @@
 import {AGGY_CONSULTANT_PLAYBOOK,consultantSystemMessage} from './aggy-consultant-playbook.js';
 import {AGGY_AGENTIC_POLICY,agenticPolicyMessage,classifyAgenticRequest} from './aggy-agentic-policy.js';
 
-const ALLOWED_ORIGINS=new Set(['https://secquoia.net','https://www.secquoia.net']);
+const ALLOWED_ORIGINS=new Set([
+  'https://secquoia.net',
+  'https://www.secquoia.net',
+  'https://secquoia.group',
+  'https://www.secquoia.group'
+]);
 const MAX_BODY_BYTES=64*1024;
 const MAX_CDR_BYTES=32*1024*1024;
 const MAX_MESSAGE_CHARS=24_000;
