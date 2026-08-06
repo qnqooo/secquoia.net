@@ -982,8 +982,19 @@
           paidStatus=await fetchUsageStatus().catch(()=>paidStatus);
         }
         if(Number(paidStatus?.wallet?.balance||0)>=Number(paidStatus?.continuation?.customerQVit||1)){
-          setState('connecting','¡Gracias por tu pago!','Tu Tiempo IA está acreditado. Aggy Voice LIVE se reactivará para continuar la conversación.','PAGO CONFIRMADO');
-          await startRealtime(true,{userInitiated:permissionState!=='granted',postPayment:paidConfirmation});
+          if(permissionState==='granted'){
+            setState('connecting','¡Gracias por tu pago!','Tu Tiempo IA está acreditado. Aggy Voice LIVE se reactivará para continuar la conversación.','PAGO CONFIRMADO');
+            await startRealtime(true,{userInitiated:false,postPayment:paidConfirmation});
+            return;
+          }
+          startButton.disabled=false;
+          startButton.textContent='Activar Voice LIVE';
+          setState(
+            'idle',
+            'Tu Tiempo IA está listo',
+            'El pago está acreditado. Toca Activar Voice LIVE para conceder el micrófono y continuar; no realices otro pago.',
+            'ACTIVAR'
+          );
           return;
         }
         usageUi('Pago confirmado · acreditación en curso','QuPay confirmó el pago. Estamos terminando de acreditar tu Tiempo IA; no necesitas pagar nuevamente.','checking');
@@ -992,10 +1003,21 @@
         setState('idle','Tu pago está confirmado','La acreditación de Tiempo IA continúa de forma segura. Toca Reintentar activación en unos segundos; no realices otro pago.','PROCESANDO');
         return;
       }
-      if(permissionState!=='denied'){
+      if(permissionState==='granted'){
         startButton.textContent='Iniciando voz';
         setState('connecting','Aggy está iniciando',`QuGEO detectó ${place} · ${qugeoLocale}. Abriendo el micrófono y la voz en vivo para saludarte.`,'INICIANDO');
-        await startRealtime(false,{userInitiated:permissionState!=='granted'});
+        await startRealtime(false,{userInitiated:false});
+        return;
+      }
+      if(permissionState!=='denied'){
+        startButton.disabled=false;
+        startButton.textContent='Activar Voice LIVE';
+        setState(
+          'idle',
+          'Aggy está lista',
+          `QuGEO detectó ${place} · ${qugeoLocale}. Toca Activar Voice LIVE para conceder el micrófono y comenzar la conversación.`,
+          'ACTIVAR'
+        );
         return;
       }
       startButton.disabled=false;
