@@ -138,7 +138,7 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
     assert.match(widget,new RegExp(`id="${id}"`));
   }
   assert.match(widget,/Voz femenina · acento colombiano/);
-  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.3\.0-rc\.2"/);
+  assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.3\.0-rc\.2-mic-permission-20260806"/);
   assert.match(embed,/new URL\('https:\/\/secquoia\.net\/qu-market\.html'\)/);
   assert.match(embed,/url\.searchParams\.set\('embed','1'\)/);
   assert.match(embed,/url\.searchParams\.set\('aggy','1'\)/);
@@ -147,12 +147,12 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
 });
 
 test('SECQUOIA public pages load the local Aggy distribution',()=>{
-  assert.match(index,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic2-20260805"[^>]*data-aggy-site="secquoia\.net"/);
-  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic2-20260805"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(index,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.2-mic-permission-20260806"[^>]*data-aggy-site="secquoia\.net"/);
+  assert.match(notFound,/src="\/aggy-embed\.js\?v=1\.3\.0-rc\.2-mic-permission-20260806"[^>]*data-aggy-site="secquoia\.net"/);
 });
 
 test('SECQUOIA entry pages cache-bust the QuCFA-normalized Aggy distribution',()=>{
   assert.match(embed,/1\.3\.0-rc\.2/);
-  assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.2-agentic2-20260805/);
-  assert.match(embed,/const assetRevision='1\.3\.0-rc\.2-languages11-20260805'/);
+  assert.match(index,/aggy-embed\.js\?v=1\.3\.0-rc\.2-mic-permission-20260806/);
+  assert.match(embed,/const assetRevision='1\.3\.0-rc\.2-mic-permission-20260806'/);
 });

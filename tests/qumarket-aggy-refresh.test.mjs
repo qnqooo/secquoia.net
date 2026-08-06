@@ -64,7 +64,10 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/const healthEndpoint='https:\/\/aggy\.secquoia\.group\/api\/aggy\/realtime\/health'/);
   assert.match(voice,/prewarmVoice\(\)/);
   assert.match(voice,/setState\('connecting','Aggy está iniciando'/);
-  assert.match(voice,/await startRealtime\(false,\{userInitiated:permissionState!=='granted'\}\)/);
+  assert.match(voice,/if\(permissionState==='granted'\)/);
+  assert.match(voice,/await startRealtime\(false,\{userInitiated:false\}\)/);
+  assert.match(voice,/startButton\.textContent='Activar Voice LIVE'/);
+  assert.match(voice,/Toca Activar Voice LIVE para conceder el micrófono/);
   assert.match(voice,/navigator\.permissions\?\.query/);
   assert.match(voice,/permissionState!=='denied'/);
   assert.match(voice,/startRealtime\(false,\{userInitiated:true\}\)/);
@@ -95,7 +98,9 @@ test('Aggy Realtime client follows a backend-mediated WebRTC flow',()=>{
   assert.match(voice,/single most important objective, blocker or decision/);
   assert.match(voice,/secquoia:aggy:payment-confirmed/);
   assert.match(voice,/publishPaymentConfirmation\(paidConfirmation\)/);
-  assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
+  assert.match(voice,/startRealtime\(true,\{userInitiated:false,postPayment:paidConfirmation\}\)/);
+  assert.match(embed,/const activationRequired=event\.data\.label==='ACTIVAR'/);
+  assert.match(embed,/Abre Aggy y toca Activar Voice LIVE/);
   assert.match(voice,/turn_detection:\{type:'semantic_vad',eagerness:'medium',create_response:true,interrupt_response:true\}/);
   assert.match(voice,/const speechSpeed=1\.03/);
   assert.match(voice,/output:\{voice:naturalVoice,speed:speechSpeed\}/);
@@ -658,7 +663,9 @@ test('Post-payment Voice LIVE confirms value, time and consultative continuation
 test('Cross-site paid return resumes Voice LIVE with exact commercial-consultative acknowledgment',()=>{
   assert.match(voice,/paymentFragment=new URLSearchParams\(location\.hash\.replace/);
   assert.match(voice,/params\.get\('payment'\)[\s\S]{0,180}params\.get\('aggy_payment'\)[\s\S]{0,180}paymentFragment\.get\('payment'\)[\s\S]{0,180}paymentFragment\.get\('aggy_payment'\)/);
-  assert.match(voice,/startRealtime\(true,\{userInitiated:permissionState!=='granted',postPayment:paidConfirmation\}\)/);
+  assert.match(voice,/if\(permissionState==='granted'\)[\s\S]{0,360}startRealtime\(true,\{userInitiated:false,postPayment:paidConfirmation\}\)/);
+  assert.match(voice,/Tu Tiempo IA está listo/);
+  assert.match(voice,/no realices otro pago/);
   assert.match(voice,/¡Pago confirmado! Muchas gracias por continuar conmigo/);
   assert.match(voice,/single most important objective, blocker or decision/);
   assert.match(voice,/for\(let attempt=0;attempt<40/);

@@ -8,7 +8,7 @@
   const site=script?.dataset.aggySite||location.hostname||'unknown';
   const autoOpen=script?.dataset.aggyAutoOpen==='true';
   const version='1.3.0-rc.2';
-  const assetRevision='1.3.0-rc.2-languages11-20260805';
+  const assetRevision='1.3.0-rc.2-mic-permission-20260806';
   const paymentReturn=(()=>{
     try{
       const values=new URLSearchParams(location.hash.replace(/^#/,''));
@@ -437,6 +437,7 @@
     }
     if(event.data?.type!=='secquoia:aggy:voice-state')return;
     const state=['connecting','live','ready','blocked'].includes(event.data.state)?event.data.state:'ready';
+    const activationRequired=event.data.label==='ACTIVAR';
     launcher.dataset.voice=state;
     const preview=launcher.dataset.accessMode==='ECOSYSTEM_PREVIEW';
     const included=launcher.dataset.accessMode==='CONTRACT_INCLUDED';
@@ -462,13 +463,16 @@
         ?state==='live'?'EN VIVO · Tiempo IA':paidMinutes>0?`${paidMinutes} min disponibles · Voice LIVE`:'Tiempo IA disponible · continuar'
       :preview
         ?'Preview · sin consumo'
-        :included
+      :included
           ?'Voz LIVE · incluida'
           :state==='live'
       ?'EN VIVO · 10 min gratis'
+        :activationRequired
+          ?'Toca para activar · 10 min gratis'
         :state==='blocked'
           ?'Toca para activar · 10 min gratis'
           :'Voice LIVE · 10 min gratis';
+    if(activationRequired)launcherNudge.textContent='Abre Aggy y toca Activar Voice LIVE';
   });
   window.addEventListener('message',event=>{
     if(event.origin!=='https://secquoia.net'||event.source!==paymentWindow||event.data?.type!=='secquoia:aggy:payment-handoff')return;
