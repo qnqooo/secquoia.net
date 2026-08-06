@@ -139,6 +139,8 @@ test('Aggy compact widget uses the governed Realtime voice client only',()=>{
   }
   assert.match(widget,/Voz femenina · acento colombiano/);
   assert.match(widget,/src="\/aggy-realtime-voice\.js\?v=1\.3\.0-rc\.2-mic-permission-20260806"/);
+  assert.match(widget,/id="aggyVoiceStage" data-state="idle"/);
+  assert.match(widget,/id="aggyVoiceBadge">ACTIVAR/);
   assert.match(embed,/new URL\('https:\/\/secquoia\.net\/qu-market\.html'\)/);
   assert.match(embed,/url\.searchParams\.set\('embed','1'\)/);
   assert.match(embed,/url\.searchParams\.set\('aggy','1'\)/);
