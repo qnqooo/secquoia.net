@@ -1,0 +1,21 @@
+{
+  "$schema": "../schemas/sqaile-platform-manifest.schema.json",
+  "schemaVersion": "1.0.0",
+  "platform": "SECQUOIA Cybersecurity",
+  "domain": "secquoia.net",
+  "classification": "corporate-public",
+  "controlPlane": "SQAILE",
+  "edge": "Cloudflare",
+  "identity": "QuIdentify",
+  "platformBff": "required",
+  "integrationGateway": "QuHub",
+  "engineApi": "private",
+  "providerAccess": "connector-only",
+  "security": ["QuFense", "QuSOC"],
+  "audit": "QuAudit",
+  "operations": ["QuCOO", "QuDeploy", "QuSupport"],
+  "secrets": "QuVault references only",
+  "failClosed": true,
+  "productionEvidenceRequired": true,
+  "rollback": "Git commit plus previous edge deployment"
+}
